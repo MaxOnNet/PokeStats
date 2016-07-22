@@ -40,12 +40,18 @@ class PokemonSpawnpoint(Base):
 
     latitude = Column(Float())
     longitude = Column(Float())
-    date_disappear = Column(DateTime(), nullable=False, default=func.utc_timestamp())
 
+    date_disappear = Column(DateTime(), nullable=True)
+    date_till_hidden = Column(Integer(), default=0, nullable=False)
     date_create = Column(DateTime(), nullable=False, default=func.utc_timestamp())
     date_change = Column(DateTime(), nullable=False, default=func.utc_timestamp(), onupdate=func.utc_timestamp())
 
     pokemon = relationship("Pokemon", backref="PokemonSpawnpoint")
+
+    #
+    @property
+    def date_disappear_fix(self):
+        return self.date_disappear - timedelta(hours=6)
 
     @classmethod
     def get_active(cls, session):
@@ -63,6 +69,7 @@ class Pokestop(Base):
 
     latitude = Column(Float())
     longitude = Column(Float())
+
 
     date_modified = Column(DateTime(), nullable=True)
     date_lure_expiration = Column(DateTime(), nullable=True)
@@ -109,7 +116,6 @@ def parse_map(map_dict, session):
     cells = map_dict['responses']['GET_MAP_OBJECTS']['map_cells']
     for cell in cells:
         for p in cell.get('wild_pokemons', []):
-            print p
             pokemon_spawnpoint = PokemonSpawnpoint()
 
             pokemon_spawnpoint.id = p['spawnpoint_id']
@@ -118,7 +124,7 @@ def parse_map(map_dict, session):
 
             pokemon_spawnpoint.latitude = p['latitude']
             pokemon_spawnpoint.longitude = p['longitude']
-
+            pokemon_spawnpoint.date_till_hidden = p['time_till_hidden_ms'] / 1000.0
             pokemon_spawnpoint.date_disappear = datetime.fromtimestamp(
                     (p['last_modified_timestamp_ms'] +
                      p['time_till_hidden_ms']) / 1000.0)
@@ -134,7 +140,6 @@ def parse_map(map_dict, session):
                         f['lure_info']['lure_expires_timestamp_ms'] / 1000.0)
                 else:
                     lure_expiration = None
-                print f
                 pokestop = Pokestop()
 
                 pokestop.id = f['id']
@@ -151,7 +156,6 @@ def parse_map(map_dict, session):
 
             else:  # Currently, there are only stops and gyms
                 gym = Gym()
-                print f
                 gym.id = f['id']
 
                 if not "owned_by_team" in f:

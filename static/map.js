@@ -154,7 +154,7 @@ function setupPokemonMarker(item) {
     });
 
     marker.infoWindow = new google.maps.InfoWindow({
-        content: pokemonLabel(item.pokemon_name, item.date_disappear, item.cd_pokemon, item.latitude, item.longitude)
+        content: pokemonLabel(item.pokemon_name, item.date_disappear_fix, item.cd_pokemon, item.latitude, item.longitude)
     });
 
     addListeners(marker);
