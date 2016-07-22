@@ -18,13 +18,7 @@ config_xml = Config()
 log = logging.getLogger(__name__)
 debug=False
 
-def start_locator_thread(config_xml):
-    search_thread = Thread(target=search_loop, args=(config_xml,))
-    search_thread.daemon = True
-    search_thread.name = 'search_thread'
-    search_thread.start()
-
-position = get_pos_by_name(config_xml.get("map", "", "location", "Омск, Мира, 20"))
+position = get_pos_by_name(config_xml.get("map", "", "location", "Омск, Менделеева, 21"))
 config['ORIGINAL_LATITUDE'] = position[0]
 config['ORIGINAL_LONGITUDE'] = position[1]
 config['GMAPS_KEY'] = config_xml.get("map", "google", "key", "")
@@ -49,17 +43,6 @@ if debug:
 log.info('Parsed location is: {:.4f}/{:.4f}/{:.4f} (lat/lng/alt)'.
              format(*position))
 
-
-
-#    if args.ignore:
-#        Pokemon.IGNORE = [i.lower().strip() for i in args.ignore.split(',')]
-#    elif args.only:
-#        Pokemon.ONLY = [i.lower().strip() for i in args.only.split(',')]
-
-#    if not args.mock:
-#start_locator_thread(config_xml)
-#    else:
-#insert_mock_data("55.0506,73.3097", 6)
 
 app = Pogom(__name__)
 config['ROOT_PATH'] = app.root_path
