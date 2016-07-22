@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+    <database>
+        <mysql database="db_pokestats" password="3aNC7nVcPPpa2q" server="10.19.2.8" user="srv_pokestats" charset="utf8" />
+    </database>
+
+</configuration>
