@@ -25,12 +25,16 @@ class Pogom(Flask):
 
         self.config_xml = Config()
 
-        self._init_database()
 
-    def _init_database(self):
+
+    def _database_init(self):
         self.session_maker = init(self.config_xml)
         self.session_mysql = self.session_maker()
 
+    def _database_close(self):
+        self.session_mysql.flush()
+        self.session_mysql.expunge_all()
+        self.session_mysql.close()
 
     def fullmap(self):
         return render_template('map.html',
@@ -40,8 +44,7 @@ class Pogom(Flask):
 
     # Добавить возможность учитывать регион иначе браузер повещается
     def get_raw_data(self):
-        self.session_mysql.flush()
-        self.session_mysql.expunge_all()
+        self._database_init()
 
         return {
             'gyms': [u.__dict__ for u in self.session_mysql.query(Gym).all()],
@@ -49,7 +52,8 @@ class Pogom(Flask):
             'pokemons': [u.__dict__ for u in PokemonSpawnpoint.get_active(self.session_mysql).all()]
         }
 
-
+        self._database_close()
+        
     def raw_data(self):
         return jsonify(self.get_raw_data())
 

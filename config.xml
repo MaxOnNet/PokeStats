@@ -8,6 +8,7 @@
         <search step_limit="10" />
         <account2 auth-service="ptc" login="MaxOnNet" password="b7nYgJKFU22dRe" />
         <account6 auth-service="ptc" login="kuzyiaa" password="123456" />
-        <account auth-service="google" login="v55morozov@gmail.com" password="apex-wheal-clod" />
+        <account auth-service="google" login="nastya.akafeva@gmail.com" password="nastya1234" />
+        <account23 auth-service="google" login="v55morozov@gmail.com" password="apex-wheal-clod" />
     </map>
 </configuration>

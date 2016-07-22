@@ -17,7 +17,7 @@ config_xml = Config()
 log = logging.getLogger(__name__)
 debug=True
 
-position = get_pos_by_name(config_xml.get("map", "", "location", "Омск, Мира, 20"))
+position = get_pos_by_name(config_xml.get("map", "", "location", "Омск, 22 Апреля, 30"))
 config['ORIGINAL_LATITUDE'] = position[0]
 config['ORIGINAL_LONGITUDE'] = position[1]
 config['GMAPS_KEY'] = config_xml.get("map", "google", "key", "")
