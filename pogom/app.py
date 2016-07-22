@@ -55,7 +55,7 @@ class Pogom(Flask):
         self._database_close()
 
         return dict
-    
+
     def raw_data(self):
         return jsonify(self.get_raw_data())
 

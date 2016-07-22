@@ -5,14 +5,16 @@ import os
 import logging
 
 from Interfaces.Config import Config
-from Interfaces.MySQL import init
-
 from threading import Thread
 
 from pogom import config
 from pogom.search import search_loop
+from pogom.pgoapi.utilities import get_pos_by_name
+
 
 log = logging.getLogger(__name__)
+
+#position = get_pos_by_name(config_xml.get("map", "", "location", "Омск, 22 Апреля, 30"))
 
 if __name__ == '__main__':
     logging.basicConfig(level=logging.INFO, format='%(asctime)s [%(module)11s] [%(levelname)7s] %(message)s')
@@ -25,13 +27,10 @@ if __name__ == '__main__':
     config = Config()
     workers = []
 
-    session_maker = init(config)
-    session_mysql = session_maker()
-
     for worker in config.get_dict("map","worker"):
         if worker["enable"] == "True":
             print 'search_thread_{0}'.format(worker['name'])
-            worker_thread = Thread(target=search_loop, args=(worker,session_mysql,))
+            worker_thread = Thread(target=search_loop, args=(worker,))
             worker_thread.daemon = True
             worker_thread.name = 'search_thread_{0}'.format(worker['name'])
             worker_thread.start()
@@ -41,8 +40,6 @@ if __name__ == '__main__':
     for worker in workers:
         worker.join()
 
-    session_mysql.flush()
-    session_mysql.close()
 #    if args.ignore:
 #        Pokemon.IGNORE = [i.lower().strip() for i in args.ignore.split(',')]
 #    elif args.only:

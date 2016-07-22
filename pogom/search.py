@@ -13,7 +13,9 @@ import time
 from pgoapi import PGoApi
 from pgoapi.utilities import f2i, h2f, get_cellid, encode, get_pos_by_name
 
-from Interfaces.MySQL.Schema import parse_map
+from Interfaces.Config import Config
+from Interfaces.MySQL import init
+from Interfaces.MySQL.Schema import PokemonSpawnpoint, Gym, Pokestop, parse_map
 
 log = logging.getLogger(__name__)
 
@@ -59,10 +61,13 @@ def login(config_dict, position):
     log.info('Login successful.')
 
 
-def search(config_dict, session_mysql):
+def search(config_dict):
     num_steps = int(config_dict["step_limit"])
     position = get_pos_by_name(config_dict["location"])
 
+    config = Config()
+    session_maker = init(config)
+    session_mysql = session_maker()
 
     if api._auth_provider and api._auth_provider._ticket_expire:
         remaining_time = api._auth_provider._ticket_expire/1000 - time.time()
@@ -93,11 +98,12 @@ def search(config_dict, session_mysql):
         log.info('Completed {:5.2f}% of scan.'.format(float(i) / num_steps**2*100))
         i += 1
 
+    session_mysql.close()
     time.sleep(REQ_SLEEP)
 
 
-def search_loop(config_dict, session_mysql):
+def search_loop(config_dict):
     while True:
-        search(config_dict, session_mysql)
+        search(config_dict)
         log.info("Scanning complete.")
         time.sleep(1)
