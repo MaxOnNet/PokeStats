@@ -64,5 +64,5 @@ log.info('Parsed location is: {:.4f}/{:.4f}/{:.4f} (lat/lng/alt)'.
 
 app = Pogom(__name__)
 config['ROOT_PATH'] = app.root_path
-
-app.run(threaded=True, host="127.0.0.1", port="5000")
+if __name__ == '__main__':
+    app.run(threaded=True, host="127.0.0.1", port="5000")
