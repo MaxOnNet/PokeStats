@@ -4,7 +4,7 @@
 import os
 import logging
 
-from Interfaces import Config
+from Interfaces.Config import Config
 from threading import Thread
 
 from pogom import config
