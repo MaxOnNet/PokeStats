@@ -41,6 +41,7 @@ class Pogom(Flask):
     # Добавить возможность учитывать регион иначе браузер повещается
     def get_raw_data(self):
         self.session_mysql.flush()
+        self.session_mysql.expunge_all()
 
         return {
             'gyms': [u.__dict__ for u in self.session_mysql.query(Gym).all()],

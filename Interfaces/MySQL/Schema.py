@@ -174,5 +174,6 @@ def parse_map(map_dict, session):
                 session.merge(gym)
                 session.commit()
                 session.flush()
-
     session.flush()
+    session.expunge_all()
+
