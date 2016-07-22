@@ -150,11 +150,11 @@ function setupPokemonMarker(item) {
             lng: item.longitude
         },
         map: map,
-        icon: 'static/icons/' + item.pokemon_id + '.png'
+        icon: 'static/icons/' + item.cd_pokemon + '.png'
     });
 
     marker.infoWindow = new google.maps.InfoWindow({
-        content: pokemonLabel(item.pokemon_name, item.disappear_time, item.pokemon_id, item.latitude, item.longitude)
+        content: pokemonLabel(item.pokemon_name, item.date_disappear, item.cd_pokemon, item.latitude, item.longitude)
     });
 
     addListeners(marker);
@@ -168,11 +168,11 @@ function setupGymMarker(item) {
             lng: item.longitude
         },
         map: map,
-        icon: 'static/forts/' + gym_types[item.team_id] + '.png'
+        icon: 'static/forts/' + gym_types[item.cd_team] + '.png'
     });
 
     marker.infoWindow = new google.maps.InfoWindow({
-        content: gymLabel(gym_types[item.team_id], item.team_id, item.gym_points)
+        content: gymLabel(gym_types[item.cd_team], item.cd_team, item.gym_points)
     });
 
     addListeners(marker);
@@ -180,7 +180,7 @@ function setupGymMarker(item) {
 };
 
 function setupPokestopMarker(item) {
-    var imagename = item.lure_expiration ? "PstopLured" : "Pstop";
+    var imagename = item.date_lure_expiration ? "PstopLured" : "Pstop";
     var marker = new google.maps.Marker({
         position: {
             lat: item.latitude,
@@ -253,23 +253,23 @@ function updateMap() {
           if (!localStorage.showPokemon) {
               return false; // in case the checkbox was unchecked in the meantime.
           }
-          if (!(item.encounter_id in map_pokemons) &&
-                    excludedPokemon.indexOf(item.pokemon_id) < 0) {
+          if (!(item.cd_encounter in map_pokemons) &&
+                    excludedPokemon.indexOf(item.cd_pokemon) < 0) {
               // add marker to map and item to dict
               if (item.marker) item.marker.setMap(null);
               item.marker = setupPokemonMarker(item);
-              map_pokemons[item.encounter_id] = item;
+              map_pokemons[item.cd_encounter] = item;
           }
         });
 
         $.each(result.pokestops, function(i, item) {
             if (!localStorage.showPokestops) {
                 return false;
-            } else if (!(item.pokestop_id in map_pokestops)) { // add marker to map and item to dict
+            } else if (!(item.id in map_pokestops)) { // add marker to map and item to dict
                 // add marker to map and item to dict
                 if (item.marker) item.marker.setMap(null);
                 item.marker = setupPokestopMarker(item);
-                map_pokestops[item.pokestop_id] = item;
+                map_pokestops[item.id] = item;
             }
 
         });
@@ -279,21 +279,21 @@ function updateMap() {
                 return false; // in case the checkbox was unchecked in the meantime.
             }
 
-            if (item.gym_id in map_gyms) {
+            if (item.id in map_gyms) {
                 // if team has changed, create new marker (new icon)
-                if (map_gyms[item.gym_id].team_id != item.team_id) {
-                    map_gyms[item.gym_id].marker.setMap(null);
-                    map_gyms[item.gym_id].marker = setupGymMarker(item);
+                if (map_gyms[item.id].cd_team != item.cd_team) {
+                    map_gyms[item.id].marker.setMap(null);
+                    map_gyms[item.id].marker = setupGymMarker(item);
                 } else { // if it hasn't changed generate new label only (in case prestige has changed)
-                    map_gyms[item.gym_id].marker.infoWindow = new google.maps.InfoWindow({
-                        content: gymLabel(gym_types[item.team_id], item.team_id, item.gym_points)
+                    map_gyms[item.id].marker.infoWindow = new google.maps.InfoWindow({
+                        content: gymLabel(gym_types[item.cd_team], item.cd_team, item.gym_points)
                     });
                 }
             }
             else { // add marker to map and item to dict
                 if (item.marker) item.marker.setMap(null);
                 item.marker = setupGymMarker(item);
-                map_gyms[item.gym_id] = item;
+                map_gyms[item.id] = item;
             }
 
         });

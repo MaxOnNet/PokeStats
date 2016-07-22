@@ -36,7 +36,7 @@ class PokemonSpawnpoint(Base):
 
     id = Column(String(64), doc="")
     cd_encounter = Column(String(64), primary_key=True, doc="")
-    cd_pokemon = Column(Integer(), default=0, nullable=False, doc="")
+    cd_pokemon = Column(Integer(), ForeignKey('pokemon.id'), default=0, nullable=False, doc="")
 
     latitude = Column(Float())
     longitude = Column(Float())
@@ -155,8 +155,8 @@ def parse_map(map_dict, session):
                 gym.id = f['id']
 
                 if not "owned_by_team" in f:
-                    gym.cd_guard_pokemon=0
-                    gym.cd_team=0
+                    gym.cd_guard_pokemon = 0
+                    gym.cd_team = 0
                 else:
                     gym.cd_team = f['owned_by_team']
                     gym.cd_guard_pokemon = f['guard_pokemon_id']

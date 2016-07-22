@@ -9,7 +9,7 @@ from datetime import datetime
 from Interfaces.Config import Config
 from Interfaces.MySQL import init
 from Interfaces.MySQL.Schema import PokemonSpawnpoint, Gym, Pokestop
-
+import sqlalchemy
 from . import config
 
 
@@ -46,6 +46,7 @@ class Pogom(Flask):
             'pokemons': [u.__dict__ for u in PokemonSpawnpoint.get_active(self.session_mysql).all()]
         }
 
+
     def raw_data(self):
         return jsonify(self.get_raw_data())
 
@@ -70,6 +71,10 @@ class CustomJSONEncoder(JSONEncoder):
                     obj.microsecond / 1000
                 )
                 return millis
+
+            if isinstance(obj, sqlalchemy.orm.state.InstanceState):
+                return ""
+
             iterable = iter(obj)
         except TypeError:
             pass
