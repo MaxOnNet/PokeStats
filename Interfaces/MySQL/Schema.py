@@ -36,7 +36,7 @@ class PokemonSpawnpoint(Base):
 
     id = Column(String(64), doc="")
     cd_encounter = Column(String(64), primary_key=True, doc="")
-    cd_pokemon = Column(Integer(), ForeignKey('pokemon.id'), nullable=False, doc="")
+    cd_pokemon = Column(Integer(), default=0, nullable=False, doc="")
 
     latitude = Column(Float())
     longitude = Column(Float())
@@ -59,7 +59,7 @@ class Pokestop(Base):
 
     id = Column(String(64), primary_key=True, doc="")
 
-    is_enabled = Column(Boolean())
+    is_enabled = Column(Boolean(),default=False)
 
     latitude = Column(Float())
     longitude = Column(Float())
@@ -92,10 +92,10 @@ class Gym(Base):
                       'mysql_comment': ''}
 
     id = Column(String(64), primary_key=True, doc="")
-    cd_team = Column(Integer(), ForeignKey('team.id'), nullable=False, doc="")
-    cd_guard_pokemon = Column(Integer(), ForeignKey('pokemon.id'), nullable=False, doc="")
+    cd_team = Column(Integer(), nullable=False, doc="")
+    cd_guard_pokemon = Column(Integer(), default=0, nullable=False, doc="")
 
-    is_enabled = Column(Boolean())
+    is_enabled = Column(Boolean(), default=False)
 
     latitude = Column(Float())
     longitude = Column(Float())
@@ -109,6 +109,7 @@ def parse_map(map_dict, session):
     cells = map_dict['responses']['GET_MAP_OBJECTS']['map_cells']
     for cell in cells:
         for p in cell.get('wild_pokemons', []):
+            print p
             pokemon_spawnpoint = PokemonSpawnpoint()
 
             pokemon_spawnpoint.id = p['spawnpoint_id']
@@ -123,6 +124,8 @@ def parse_map(map_dict, session):
                      p['time_till_hidden_ms']) / 1000.0)
 
             session.merge(pokemon_spawnpoint)
+            session.commit()
+            session.flush()
 
         for f in cell.get('forts', []):
             if f.get('type') == 1:  # Pokestops
@@ -131,7 +134,7 @@ def parse_map(map_dict, session):
                         f['lure_info']['lure_expires_timestamp_ms'] / 1000.0)
                 else:
                     lure_expiration = None
-
+                print f
                 pokestop = Pokestop()
 
                 pokestop.id = f['id']
@@ -143,17 +146,28 @@ def parse_map(map_dict, session):
                 pokestop.date_lure_expiration = lure_expiration
 
                 session.merge(pokestop)
+                session.commit()
+                session.flush()
 
             else:  # Currently, there are only stops and gyms
                 gym = Gym()
+                print f
                 gym.id = f['id']
-                gym.cd_team = f['owned_by_team']
-                gym.cd_guard_pokemon = f['guard_pokemon_id']
+
+                if not "owned_by_team" in f:
+                    gym.cd_guard_pokemon=0
+                    gym.cd_team=0
+                else:
+                    gym.cd_team = f['owned_by_team']
+                    gym.cd_guard_pokemon = f['guard_pokemon_id']
+
                 gym.is_enabled = f['enabled']
                 gym.latitude = f['latitude']
                 gym.longitude = f['longitude']
                 gym.date_modified = datetime.fromtimestamp(f['last_modified_timestamp_ms'] / 1000.0)
 
                 session.merge(gym)
+                session.commit()
+                session.flush()
 
     session.flush()
