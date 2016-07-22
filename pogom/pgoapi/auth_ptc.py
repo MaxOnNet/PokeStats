@@ -50,7 +50,7 @@ class AuthPtc(Auth):
         
         head = {'User-Agent': 'niantic'}
         r = self._session.get(self.PTC_LOGIN_URL, headers=head)
-        
+
         jdata = json.loads(r.content)
         data = {
             'lt': jdata['lt'],

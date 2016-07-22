@@ -34,8 +34,8 @@ class PokemonSpawnpoint(Base):
     __table_args__ = {'mysql_engine': 'InnoDB', 'mysql_charset': 'utf8', 'mysql_collate': 'utf8_general_ci',
                       'mysql_comment': ''}
 
-    id = Column(BigInteger(), doc="")
-    cd_encounter = Column(BigInteger(), primary_key=True, doc="")
+    id = Column(String(64), doc="")
+    cd_encounter = Column(String(64), primary_key=True, doc="")
     cd_pokemon = Column(Integer(), ForeignKey('pokemon.id'), nullable=False, doc="")
 
     latitude = Column(Float())
@@ -57,7 +57,7 @@ class Pokestop(Base):
     __table_args__ = {'mysql_engine': 'InnoDB', 'mysql_charset': 'utf8', 'mysql_collate': 'utf8_general_ci',
                       'mysql_comment': ''}
 
-    id = Column(BigInteger(), primary_key=True, doc="")
+    id = Column(String(64), primary_key=True, doc="")
 
     is_enabled = Column(Boolean())
 
@@ -91,7 +91,7 @@ class Gym(Base):
     __table_args__ = {'mysql_engine': 'InnoDB', 'mysql_charset': 'utf8', 'mysql_collate': 'utf8_general_ci',
                       'mysql_comment': ''}
 
-    id = Column(BigInteger(), primary_key=True, doc="")
+    id = Column(String(64), primary_key=True, doc="")
     cd_team = Column(Integer(), ForeignKey('team.id'), nullable=False, doc="")
     cd_guard_pokemon = Column(Integer(), ForeignKey('pokemon.id'), nullable=False, doc="")
 
