@@ -104,7 +104,7 @@ function pokemonLabel(name, disappear_time, id, latitude, longitude) {
             </small>
         </div>
         <div>
-            Disappears at ${pad(disappear_date.getHours())}:${pad(disappear_date.getMinutes())}:${pad(disappear_date.getSeconds())}
+            Исчезнет в ${pad(disappear_date.getHours())}:${pad(disappear_date.getMinutes())}:${pad(disappear_date.getSeconds())}
             <span class='label-countdown' disappears-at='${disappear_time}'>(00m00s)</span></div>
         <div>
             <a href='https://www.google.com/maps/dir/Current+Location/${latitude},${longitude}'
@@ -154,7 +154,7 @@ function setupPokemonMarker(item) {
     });
 
     marker.infoWindow = new google.maps.InfoWindow({
-        content: pokemonLabel(item.pokemon_name, item.date_disappear_fix, item.cd_pokemon, item.latitude, item.longitude)
+        content: pokemonLabel(item.pokemon_name, (item.date_disappear-6*60*60*1000), item.cd_pokemon, item.latitude, item.longitude)
     });
 
     addListeners(marker);

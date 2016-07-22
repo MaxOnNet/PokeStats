@@ -43,8 +43,8 @@ class PokemonSpawnpoint(Base):
 
     date_disappear = Column(DateTime(), nullable=True)
     date_till_hidden = Column(Integer(), default=0, nullable=False)
-    date_create = Column(DateTime(), nullable=False, default=func.utc_timestamp())
-    date_change = Column(DateTime(), nullable=False, default=func.utc_timestamp(), onupdate=func.utc_timestamp())
+    date_create = Column(DateTime(), nullable=False, default=func.now())
+    date_change = Column(DateTime(), nullable=False, default=func.now(), onupdate=func.now())
 
     pokemon = relationship("Pokemon", backref="PokemonSpawnpoint")
 
@@ -74,8 +74,8 @@ class Pokestop(Base):
     date_modified = Column(DateTime(), nullable=True)
     date_lure_expiration = Column(DateTime(), nullable=True)
 
-    date_create = Column(DateTime(), nullable=False, default=func.utc_timestamp())
-    date_change = Column(DateTime(), nullable=False, default=func.utc_timestamp(), onupdate=func.utc_timestamp())
+    date_create = Column(DateTime(), nullable=False, default=func.now())
+    date_change = Column(DateTime(), nullable=False, default=func.now(), onupdate=func.now())
 
 
 class Team(Base):
@@ -108,8 +108,8 @@ class Gym(Base):
     longitude = Column(Float())
 
     date_modified = Column(DateTime(), nullable=True)
-    date_create = Column(DateTime(), nullable=False, default=func.utc_timestamp())
-    date_change = Column(DateTime(), nullable=False, default=func.utc_timestamp(), onupdate=func.utc_timestamp())
+    date_create = Column(DateTime(), nullable=False, default=func.now())
+    date_change = Column(DateTime(), nullable=False, default=func.now(), onupdate=func.now())
 
 
 def parse_map(map_dict, session):
@@ -128,7 +128,7 @@ def parse_map(map_dict, session):
             pokemon_spawnpoint.date_disappear = datetime.fromtimestamp(
                     (p['last_modified_timestamp_ms'] +
                      p['time_till_hidden_ms']) / 1000.0)
-
+            pokemon_spawnpoint.date_change = datetime.fromtimestamp((p['last_modified_timestamp_ms']/1000))
             session.merge(pokemon_spawnpoint)
             session.commit()
             session.flush()
