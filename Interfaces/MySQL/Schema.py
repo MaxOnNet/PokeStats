@@ -27,6 +27,9 @@ class Pokemon(Base):
     id = Column(Integer(), primary_key=True, autoincrement=True, doc="")
 
     name = Column(String(64), nullable=False, doc="")
+    group = Column(String(64), nullable=False, doc="")
+    color = Column(String(16), nullable=False, doc="")
+    zoom = Column(Float(),nullable=False, default=1)
 
 
 class PokemonSpawnpoint(Base):
@@ -117,6 +120,11 @@ def parse_map(map_dict, session):
     cells = map_dict['responses']['GET_MAP_OBJECTS']['map_cells']
     for cell in cells:
         for p in cell.get('wild_pokemons', []):
+
+            # fix
+            if int(p['time_till_hidden_ms']) < 0:
+                p['time_till_hidden_ms'] = 300
+
             pokemon_spawnpoint = PokemonSpawnpoint()
 
             pokemon_spawnpoint.id = p['spawnpoint_id']

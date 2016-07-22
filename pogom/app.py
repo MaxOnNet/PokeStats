@@ -8,7 +8,7 @@ from datetime import datetime
 
 from Interfaces.Config import Config
 from Interfaces.MySQL import init
-from Interfaces.MySQL.Schema import PokemonSpawnpoint, Gym, Pokestop
+from Interfaces.MySQL.Schema import PokemonSpawnpoint, Gym, Pokestop, Pokemon
 import sqlalchemy
 from . import config
 
@@ -45,11 +45,29 @@ class Pogom(Flask):
     # Добавить возможность учитывать регион иначе браузер повещается
     def get_raw_data(self):
         self._database_init()
+        dict_podemons = []
+
+        for pokemon_spawnpoint in PokemonSpawnpoint.get_active(self.session_mysql).all():
+            pokemon_dict = pokemon_spawnpoint.__dict__
+            pokemon_db = self.session_mysql.query(Pokemon).filter(Pokemon.id == pokemon_spawnpoint.cd_pokemon).one()
+
+            if pokemon_db:
+                pokemon_dict['pokemon_name'] = pokemon_db.name
+                pokemon_dict['pokemon_group'] = pokemon_db.group
+                pokemon_dict['pokemon_color'] = pokemon_db.color
+                pokemon_dict['pokemon_zoom'] = pokemon_db.zoom
+            else:
+                pokemon_dict['pokemon_name'] = 'NoName'
+                pokemon_dict['pokemon_group'] = 'NoGroup'
+                pokemon_dict['pokemon_color'] = '#000000'
+                pokemon_dict['pokemon_zoom'] = 1
+
+            dict_podemons.append(pokemon_dict)
 
         dict = {
             'gyms': [u.__dict__ for u in self.session_mysql.query(Gym).all()],
             'pokestops': [u.__dict__ for u in self.session_mysql.query(Pokestop).all()],
-            'pokemons': [u.__dict__ for u in PokemonSpawnpoint.get_active(self.session_mysql).all()]
+            'pokemons': dict_podemons
         }
 
         self._database_close()
