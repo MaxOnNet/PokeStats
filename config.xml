@@ -3,5 +3,7 @@
     <database>
         <mysql database="db_pokestats" password="3aNC7nVcPPpa2q" server="10.19.2.8" user="srv_pokestats" charset="utf8" />
     </database>
-
+    <map>
+        <google key="AIzaSyA3OUM5s1t1mX3mqtSMNSToPD_uaTAdP3M" />
+    </map>
 </configuration>
