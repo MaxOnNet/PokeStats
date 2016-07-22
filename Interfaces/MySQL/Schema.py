@@ -13,7 +13,7 @@ from sqlalchemy_utils import URLType, CountryType, PhoneNumberType, UUIDType, IP
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.ext.hybrid import hybrid_property, hybrid_method
 
-from datetime import datetime
+from datetime import datetime, timedelta
 from base64 import b64encode
 
 log = logging.getLogger(__name__)
@@ -49,7 +49,7 @@ class PokemonSpawnpoint(Base):
 
     @classmethod
     def get_active(cls, session):
-        return session.query(PokemonSpawnpoint).filter(PokemonSpawnpoint.date_disappear > datetime.now())
+        return session.query(PokemonSpawnpoint).filter(PokemonSpawnpoint.date_disappear > datetime.now() - timedelta(hours=9))
 
 
 class Pokestop(Base):
@@ -142,7 +142,7 @@ def parse_map(map_dict, session):
                 pokestop.latitude = f['latitude']
                 pokestop.longitude = f['longitude']
 
-                pokestop.date_modified =datetime.fromtimestamp(f['last_modified_timestamp_ms'] / 1000.0)
+                pokestop.date_modified=datetime.fromtimestamp(f['last_modified_timestamp_ms'] / 1000.0)
                 pokestop.date_lure_expiration = lure_expiration
 
                 session.merge(pokestop)

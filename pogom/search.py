@@ -91,10 +91,10 @@ def search(config_xml):
             response_dict = send_map_request(api, step_location)
             time.sleep(REQ_SLEEP)
 
-        #try:
-        parse_map(response_dict, session_mysql)
-        #except KeyError:
-        #    log.error('Scan step failed. Response dictionary key error.')
+        try:
+            parse_map(response_dict, session_mysql)
+        except KeyError:
+            log.error('Scan step failed. Response dictionary key error.')
 
         log.info('Completed {:5.2f}% of scan.'.format(float(i) / num_steps**2*100))
         i += 1
