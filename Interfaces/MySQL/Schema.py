@@ -76,7 +76,7 @@ class Team(Base):
     __table_args__ = {'mysql_engine': 'InnoDB', 'mysql_charset': 'utf8', 'mysql_collate': 'utf8_general_ci',
                       'mysql_comment': ''}
 
-    id = Column(Integer(), doc="")
+    id = Column(Integer(), primary_key=True, doc="")
 
     name = Column(String(64), nullable=False, doc="")
 
