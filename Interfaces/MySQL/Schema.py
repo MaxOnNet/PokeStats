@@ -49,7 +49,7 @@ class PokemonSpawnpoint(Base):
 
     @classmethod
     def get_active(cls, session):
-        return session.query(PokemonSpawnpoint).filter(PokemonSpawnpoint.date_disappear + timedelta(hours=6) > datetime.now() )
+        return session.query(PokemonSpawnpoint).filter(PokemonSpawnpoint.date_disappear > datetime.now())
 
 
 class Pokestop(Base):
