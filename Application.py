@@ -16,10 +16,10 @@ from pogom.pgoapi.utilities import get_pos_by_name
 
 config_xml = Config()
 log = logging.getLogger(__name__)
+debug=False
 
-
-def start_locator_thread(args):
-    search_thread = Thread(target=search_loop, args=(args,))
+def start_locator_thread(config_xml):
+    search_thread = Thread(target=search_loop, args=(config_xml,))
     search_thread.daemon = True
     search_thread.name = 'search_thread'
     search_thread.start()
@@ -33,22 +33,21 @@ config['GMAPS_KEY'] = config_xml.get("map", "google", "key", "")
 if __name__ == '__main__':
     logging.basicConfig(level=logging.INFO, format='%(asctime)s [%(module)11s] [%(levelname)7s] %(message)s')
 
-    logging.getLogger("peewee").setLevel(logging.INFO)
-    logging.getLogger("requests").setLevel(logging.WARNING)
-    logging.getLogger("pogom.pgoapi.pgoapi").setLevel(logging.WARNING)
-    logging.getLogger("pogom.pgoapi.rpc_api").setLevel(logging.INFO)
+logging.getLogger("peewee").setLevel(logging.INFO)
+logging.getLogger("requests").setLevel(logging.WARNING)
+logging.getLogger("pogom.pgoapi.pgoapi").setLevel(logging.WARNING)
+logging.getLogger("pogom.pgoapi.rpc_api").setLevel(logging.INFO)
 
-    args = get_args()
 
-    if args.debug:
-        logging.getLogger("requests").setLevel(logging.DEBUG)
-        logging.getLogger("pgoapi").setLevel(logging.DEBUG)
-        logging.getLogger("rpc_api").setLevel(logging.DEBUG)
-
+if debug:
+    logging.getLogger("requests").setLevel(logging.DEBUG)
+    logging.getLogger("pgoapi").setLevel(logging.DEBUG)
+    logging.getLogger("rpc_api").setLevel(logging.DEBUG)
 
 
 
-    log.info('Parsed location is: {:.4f}/{:.4f}/{:.4f} (lat/lng/alt)'.
+
+log.info('Parsed location is: {:.4f}/{:.4f}/{:.4f} (lat/lng/alt)'.
              format(*position))
 
 
@@ -59,10 +58,11 @@ if __name__ == '__main__':
 #        Pokemon.ONLY = [i.lower().strip() for i in args.only.split(',')]
 
 #    if not args.mock:
-#        start_locator_thread(args)
+#start_locator_thread(config_xml)
 #    else:
-insert_mock_data("55.0506,73.3097", 6)
+#insert_mock_data("55.0506,73.3097", 6)
 
 app = Pogom(__name__)
 config['ROOT_PATH'] = app.root_path
 
+app.run(threaded=True, host="127.0.0.1", port="5000")

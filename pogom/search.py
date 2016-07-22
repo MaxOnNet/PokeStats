@@ -48,20 +48,20 @@ def generate_location_steps(initial_location, num_steps):
         x, y = x + dx, y + dy
 
 
-def login(args, position):
+def login(config_xml, position):
     log.info('Attempting login.')
 
     api.set_position(*position)
 
-    while not api.login(args.auth_service, args.username, args.password):
+    while not api.login(config_xml.get("map", "account", "auth-service", "ptc"), config_xml.get("map", "account", "login", ""), config_xml.get("map", "account", "password", "")):
         log.info('Login failed. Trying again.')
         time.sleep(REQ_SLEEP)
 
     log.info('Login successful.')
 
 
-def search(args):
-    num_steps = args.step_limit
+def search(config_xml):
+    num_steps = config_xml.get("map", "search", "step_limit", 10)
     position = (config['ORIGINAL_LATITUDE'], config['ORIGINAL_LONGITUDE'], 0)
 
     if api._auth_provider and api._auth_provider._ticket_expire:
@@ -70,9 +70,9 @@ def search(args):
         if remaining_time > 60:
             log.info("Skipping login process since already logged in for another {:.2f} seconds".format(remaining_time))
         else:
-            login(args, position)
+            login(config_xml, position)
     else:
-        login(args, position)
+        login(config_xml, position)
 
     i = 1
     for step_location in generate_location_steps(position, num_steps):
@@ -95,8 +95,8 @@ def search(args):
         time.sleep(REQ_SLEEP)
 
 
-def search_loop(args):
+def search_loop(config_xml):
     while True:
-        search(args)
+        search(config_xml)
         log.info("Scanning complete.")
         time.sleep(1)

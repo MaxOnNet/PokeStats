@@ -5,5 +5,7 @@
     </database>
     <map>
         <google key="AIzaSyA3OUM5s1t1mX3mqtSMNSToPD_uaTAdP3M" />
+        <search step_limit="10" />
+        <account auth-service="ptc" login="MaxOnNet" password="b7nYgJKFU22dRe" />
     </map>
 </configuration>
