@@ -14,7 +14,10 @@ from pgoapi import PGoApi
 from pgoapi.utilities import f2i, h2f, get_cellid, encode, get_pos_by_name
 
 from . import config
-from .models import parse_map
+
+from Interfaces.Config import Config
+from Interfaces.MySQL import init
+from Interfaces.MySQL.Schema import PokemonSpawnpoint, Gym, Pokestop, parse_map
 
 log = logging.getLogger(__name__)
 
@@ -61,8 +64,11 @@ def login(config_xml, position):
 
 
 def search(config_xml):
-    num_steps = config_xml.get("map", "search", "step_limit", 10)
+    num_steps = int(config_xml.get("map", "search", "step_limit", 10))
     position = (config['ORIGINAL_LATITUDE'], config['ORIGINAL_LONGITUDE'], 0)
+
+    session_maker = init(config_xml)
+    session_mysql = session_maker()
 
     if api._auth_provider and api._auth_provider._ticket_expire:
         remaining_time = api._auth_provider._ticket_expire/1000 - time.time()
@@ -86,12 +92,13 @@ def search(config_xml):
             time.sleep(REQ_SLEEP)
 
         try:
-            parse_map(response_dict)
+            parse_map(response_dict, session_mysql)
         except KeyError:
             log.error('Scan step failed. Response dictionary key error.')
 
         log.info('Completed {:5.2f}% of scan.'.format(float(i) / num_steps**2*100))
         i += 1
+        session_mysql.close()
         time.sleep(REQ_SLEEP)
 
 

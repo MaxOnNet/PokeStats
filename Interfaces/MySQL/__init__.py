@@ -2,7 +2,6 @@
 # -*- coding: utf-8 -*-
 
 from Interfaces.MySQL.Schema import *
-from Interfaces.MySQL.Types import PasswordType
 from sqlalchemy import create_engine, MetaData, Table
 from sqlalchemy.orm import mapper, sessionmaker
 from sqlalchemy.orm import scoped_session

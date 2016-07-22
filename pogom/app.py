@@ -6,8 +6,11 @@ from flask import Flask, jsonify, render_template
 from flask.json import JSONEncoder
 from datetime import datetime
 
+from Interfaces.Config import Config
+from Interfaces.MySQL import init
+from Interfaces.MySQL.Schema import PokemonSpawnpoint, Gym, Pokestop
+
 from . import config
-from .models import Pokemon, Gym, Pokestop
 
 
 class Pogom(Flask):
@@ -20,17 +23,27 @@ class Pogom(Flask):
         self.route("/pokestops", methods=['GET'])(self.pokestops)
         self.route("/raw_data", methods=['GET'])(self.raw_data)
 
+        self.config_xml = Config()
+
+        self._init_database()
+
+    def _init_database(self):
+        self.session_maker = init(self.config_xml)
+        self.session_mysql = self.session_maker()
+
+
     def fullmap(self):
         return render_template('map.html',
                                lat=config['ORIGINAL_LATITUDE'],
                                lng=config['ORIGINAL_LONGITUDE'],
                                gmaps_key=config['GMAPS_KEY'])
 
+    # Добавить возможность учитывать регион иначе браузер повещается
     def get_raw_data(self):
         return {
-            'gyms': [g for g in Gym.select().dicts()],
-            'pokestops': [p for p in Pokestop.select().dicts()],
-            'pokemons': Pokemon.get_active()
+            'gyms': [u.__dict__ for u in self.session_mysql.query(Gym).all()],
+            'pokestops': [u.__dict__ for u in self.session_mysql.query(Pokestop).all()],
+            'pokemons': [u.__dict__ for u in PokemonSpawnpoint.get_active(self.session_mysql).all()]
         }
 
     def raw_data(self):
@@ -46,10 +59,7 @@ class Pogom(Flask):
         return jsonify(self.get_raw_data()['gyms'])
 
 
-
-
 class CustomJSONEncoder(JSONEncoder):
-
     def default(self, obj):
         try:
             if isinstance(obj, datetime):

@@ -9,9 +9,9 @@ from threading import Thread
 
 from pogom import config
 from pogom.app import Pogom
-from pogom.utils import get_args, insert_mock_data, load_credentials
+from pogom.utils import get_args, insert_mock_data
 from pogom.search import search_loop
-from pogom.models import create_tables, Pokemon
+
 from pogom.pgoapi.utilities import get_pos_by_name
 
 config_xml = Config()
@@ -24,7 +24,6 @@ def start_locator_thread(config_xml):
     search_thread.name = 'search_thread'
     search_thread.start()
 
-create_tables()
 position = get_pos_by_name(config_xml.get("map", "", "location", "Омск, Менделеева, 21"))
 config['ORIGINAL_LATITUDE'] = position[0]
 config['ORIGINAL_LONGITUDE'] = position[1]

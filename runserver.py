@@ -9,22 +9,14 @@ from threading import Thread
 
 from pogom import config
 from pogom.app import Pogom
-from pogom.utils import get_args, insert_mock_data, load_credentials
+from pogom.utils import get_args, insert_mock_data
 from pogom.search import search_loop
-from pogom.models import create_tables, Pokemon
 from pogom.pgoapi.utilities import get_pos_by_name
 
 config_xml = Config()
 log = logging.getLogger(__name__)
-debug=False
+debug=True
 
-def start_locator_thread(config_xml):
-    search_thread = Thread(target=search_loop, args=(config_xml,))
-    search_thread.daemon = True
-    search_thread.name = 'search_thread'
-    search_thread.start()
-
-create_tables()
 position = get_pos_by_name(config_xml.get("map", "", "location", "Омск, Менделеева, 21"))
 config['ORIGINAL_LATITUDE'] = position[0]
 config['ORIGINAL_LONGITUDE'] = position[1]
@@ -47,8 +39,7 @@ if debug:
 
 
 
-log.info('Parsed location is: {:.4f}/{:.4f}/{:.4f} (lat/lng/alt)'.
-             format(*position))
+log.info('Parsed location is: {:.4f}/{:.4f}/{:.4f} (lat/lng/alt)'. format(*position))
 
 
 
@@ -58,4 +49,8 @@ log.info('Parsed location is: {:.4f}/{:.4f}/{:.4f} (lat/lng/alt)'.
 #        Pokemon.ONLY = [i.lower().strip() for i in args.only.split(',')]
 
 #    if not args.mock:
-start_locator_thread(config_xml)
+search_thread = Thread(target=search_loop, args=(config_xml,))
+search_thread.daemon = True
+search_thread.name = 'search_thread'
+search_thread.start()
+search_thread.join()
