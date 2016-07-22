@@ -14,7 +14,7 @@ from pogom.search import search_loop
 from pogom.models import create_tables, Pokemon
 from pogom.pgoapi.utilities import get_pos_by_name
 
-config = Config()
+config_xml = Config()
 log = logging.getLogger(__name__)
 
 
@@ -25,10 +25,10 @@ def start_locator_thread(args):
     search_thread.start()
 
 create_tables()
-position = get_pos_by_name(config.get("map", "", "location", "Омск, Менделеева, 21"))
+position = get_pos_by_name(config_xml.get("map", "", "location", "Омск, Менделеева, 21"))
 config['ORIGINAL_LATITUDE'] = position[0]
 config['ORIGINAL_LONGITUDE'] = position[1]
-config['GMAPS_KEY'] = config.get("map", "google", "key", "")
+config['GMAPS_KEY'] = config_xml.get("map", "google", "key", "")
 
 if __name__ == '__main__':
     logging.basicConfig(level=logging.INFO, format='%(asctime)s [%(module)11s] [%(levelname)7s] %(message)s')
@@ -61,7 +61,7 @@ if __name__ == '__main__':
 #    if not args.mock:
 #        start_locator_thread(args)
 #    else:
-insert_mock_data(config.get("map", "", "location", "Омск, Менделеева, 21"), 6)
+insert_mock_data(config_xml.get("map", "", "location", "Омск, Менделеева, 21"), 6)
 
 app = Pogom(__name__)
 config['ROOT_PATH'] = app.root_path
