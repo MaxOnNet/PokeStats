@@ -46,6 +46,19 @@ class Config:
                     else:
                         return value
 
+    def get_dict(self, group, item):
+        dict = []
+        for group in self.configuration.getElementsByTagName(group):
+            for item in group.getElementsByTagName(item):
+                item_dict = {}
+
+                for item_attr in item.attributes.items():
+                    item_dict[item_attr[0]] = item_attr[1]
+
+                dict.append(item_dict)
+
+        return dict
+
     def set(self, group, item, attribute, value):
         if len(self.configuration.getElementsByTagName(group)) == 0:
             self.configuration.appendChild(self.xml.createElement(group))

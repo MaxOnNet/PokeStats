@@ -46,14 +46,16 @@ class Pogom(Flask):
     def get_raw_data(self):
         self._database_init()
 
-        return {
+        dict = {
             'gyms': [u.__dict__ for u in self.session_mysql.query(Gym).all()],
             'pokestops': [u.__dict__ for u in self.session_mysql.query(Pokestop).all()],
             'pokemons': [u.__dict__ for u in PokemonSpawnpoint.get_active(self.session_mysql).all()]
         }
 
         self._database_close()
-        
+
+        return dict
+    
     def raw_data(self):
         return jsonify(self.get_raw_data())
 

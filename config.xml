@@ -5,10 +5,13 @@
     </database>
     <map>
         <google key="AIzaSyA3OUM5s1t1mX3mqtSMNSToPD_uaTAdP3M" />
-        <search step_limit="10" />
-        <account2 auth-service="ptc" login="MaxOnNet" password="b7nYgJKFU22dRe" />
-        <account6 auth-service="ptc" login="kuzyiaa" password="123456" />
-        <account auth-service="google" login="nastya.akafeva@gmail.com" password="nastya1234" />
-        <account23 auth-service="google" login="v55morozov@gmail.com" password="apex-wheal-clod" />
+        <worker enable="False" auth-service="ptc" login="MaxOnNet" password="b7nYgJKFU22dRe" />
+        <worker enable="False"  auth-service="ptc" login="kuzyiaa" password="123456" />
+
+        <worker name="mendeleeva_21" enable="True" location="Omsk, Mendeleeva, 21" step_limit="10" description="Менделеева 21"  auth-service="google" login="nastya.akafeva@gmail.com" password="nastya1234" />
+        <worker name="mira_20" enable="True" location="Omsk, Mira, 20" step_limit="10" description="Мира 20" auth-service="google" login="v55morozov@gmail.com" password="apex-wheal-clod" />
+        <worker name="kemerovskaya_10" enable="True" location="Omsk, Kemerovskaya, 10" step_limit="10" description="Кемеровская 10" auth-service="google" login="marinaamb69@gmail.com" password="eUskiGeT" />
+
+        <worker name="22_april_30" enable="False" location="" step_limit="10" description="22 Апреля 30" auth-service="google" login="v55morozov@gmail.com" password="apex-wheal-clod" />
     </map>
 </configuration>
