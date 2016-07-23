@@ -1,4 +1,5 @@
 var $selectExclude = $("#exclude-pokemon");
+var $selectInclude = $("#include-pokemon");
 
 $.getJSON("static/locales/pokemon.en.json").done(function(data) {
     var pokeList = []
@@ -7,20 +8,42 @@ $.getJSON("static/locales/pokemon.en.json").done(function(data) {
         pokeList.push( { id: key, text: value } );
     });
 
-    JSON.parse(readCookie("remember_select"));
+    JSON.parse(readCookie("remember_select_ex"));
     $selectExclude.select2({
         placeholder: "Select Pokemon to exclude",
         data: pokeList
     });
-    $selectExclude.val(JSON.parse(readCookie("remember_select"))).trigger("change");
+    $selectExclude.val(JSON.parse(readCookie("remember_select_ex"))).trigger("change");
+});
+
+$.getJSON("static/locales/pokemon.en.json").done(function(data) {
+    var pokeList = []
+
+    $.each(data, function(key, value) {
+        pokeList.push( { id: key, text: value } );
+    });
+
+    JSON.parse(readCookie("remember_select_in"));
+    $selectInclude.select2({
+        placeholder: "Select Pokemon to include",
+        data: pokeList
+    });
+    $selectInclude.val(JSON.parse(readCookie("remember_select_in"))).trigger("change");
 });
 
 var excludedPokemon = [];
+var includedPokemon = [];
 
 $selectExclude.on("change", function (e) {
     excludedPokemon = $selectExclude.val().map(Number);
     clearStaleMarkers();
     document.cookie = 'remember_select='+JSON.stringify(excludedPokemon)+
+            '; max-age=31536000; path=/';
+});
+$selectInclude.on("change", function (e) {
+    includedPokemon = $selectInclude.val().map(Number);
+    clearStaleMarkers();
+    document.cookie = 'remember_select='+JSON.stringify(includedPokemon)+
             '; max-age=31536000; path=/';
 });
 
@@ -108,7 +131,7 @@ function pokemonLabel(name, disappear_time, id, latitude, longitude) {
             <span class='label-countdown' disappears-at='${disappear_time}'>(00m00s)</span></div>
         <div>
             <a href='https://www.google.com/maps/dir/Current+Location/${latitude},${longitude}'
-                    target='_blank' title='View in Maps'>Get directions</a>
+                    target='_blank' title='View in Maps'>Проложить путь</a>
         </div>`;
     return contentstring;
 };
