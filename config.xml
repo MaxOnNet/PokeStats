@@ -19,6 +19,7 @@
 
         <worker name="omskaya_119" enable="True" location="Omsk, Omskaya,119" step_limit="10" description="Omskaya" auth-service="google" login="Lynxkami@gmail.com" password="shkiper1" />
 
-        <worker name="transibir_1" enable="False" location="Omsk, Transsibirskaya, 1" step_limit="10" description="Transibirskaya" auth-service="google" login="Lynxkami@gmail.com" password="shkiper1" />
+        <worker name="transibir_1" enable="True" location="Omsk, Transsibirskaya, 1" step_limit="10" description="Transibirskaya" auth-service="google" login="KrolgaChan@gmail.com" password="shkiper1" />
     </map>
+
 </configuration>
