@@ -138,6 +138,9 @@ def parse_map(map_dict, session):
                     (p['last_modified_timestamp_ms'] +
                      p['time_till_hidden_ms']) / 1000.0)
             pokemon_spawnpoint.date_change = datetime.fromtimestamp((p['last_modified_timestamp_ms']/1000))
+
+            print "Pokemon {0} added".format(p['pokemon_data']['pokemon_id'])
+
             session.merge(pokemon_spawnpoint)
             session.commit()
             session.flush()

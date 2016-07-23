@@ -49,18 +49,25 @@ class Pogom(Flask):
 
         for pokemon_spawnpoint in PokemonSpawnpoint.get_active(self.session_mysql).all():
             pokemon_dict = pokemon_spawnpoint.__dict__
-            pokemon_db = self.session_mysql.query(Pokemon).filter(Pokemon.id == pokemon_spawnpoint.cd_pokemon).one()
+            try:
+                pokemon_db = self.session_mysql.query(Pokemon).filter(Pokemon.id == pokemon_spawnpoint.cd_pokemon).one()
+                if pokemon_db:
+                    pokemon_dict['pokemon_name'] = pokemon_db.name
+                    pokemon_dict['pokemon_group'] = pokemon_db.group
+                    pokemon_dict['pokemon_color'] = pokemon_db.color
+                    pokemon_dict['pokemon_zoom'] = pokemon_db.zoom
+                else:
+                    pokemon_dict['pokemon_name'] = 'NoName'
+                    pokemon_dict['pokemon_group'] = 'NoGroup'
+                    pokemon_dict['pokemon_color'] = '#000000'
+                    pokemon_dict['pokemon_zoom'] = 1
 
-            if pokemon_db:
-                pokemon_dict['pokemon_name'] = pokemon_db.name
-                pokemon_dict['pokemon_group'] = pokemon_db.group
-                pokemon_dict['pokemon_color'] = pokemon_db.color
-                pokemon_dict['pokemon_zoom'] = pokemon_db.zoom
-            else:
+            except:
                 pokemon_dict['pokemon_name'] = 'NoName'
                 pokemon_dict['pokemon_group'] = 'NoGroup'
                 pokemon_dict['pokemon_color'] = '#000000'
                 pokemon_dict['pokemon_zoom'] = 1
+
 
             dict_podemons.append(pokemon_dict)
 
