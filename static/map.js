@@ -125,12 +125,12 @@ function gymLabel(team_name, team_id, gym_points) {
     } else {
         str = `
             <div><center>
-            <div style='padding-bottom: 2px'>Gym owned by:</div>
+            <div style='padding-bottom: 2px'>Gym занят:</div>
             <div>
-                <b style='color:rgba(${gym_color[team_id]})'>Team ${team_name}</b><br>
+                <b style='color:rgba(${gym_color[team_id]})'>Команда ${team_name}</b><br>
                 <img height='70px' style='padding: 5px;' src='static/forts/${team_name}_large.png'>
             </div>
-            <div>Prestige: ${gym_points}</div>
+            <div>Престиж: ${gym_points}</div>
             </center></div>`;
     }
 
@@ -141,6 +141,7 @@ function gymLabel(team_name, team_id, gym_points) {
 map_pokemons = {} // Pokemon
 map_gyms = {} // Gyms
 map_pokestops = {} // Pokestops
+
 var gym_types = ["Uncontested", "Mystic", "Valor", "Instinct"];
 
 function setupPokemonMarker(item) {
@@ -225,8 +226,8 @@ function addListeners(marker) {
 function clearStaleMarkers() {
     $.each(map_pokemons, function(key, value) {
 
-        if (map_pokemons[key]['disappear_time'] < new Date().getTime() ||
-                excludedPokemon.indexOf(map_pokemons[key]['pokemon_id']) >= 0) {
+        if (map_pokemons[key]['date_disappear'] < new Date().getTime() ||
+                excludedPokemon.indexOf(map_pokemons[key]['cd_pokemon']) >= 0) {
             map_pokemons[key].marker.setMap(null);
             delete map_pokemons[key];
         }

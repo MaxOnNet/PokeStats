@@ -3,7 +3,7 @@
 
 import os
 import logging
-
+import time
 from Interfaces.Config import Config
 from threading import Thread
 
@@ -34,7 +34,7 @@ if __name__ == '__main__':
             worker_thread.daemon = True
             worker_thread.name = 'search_thread_{0}'.format(worker['name'])
             worker_thread.start()
-
+            time.sleep(10)
             workers.append(worker_thread)
 
     for worker in workers:
