@@ -249,8 +249,8 @@ function addListeners(marker) {
 function clearStaleMarkers() {
     $.each(map_pokemons, function(key, value) {
 
-        if (map_pokemons[key]['date_disappear'] < new Date().getTime() ||
-                excludedPokemon.indexOf(map_pokemons[key]['cd_pokemon']) >= 0) {
+        if ((map_pokemons[key]['date_disappear']-6*60*60*1000) < new Date().getTime() ||
+                excludedPokemon.indexOf(map_pokemons[key]['cd_pokemon']) >= 0 || (includedPokemon.length > 0 && includedPokemon.indexOf(map_pokemons[key]['cd_pokemon']) == -1) ) {
             map_pokemons[key].marker.setMap(null);
             delete map_pokemons[key];
         }
