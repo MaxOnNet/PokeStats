@@ -88,10 +88,10 @@ class Pogom(Flask):
             dict['pokemons'] = ""
 
         if request.args.get('pokestops') == "false":
-            dict['pokemons'] = ""
+            dict['pokestops'] = ""
 
         if request.args.get('gyms') == "false":
-            dict['pokemons'] = ""
+            dict['gyms'] = ""
 
         return jsonify(dict)
 
