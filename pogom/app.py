@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 import calendar
-from flask import Flask, jsonify, render_template
+from flask import Flask, jsonify, render_template, request
 from flask.json import JSONEncoder
 from datetime import datetime
 
@@ -82,7 +82,19 @@ class Pogom(Flask):
         return dict
 
     def raw_data(self):
-        return jsonify(self.get_raw_data())
+        dict=self.get_raw_data()
+
+        if request.args.get('pokemon') == "false":
+            dict['pokemons'] = ""
+
+        if request.args.get('pokestops') == "false":
+            dict['pokemons'] = ""
+
+        if request.args.get('gyms') == "false":
+            dict['pokemons'] = ""
+
+        return jsonify(dict)
+
 
     def pokemons(self):
         return jsonify(self.get_raw_data()['pokemons'])
