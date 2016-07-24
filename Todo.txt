@@ -1,0 +1,9 @@
+Добавить авторизацию на сайте басик авторизатион
+Добавить в схму престиж
+
+
+
+
+
+        <worker enable="False" auth-service="ptc" login="MaxOnNet" password="b7nYgJKFU22dRe" />
+        <worker enable="False"  auth-service="ptc" login="kuzyiaa" password="123456" />

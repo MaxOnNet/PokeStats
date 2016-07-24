@@ -1,25 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <configuration>
-    <database>
+    <database current="mysql-home">
         <mysql database="db_pokestats" password="3aNC7nVcPPpa2q" server="10.19.2.8" user="srv_pokestats" charset="utf8" />
         <mysql-loc database="db_pokestats" password="3aNC7nVcPPpa2q" server="127.0.0.1" user="srv_pokestats" charset="utf8" />
 
     </database>
     <map>
         <google key="AIzaSyA3OUM5s1t1mX3mqtSMNSToPD_uaTAdP3M" />
-        <worker enable="False" auth-service="ptc" login="MaxOnNet" password="b7nYgJKFU22dRe" />
-        <worker enable="False"  auth-service="ptc" login="kuzyiaa" password="123456" />
-
-        <worker name="mendeleeva_21" enable="True" location="Omsk,  Borodina, 8" step_limit="10" description="Менделеева 21"  auth-service="google" login="nastya.akafeva@gmail.com" password="nastya1234" />
-
-        <worker name="mira_20" enable="True" location="Omsk, Mira, 20" step_limit="10" description="Мира 20" auth-service="google" login="v55morozov@gmail.com" password="apex-wheal-clod" />
-
-
-        <worker name="22_april_30" enable="True" location="Omsk, April, 30" step_limit="10" description="Кемеровская 10" auth-service="google" login="marinaamb69@gmail.com" password="eUskiGeT" />
-
-        <worker name="omskaya_119" enable="True" location="Omsk, Omskaya,119" step_limit="10" description="Omskaya" auth-service="google" login="Lynxkami@gmail.com" password="shkiper1" />
-
-        <worker name="transibir_1" enable="True" location="Omsk, Maslenikova, 80" step_limit="10" description="Transibirskaya" auth-service="google" login="KrolgaChan@gmail.com" password="shkiper1" />
     </map>
-
 </configuration>

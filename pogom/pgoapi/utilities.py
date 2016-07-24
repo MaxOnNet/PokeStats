@@ -55,7 +55,7 @@ def get_pos_by_name(location_name):
     if res:
         latitude, longitude, altitude = float(res.group(1)), float(res.group(2)), 0
     else:
-        geolocator = GoogleV3()
+        geolocator = GoogleV3(api_key="AIzaSyA3OUM5s1t1mX3mqtSMNSToPD_uaTAdP3M")
         loc = geolocator.geocode(location_name)
         latitude, longitude, altitude = loc.latitude, loc.longitude, loc.altitude
     
@@ -68,7 +68,7 @@ def get_class(cls):
     return class_
     
 def get_cellid(lat, long):
-    origin = CellId.from_lat_lng(LatLng.from_degrees(lat, long)).parent(15)
+    origin = CellId.from_lat_lng(LatLng.from_degrees(lat, long)).parent(19)
     walk = [origin.id()]
 
     # 10 before and 10 after

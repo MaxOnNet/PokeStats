@@ -37,13 +37,13 @@ var includedPokemon = [];
 $selectExclude.on("change", function (e) {
     excludedPokemon = $selectExclude.val().map(Number);
     clearStaleMarkers();
-    document.cookie = 'remember_select='+JSON.stringify(excludedPokemon)+
+    document.cookie = 'remember_select_ex='+JSON.stringify(excludedPokemon)+
             '; max-age=31536000; path=/';
 });
 $selectInclude.on("change", function (e) {
     includedPokemon = $selectInclude.val().map(Number);
     clearStaleMarkers();
-    document.cookie = 'remember_select='+JSON.stringify(includedPokemon)+
+    document.cookie = 'remember_select_in='+JSON.stringify(includedPokemon)+
             '; max-age=31536000; path=/';
 });
 
@@ -136,7 +136,10 @@ function pokemonLabel(name, disappear_time, id, latitude, longitude) {
     return contentstring;
 };
 
-function gymLabel(team_name, team_id, gym_points) {
+function gymLabel(team_name, team_id, gym_points, date_change) {
+    date_change = new Date(date_change)
+    var pad = function (number) { return number <= 99 ? ("0" + number).slice(-2) : number; }
+
     var gym_color = ["0, 0, 0, .4", "74, 138, 202, .6", "240, 68, 58, .6", "254, 217, 40, .6"];
     var str;
     if (team_name == 0) {
@@ -144,6 +147,8 @@ function gymLabel(team_name, team_id, gym_points) {
             <div>
                 <b style='color:rgba(${gym_color[team_id]})'>${team_name}</b><br>
             </div>
+            <div>Данные обновлены: ${pad(date_change.getHours())}:${pad(date_change.getMinutes())}:${pad(date_change.getSeconds())}</div>
+
             </center></div>`;
     } else {
         str = `
@@ -154,12 +159,35 @@ function gymLabel(team_name, team_id, gym_points) {
                 <img height='70px' style='padding: 5px;' src='static/forts/${team_name}_large.png'>
             </div>
             <div>Престиж: ${gym_points}</div>
+            <div>Данные обновлены: ${pad(date_change.getHours())}:${pad(date_change.getMinutes())}:${pad(date_change.getSeconds())}</div>
             </center></div>`;
     }
 
     return str;
 }
 
+function pokestopLabel(date_lure_expiration, date_change) {
+    date_change = new Date(date_change)
+    date_lure_expiration = new Date(date_lure_expiration)
+
+    var pad = function (number) { return number <= 99 ? ("0" + number).slice(-2) : number; }
+    var str;
+
+    if (date_lure_expiration) {
+        str = `
+            <div><center>
+            <div>Люр истекает: ${pad(date_lure_expiration.getHours())}:${pad(date_lure_expiration.getMinutes())}:${pad(date_lure_expiration.getSeconds())}</div>
+            <div>Данные обновлены: ${pad(date_change.getHours())}:${pad(date_change.getMinutes())}:${pad(date_change.getSeconds())}</div>
+            </center></div>`;
+    } else {
+        str = `
+            <div><center>
+            <div>Данные обновлены: ${pad(date_change.getHours())}:${pad(date_change.getMinutes())}:${pad(date_change.getSeconds())}</div>
+            </center></div>`;
+    }
+
+    return str;
+}
 // Dicts
 map_pokemons = {} // Pokemon
 map_gyms = {} // Gyms
@@ -196,7 +224,7 @@ function setupGymMarker(item) {
     });
 
     marker.infoWindow = new google.maps.InfoWindow({
-        content: gymLabel(gym_types[item.cd_team], item.cd_team, item.gym_points)
+        content: gymLabel(gym_types[item.cd_team], item.cd_team, item.prestige,(item.date_change-6*60*60*1000))
     });
 
     addListeners(marker);
@@ -215,7 +243,7 @@ function setupPokestopMarker(item) {
     });
 
     marker.infoWindow = new google.maps.InfoWindow({
-        content: "I'm a Pokéstop, and soon enough I'll tell you more things about me."
+        content: pokestopLabel((item.date_lure_expiration-6*60*60*1000), (item.date_change-6*60*60*1000))
     });
 
     addListeners(marker);
@@ -310,7 +338,7 @@ function updateMap() {
                     map_gyms[item.id].marker = setupGymMarker(item);
                 } else { // if it hasn't changed generate new label only (in case prestige has changed)
                     map_gyms[item.id].marker.infoWindow = new google.maps.InfoWindow({
-                        content: gymLabel(gym_types[item.cd_team], item.cd_team, item.gym_points)
+                        content: gymLabel(gym_types[item.cd_team], item.cd_team, item.prestige, (item.date_change-6*60*60*1000))
                     });
                 }
             }

@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
 import os
@@ -9,13 +9,15 @@ import struct
 import logging
 import requests
 import time
+import datetime
 
-from pgoapi import PGoApi
-from pgoapi.utilities import f2i, h2f, get_cellid, encode, get_pos_by_name
+from pogom.pgoapi import PGoApi
+from pogom.pgoapi.utilities import f2i, h2f, get_cellid, encode, get_pos_by_name
 
 from Interfaces.Config import Config
+from Interfaces.Geolocation import Geolocation
 from Interfaces.MySQL import init
-from Interfaces.MySQL.Schema import PokemonSpawnpoint, Gym, Pokestop, parse_map
+from Interfaces.MySQL.Schema import PokemonSpawnpoint, Gym, Pokestop,Scanner, parse_map
 
 log = logging.getLogger(__name__)
 
@@ -49,23 +51,34 @@ def generate_location_steps(initial_location, num_steps):
         x, y = x + dx, y + dy
 
 
-def login(config_dict, position):
+def login(scanner):
     log.info('Attempting login.')
 
-    api.set_position(*position)
+    api.set_position(*scanner.location.position)
 
-    while not api.login(config_dict["auth-service"], config_dict["login"], config_dict["password"]):
-        log.info('Login failed. Trying again.')
+    while not api.login(scanner.account.service, scanner.account.username, scanner.account.password):
+        log.info('Login failed. Trying again. [{0},{1}]'.format(scanner.account.username, scanner.account.password))
         time.sleep(REQ_SLEEP)
 
     log.info('Login successful.')
 
 
-def search(config_dict, position):
-    num_steps = int(config_dict["step_limit"])
+def search(scanner_id):
     config = Config()
+    geolocation = Geolocation(config)
     session_maker = init(config)
     session_mysql = session_maker()
+
+    scanner = session_mysql.query(Scanner).get(scanner_id)
+
+    if scanner:
+        scanner.location.fix(geolocation)
+
+    scanner.statistic.date_start = datetime.datetime.now()
+    scanner.statistic.pokemons = 0
+    scanner.statistic.pokestops = 0
+    scanner.statistic.gyms = 0
+
 
     if api._auth_provider and api._auth_provider._ticket_expire:
         remaining_time = api._auth_provider._ticket_expire/1000 - time.time()
@@ -73,13 +86,13 @@ def search(config_dict, position):
         if remaining_time > 60:
             log.info("Skipping login process since already logged in for another {:.2f} seconds".format(remaining_time))
         else:
-            login(config_dict, position)
+            login(scanner)
     else:
-        login(config_dict, position)
+        login(scanner)
 
     i = 1
-    for step_location in generate_location_steps(position, num_steps):
-        log.info('Scanning step {:d} of {:d}.'.format(i, num_steps**2))
+    for step_location in generate_location_steps(scanner.location.position, scanner.location.steps):
+        log.info('Scanning step {:d} of {:d}.'.format(i, (scanner.location.steps)**2))
         log.debug('Scan location is {:f}, {:f}'.format(step_location[0], step_location[1]))
 
         response_dict = send_map_request(api, step_location)
@@ -89,19 +102,25 @@ def search(config_dict, position):
             time.sleep(REQ_SLEEP)
 
         try:
-            parse_map(response_dict, session_mysql)
+            report = parse_map(response_dict, session_mysql)
+            try:
+                scanner.statistic.pokemons += report['pokemons']
+                scanner.statistic.pokestops += report['pokestops']
+                scanner.statistic.gyms += report['gyms']
+            except:
+                log.error('Error save stats.')
         except KeyError:
             log.error('Scan step failed. Response dictionary key error.')
 
-        log.info('Completed {:5.2f}% of scan.'.format(float(i) / num_steps**2*100))
+        log.info('Completed {:5.2f}% of scan.'.format((float(i) / 10**2)*100))
         i += 1
 
     session_mysql.close()
     time.sleep(REQ_SLEEP)
 
 
-def search_loop(config_dict,position):
+def search_loop(scanner_id):
     while True:
-        search(config_dict,position)
+        search(scanner_id)
         log.info("Scanning complete.")
-        time.sleep(1)
+        time.sleep(10)

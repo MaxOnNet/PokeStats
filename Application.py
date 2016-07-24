@@ -9,8 +9,6 @@ from threading import Thread
 
 from pogom import config
 from pogom.app import Pogom
-from pogom.utils import get_args, insert_mock_data
-from pogom.search import search_loop
 
 from pogom.pgoapi.utilities import get_pos_by_name
 

@@ -19,6 +19,102 @@ from base64 import b64encode
 log = logging.getLogger(__name__)
 Base = declarative_base()
 
+
+class ScannerServer(Base):
+    __tablename__ = 'scanner_server'
+    __table_args__ = {'mysql_engine': 'InnoDB', 'mysql_charset': 'utf8', 'mysql_collate': 'utf8_general_ci',
+                      'mysql_comment': ''}
+
+    id = Column(Integer(), primary_key=True, autoincrement=True, doc="")
+    name = Column(String(64), nullable=False, doc="")
+    description = Column(String(256), nullable=False, doc="")
+
+    scanners = relationship("Scanner")
+
+class ScannerAccount(Base):
+    __tablename__ = 'scanner_account'
+    __table_args__ = {'mysql_engine': 'InnoDB', 'mysql_charset': 'utf8', 'mysql_collate': 'utf8_general_ci',
+                      'mysql_comment': ''}
+    id = Column(Integer(), primary_key=True, autoincrement=True, doc="")
+
+    username = Column(String(64), nullable=False, doc="")
+    password = Column(String(64), nullable=False, doc="")
+    service = Column(String(64), nullable=False, doc="")
+
+
+class ScannerLocation(Base):
+    __tablename__ = 'scanner_location'
+    __table_args__ = {'mysql_engine': 'InnoDB', 'mysql_charset': 'utf8', 'mysql_collate': 'utf8_general_ci',
+                      'mysql_comment': ''}
+
+    id = Column(Integer(), primary_key=True, autoincrement=True, doc="")
+    address = Column(String(254), nullable=False, doc="")
+    description = Column(String(256), nullable=False, doc="")
+
+    latitude = Column(Float(), default=0)
+    longitude = Column(Float(), default=0)
+
+    steps = Column(Integer(), default=10)
+
+    def fix(self, geolocation):
+        if self.latitude == 0 or self.longitude == 0:
+            position = geolocation.get_position_by_name(self.address)
+
+            self.latitude = position[0]
+            self.longitude = position[1]
+
+            object_session(self).commit()
+            object_session(self).flush()
+
+    @hybrid_property
+    def position(self):
+        return [self.latitude, self.longitude, 0]
+
+
+class Scanner(Base):
+    __tablename__ = 'scanner'
+    __table_args__ = {'mysql_engine': 'InnoDB', 'mysql_charset': 'utf8', 'mysql_collate': 'utf8_general_ci',
+                      'mysql_comment': ''}
+
+    id = Column(Integer(), primary_key=True, autoincrement=True, doc="")
+
+    cd_server = Column(Integer(), ForeignKey('scanner_server.id'), default=0, nullable=False, doc="")
+    cd_account = Column(Integer(), ForeignKey('scanner_account.id'), default=0, nullable=False, doc="")
+    cd_location = Column(Integer(), ForeignKey('scanner_location.id'), default=0, nullable=False, doc="")
+
+    is_enable = Column(Boolean(), default=False)
+    is_active = Column(Boolean(), default=False)
+
+    date_create = Column(DateTime(), nullable=False, default=func.now())
+    date_change = Column(DateTime(), nullable=False, default=func.now(), onupdate=func.now())
+
+    server = relationship("ScannerServer", backref="Scanner")
+    account = relationship("ScannerAccount", backref="Scanner")
+    location = relationship("ScannerLocation", backref="Scanner")
+
+    statistic = relationship("ScannerStatistic", uselist=False)
+
+
+class ScannerStatistic(Base):
+    __tablename__ = 'scanner_statistic'
+    __table_args__ = {'mysql_engine': 'InnoDB', 'mysql_charset': 'utf8', 'mysql_collate': 'utf8_general_ci',
+                      'mysql_comment': ''}
+
+    id = Column(Integer(), primary_key=True, autoincrement=True, doc="")
+
+    cd_scanner = Column(Integer(), ForeignKey('scanner.id'), default=0, nullable=False, doc="")
+
+    gyms = Column(Integer(), default=0, nullable=False)
+    pokestops = Column(Integer(), default=0, nullable=False)
+    pokemons = Column(Integer(), default=0, nullable=False)
+
+
+    date_start = Column(DateTime(), nullable=False, default=func.now())
+    date_create = Column(DateTime(), nullable=False, default=func.now())
+    date_change = Column(DateTime(), nullable=False, default=func.now(), onupdate=func.now())
+
+
+
 class Pokemon(Base):
     __tablename__ = 'pokemon'
     __table_args__ = {'mysql_engine': 'InnoDB', 'mysql_charset': 'utf8', 'mysql_collate': 'utf8_general_ci',
@@ -29,7 +125,7 @@ class Pokemon(Base):
     name = Column(String(64), nullable=False, doc="")
     group = Column(String(64), nullable=False, doc="")
     color = Column(String(16), nullable=False, doc="")
-    zoom = Column(Float(),nullable=False, default=1)
+    zoom = Column(Float(), nullable=False, default=1)
 
 
 class PokemonSpawnpoint(Base):
@@ -111,12 +207,18 @@ class Gym(Base):
     latitude = Column(Float())
     longitude = Column(Float())
 
+    prestige = Column(Float(), default=0, nullable=False)
+
     date_modified = Column(DateTime(), nullable=True)
     date_create = Column(DateTime(), nullable=False, default=func.now())
     date_change = Column(DateTime(), nullable=False, default=func.now(), onupdate=func.now())
 
 
 def parse_map(map_dict, session):
+    count_pokemons = 0
+    count_gyms = 0
+    count_pokestops = 0
+
     cells = map_dict['responses']['GET_MAP_OBJECTS']['map_cells']
     for cell in cells:
         for p in cell.get('wild_pokemons', []):
@@ -139,7 +241,7 @@ def parse_map(map_dict, session):
                      p['time_till_hidden_ms']) / 1000.0)
             pokemon_spawnpoint.date_change = datetime.fromtimestamp((p['last_modified_timestamp_ms']/1000))
 
-            print "Pokemon {0} added".format(p['pokemon_data']['pokemon_id'])
+            count_pokemons += 1
 
             session.merge(pokemon_spawnpoint)
             session.commit()
@@ -162,6 +264,8 @@ def parse_map(map_dict, session):
                 pokestop.date_modified=datetime.fromtimestamp(f['last_modified_timestamp_ms'] / 1000.0)
                 pokestop.date_lure_expiration = lure_expiration
 
+                count_pokestops += 1
+
                 session.merge(pokestop)
                 session.commit()
                 session.flush()
@@ -169,22 +273,27 @@ def parse_map(map_dict, session):
             else:  # Currently, there are only stops and gyms
                 gym = Gym()
                 gym.id = f['id']
-
                 if not "owned_by_team" in f:
                     gym.cd_guard_pokemon = 0
                     gym.cd_team = 0
+                    gym.prestige = 0
                 else:
                     gym.cd_team = f['owned_by_team']
                     gym.cd_guard_pokemon = f['guard_pokemon_id']
+                    gym.prestige = f['gym_points']
 
                 gym.is_enabled = f['enabled']
                 gym.latitude = f['latitude']
                 gym.longitude = f['longitude']
                 gym.date_modified = datetime.fromtimestamp(f['last_modified_timestamp_ms'] / 1000.0)
 
+                count_gyms += 1
+
                 session.merge(gym)
                 session.commit()
                 session.flush()
     session.flush()
-    session.expunge_all()
+
+    return {"gyms": count_gyms, "pokestops": count_pokestops, "pokemons": count_pokemons}
+
 
