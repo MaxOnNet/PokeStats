@@ -41,7 +41,7 @@ class Scanner(threading.Thread):
         self.scanner = self.session_mysql.query(dbScanner).get(scanner_id)
 
         self._stopevent = threading.Event()
-        self._sleepperiod = 1.0
+        self._sleepperiod = 1
 
         self.api = PGoApi()
 

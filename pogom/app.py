@@ -8,7 +8,7 @@ from datetime import datetime
 
 from Interfaces.Config import Config
 from Interfaces.MySQL import init
-from Interfaces.MySQL.Schema import PokemonSpawnpoint, Gym, Pokestop, Pokemon
+from Interfaces.MySQL.Schema import PokemonSpawnpoint, Gym, Pokestop, Pokemon, Scanner, ScannerStatistic, ScannerLocation
 import sqlalchemy
 from . import config
 
@@ -18,11 +18,9 @@ class Pogom(Flask):
         super(Pogom, self).__init__(import_name, **kwargs)
         self.json_encoder = CustomJSONEncoder
         self.route("/", methods=['GET'])(self.fullmap)
-        self.route("/pokemons", methods=['GET'])(self.pokemons)
-        self.route("/gyms", methods=['GET'])(self.gyms)
-        self.route("/pokestops", methods=['GET'])(self.pokestops)
-        self.route("/raw_data", methods=['GET'])(self.raw_data)
 
+        self.route("/raw_data", methods=['GET'])(self.raw_data)
+        self.route("/next_loc", methods=['POST'])(self.next_loc)
         self.config_xml = Config()
 
 
@@ -68,43 +66,61 @@ class Pogom(Flask):
                 pokemon_dict['pokemon_color'] = '#000000'
                 pokemon_dict['pokemon_zoom'] = 1
 
-
             dict_podemons.append(pokemon_dict)
 
-        dict = {
-            'gyms': [u.__dict__ for u in self.session_mysql.query(Gym).all()],
-            'pokestops': [u.__dict__ for u in self.session_mysql.query(Pokestop).all()],
-            'pokemons': dict_podemons
+        dict_scanners = []
+
+        for scanner in self.session_mysql.query(Scanner).filter(Scanner.is_enable).all():
+            scanner_dict = scanner.__dict__
+
+            scanner_dict['latitude'] = scanner.location.latitude
+            scanner_dict['longitude'] = scanner.location.longitude
+
+            scanner_dict['count_pokemons'] = scanner.statistic.pokemons
+            scanner_dict['count_pokestops'] = scanner.statistic.pokestops
+            scanner_dict['count_gyms'] = scanner.statistic.gyms
+            scanner_dict['date_start'] = scanner.statistic.date_start
+            scanner_dict['date_change'] = scanner.statistic.date_change
+
+            dict_scanners.append(scanner_dict)
+
+        dict_dict = {
+            "scanned": dict_scanners,
+            "gyms": [u.__dict__ for u in self.session_mysql.query(Gym).all()],
+            "pokestops": [u.__dict__ for u in self.session_mysql.query(Pokestop).all()],
+            "pokemons": dict_podemons
         }
 
         self._database_close()
 
-        return dict
+        return dict_dict
 
     def raw_data(self):
-        dict=self.get_raw_data()
+        dict = self.get_raw_data()
 
         if request.args.get('pokemon') == "false":
-            dict['pokemons'] = ""
+            dict['pokemons'] = []
 
         if request.args.get('pokestops') == "false":
-            dict['pokestops'] = ""
+            dict['pokestops'] = []
 
         if request.args.get('gyms') == "false":
-            dict['gyms'] = ""
+            dict['gyms'] = []
+
+        if request.args.get('scanned') == "false":
+            dict['scanned'] = []
 
         return jsonify(dict)
 
-
-    def pokemons(self):
-        return jsonify(self.get_raw_data()['pokemons'])
-
-    def pokestops(self):
-        return jsonify(self.get_raw_data()['pokestops'])
-
-    def gyms(self):
-        return jsonify(self.get_raw_data()['gyms'])
-
+    def next_loc(self):
+        lat = request.args.get('lat', type=float)
+        lon = request.args.get('lon', type=float)
+        if not (lat and lon):
+            print('[-] Invalid next location: %s,%s' % (lat, lon))
+            return 'bad parameters', 400
+        else:
+            config['NEXT_LOCATION'] = {'lat': lat, 'lon': lon}
+            return 'ok'
 
 class CustomJSONEncoder(JSONEncoder):
     def default(self, obj):
@@ -119,6 +135,11 @@ class CustomJSONEncoder(JSONEncoder):
                 return millis
 
             if isinstance(obj, sqlalchemy.orm.state.InstanceState):
+                return ""
+
+            if isinstance(obj, ScannerStatistic):
+                return ""
+            if isinstance(obj, ScannerLocation):
                 return ""
 
             iterable = iter(obj)
