@@ -5,22 +5,23 @@ import os, sys
 import logging
 import time
 import argparse
+import datetime
 
 from threading import Thread
 
-
 from Interfaces.Config import Config
 from Interfaces.Geolocation import Geolocation
-from Interfaces.Scanner import search_loop
+from Interfaces.Scanner import Scanner as tScanner
 from Interfaces.MySQL import init
-from Interfaces.MySQL.Schema import Scanner, ScannerServer, ScannerAccount, ScannerLocation
+from Interfaces.MySQL.Schema import Scanner as dbScanner
+from Interfaces.MySQL.Schema import ScannerServer as dbScannerServer
 
 
 #from pogom.search import search_loop
 #from pogom.pgoapi.utilities import get_pos_by_name
 
-
 log = logging.getLogger(__name__)
+
 
 def _arg_parse():
     parser = argparse.ArgumentParser()
@@ -31,6 +32,34 @@ def _arg_parse():
 
     return args
 
+
+def _thread_start(scanner):
+    log.info("Инициализируем сканнер id={0}".format(scanner.id))
+
+    scanner_thread = tScanner(scanner.id)
+
+    return scanner_thread
+
+def _thread_check(thread):
+    scanner_id = int(thread.name)
+    scanner = session_mysql.query(dbScanner).get(scanner_id)
+
+    if scanner.statistic.date_start + datetime.timedelta(minutes=5) < datetime.datetime.now():
+        log.info("[{0} - Найден битый сканнер".format(scanner.id))
+
+        thread.join()
+        thread = _thread_start(scanner)
+
+    return thread
+
+arguments = _arg_parse()
+config = Config()
+
+session_maker = init(config)
+session_mysql = session_maker()
+
+scanner_alive = True
+
 if __name__ == '__main__':
     logging.basicConfig(level=logging.INFO, format='%(asctime)s [%(module)11s] [%(levelname)7s] %(message)s')
 
@@ -39,15 +68,10 @@ if __name__ == '__main__':
     logging.getLogger("pogom.pgoapi.pgoapi").setLevel(logging.WARNING)
     logging.getLogger("pogom.pgoapi.rpc_api").setLevel(logging.INFO)
 
-    arguments = _arg_parse()
-    config = Config()
-
-    session_maker = init(config)
-    session_mysql = session_maker()
 
     threads = []
 
-    server = session_mysql.query(ScannerServer).get(arguments.server)
+    server = session_mysql.query(dbScannerServer).get(arguments.server)
 
     if not server:
         log.error('Сервер с таким идентификатором не найден.')
@@ -55,13 +79,7 @@ if __name__ == '__main__':
 
     for scanner in server.scanners:
         if scanner.is_enable:
-            log.info("Инициализируем сканнер id={0}".format(scanner.id))
-
-            scanner_thread = Thread(target=search_loop, args=(int(scanner.id),))
-            scanner_thread.daemon = True
-            scanner_thread.name = 'scanner_thread_{0}'.format(scanner.id)
-
-            threads.append(scanner_thread)
+            threads.append(_thread_start(scanner))
         else:
             log.info("Cканнер id={0}, отключен, пропускаем".format(scanner.id))
 
@@ -73,10 +91,13 @@ if __name__ == '__main__':
 
         time.sleep(10)
 
-    log.info("Подключаемся к потокам и ждем конца")
-    for thread in threads:
-        thread.join()
+    time.sleep(60)
+    log.info("Проверяем состояния тредов.")
+    while scanner_alive == True:
+        for thread in threads:
+            thread = _thread_check(thread)
 
+        time.sleep(10)
 
     log.info("Отработали, закрываемся")
 
