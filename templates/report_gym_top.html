@@ -1,7 +1,7 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
 <html>
     <head>
-        <title>Отчет о провайдерах</title>
+        <title>Отчет: Топ арен.</title>
         <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
             <style type="text/css" media="screen">
             body {
@@ -55,9 +55,26 @@
                 color: #000000;
                 background-color: #FFFFFF;
             }
+            td.clsBodyRowId {
+                width: 20px;
+                text-align: center;
+                background-color: #AAAAAA;
+                color: #e6e6e6;
+                padding-left: 3px;
+                padding-right: 3px;
+            }
+
+                td.clsBodyRowName {
+                width: 80px;
+                text-align: center;
+                background-color: #AAAAAA;
+                color: #e6e6e6;
+                padding-left: 3px;
+                padding-right: 3px;
+            }
 
             td.clsBodyRowDate {
-                width: 60px;
+                width: 120px;
                 text-align: center;
                 background-color: #999999;
                 color: #e6e6e6;
@@ -79,8 +96,7 @@
                 color: #000000;
                 background-color: #FFFFFF;
             }
-
-                    .eg-tabs {
+                .eg-tabs {
             border: 0px;
             margin:0;
             margin-top: 20px;
@@ -149,10 +165,52 @@
             </style>
     </head>
     <body>
-        <div class="eg-tabs">
-        {1}
-        </div>
-        <br />Отчет составлен {2}.
+        <table cellpadding="0" cellspacing="1" border="0" class="clsTableParent" >
+            <tr>
+                <td class="clsTableParentBody">
+                    <table cellpadding="0" cellspacing="1" class="clsTable">
+                        <tr class="clsHeader">
+                            <td class="clsHeader" rowspan="2">№</td>
+                            <td class="clsHeader" rowspan="1" colspan="3">GYM</td>
+                            <td class="clsHeader" rowspan="1" colspan="2">Team</td>
+                            <td class="clsHeader" rowspan="1" colspan="2">Pokemon Guard</td>
+                            <td class="clsHeader" rowspan="1" colspan="2">Update Date</td>
+                        </tr>
+                        <tr class="clsHeader">
+                            <td class="clsHeader">ID</td>
+                            <td class="clsHeader">Prestige</td>
+                            <td class="clsHeader">Map</td>
+
+                            <td class="clsHeader">ID</td>
+                            <td class="clsHeader">Name</td>
+
+                            <td class="clsHeader">ID</td>
+                            <td class="clsHeader">Name</td>
+
+                            <td class="clsHeader">Modified</td>
+                            <td class="clsHeader">Vieved</td>
+                        </tr>
+                        {% for db_row in table %}
+                            <tr class="clsBodyRow">
+                                <td class="clsBodyRowId"></td>
+                                <td class="clsBodyRow">{{ db_row["gym_id"] }}</td>
+                                <td class="clsBodyRow">{{ db_row["gym_prestige"] }}</td>
+                                <td class="clsBodyRow">{{ db_row["gym_prestige"] }}</td>
+
+                                <td class="clsBodyRowId">{{ db_row["team_id"] }}</td>
+                                <td class="clsBodyRow">{{ db_row["team_name"] }}</td>
+
+                                <td class="clsBodyRowId">{{ db_row["pokemon_guard_id"] }}</td>
+                                <td class="clsBodyRow">{{ db_row["pokemon_guard_name"] }}</td>
+
+                                <td class="clsBodyRowDate">{{ db_row["gym_modified"] }}</td>
+                                <td class="clsBodyRowDate">{{ db_row["gym_viewed"] }}d</td>
+                            </tr>
+                        {% endfor %}
+                    </table>
+                </td>
+            </tr>
+        </table>
         <br />По всем вопросам обращаться к Татарникову Виктору [ viktor@tatarnikov.org ].
     </body>
 </html>

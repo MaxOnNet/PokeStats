@@ -45,14 +45,15 @@ def _thread_start(scanner):
 
 
 def _thread_check(thread):
+
     scanner_id = int(thread.name)
     scanner = session_mysql.query(dbScanner).get(scanner_id)
 
     if scanner.statistic.date_start + datetime.timedelta(minutes=5) < datetime.datetime.now():
         log.info("[{0} - Найден битый сканнер".format(scanner.id))
 
-        #thread.join()
-        #thread = _thread_start(scanner)
+        thread.join()
+        #thread = thread_start(scanner)
 
 
 arguments = _arg_parse()
@@ -86,7 +87,7 @@ if __name__ == '__main__':
         else:
             log.info("Cканнер id={0}, отключен, пропускаем".format(scanner.id))
 
-    session_mysql.close()
+
     time.sleep(60)
     log.info("Проверяем состояния тредов.")
 
@@ -95,9 +96,29 @@ if __name__ == '__main__':
         session_mysql = session_maker()
 
         for thread in threads:
-            _thread_check(thread)
+            if thread.is_alive():
+                _thread_check(thread)
+            else:
+                threads.remove(thread)
+
+        server = session_mysql.query(dbScannerServer).get(arguments.server)
+
+        for scanner in server.scanners:
+            if scanner.is_enable:
+                scanner_exist = False
+
+                for thread in threads:
+                    if thread.name == scanner.id:
+                        scanner_exist = True
+
+                if not scanner_exist:
+                    threads.append(_thread_start(scanner))
+            else:
+                log.info("Cканнер id={0}, отключен, пропускаем".format(scanner.id))
+
         session_mysql.close()
         time.sleep(10)
+
 
     log.info("Отработали, закрываемся")
 

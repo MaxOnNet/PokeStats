@@ -12,15 +12,45 @@ from Interfaces.Config import Config
 from Interfaces.MySQL import init
 from Interfaces.MySQL.Schema import PokemonSpawnpoint, Gym, Pokestop, Pokemon, Scanner, ScannerStatistic, ScannerLocation
 import sqlalchemy
+from sqlalchemy import text as sql_text
 from . import config
 
 
 class Pogom(Flask):
+    sql_report_gym_top = """
+            SELECT
+            g.id as "gym_id",
+            g.prestige as "gym_prestige",
+            g.longitude as "gym_longitude",
+            g.latitude as "gym_latitude",
+            g.date_modified as "gym_modified",
+            g.date_change as "srv_viewed",
+            g.cd_team as "team_id",
+            t.name as "team_name",
+            g.cd_guard_pokemon as "pokemon_cd",
+            p.name	as "pokemon_name"
+
+        FROM
+            db_pokestats.gym as g,
+            db_pokestats.team as t,
+            db_pokestats.pokemon as p
+        Where
+                g.cd_team = t.id
+            and g.cd_team != 0
+            and g.cd_guard_pokemon = p.id
+
+        ORDER BY
+            g.prestige DESC
+        LIMIT 0,50;
+	"""
+
+
     def __init__(self, import_name, **kwargs):
         super(Pogom, self).__init__(import_name, **kwargs)
         self.json_encoder = CustomJSONEncoder
         self.route("/", methods=['GET'])(self.fullmap)
-        self.route("/scanners", methods=['GET'])(self.scanners)
+        self.route("/report/gym/top", methods=['GET'])(self.report_gym_top)
+
 
         self.route("/raw_data", methods=['GET'])(self.raw_data)
         self.route("/next_loc", methods=['POST'])(self.next_loc)
@@ -37,11 +67,27 @@ class Pogom(Flask):
         self.session_mysql.expunge_all()
         self.session_mysql.close()
 
-    def scanners(self):
-        return render_template('map.html',
-                               lat=config['ORIGINAL_LATITUDE'],
-                               lng=config['ORIGINAL_LONGITUDE'],
-                               gmaps_key=config['GMAPS_KEY'])
+    def report_gym_top(self):
+        self._database_init()
+        sql = sql_text(self.sql_report_gym_top)
+        result = self.session_mysql.execute(sql)
+        table = []
+        self._database_close()
+        for row in result:
+            row_dict = {
+                "gym_id" : row[0],
+                "gym_prestige" : row[1],
+                "gym_position" : "{0},{1}".format(row[2], row[3]),
+                "gym_modified" : row[4],
+                "gym_viewed" : row[5],
+                "team_id" : row[6],
+                "team_name" : row[7],
+                "pokemon_guard_id" : row[8],
+                "pokemon_guard_name" : row[9]
+            }
+            table.append(row_dict)
+
+        return render_template('report_gym_top.html', table=table)
 
 
     def fullmap(self):
