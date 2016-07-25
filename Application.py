@@ -6,7 +6,7 @@ import logging
 
 from Interfaces.Config import Config
 from threading import Thread
-
+from flask_compress import Compress
 from pogom import config
 from pogom.app import Pogom
 
@@ -43,6 +43,7 @@ log.info('Parsed location is: {:.4f}/{:.4f}/{:.4f} (lat/lng/alt)'.
 
 
 app = Pogom(__name__)
+Compress(app)
 config['ROOT_PATH'] = app.root_path
 if __name__ == '__main__':
     app.run(threaded=True, host="127.0.0.1", port="5000")

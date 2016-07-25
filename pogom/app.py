@@ -4,6 +4,8 @@
 import calendar
 from flask import Flask, jsonify, render_template, request
 from flask.json import JSONEncoder
+
+
 from datetime import datetime
 
 from Interfaces.Config import Config
@@ -18,6 +20,7 @@ class Pogom(Flask):
         super(Pogom, self).__init__(import_name, **kwargs)
         self.json_encoder = CustomJSONEncoder
         self.route("/", methods=['GET'])(self.fullmap)
+        self.route("/scanners", methods=['GET'])(self.scanners)
 
         self.route("/raw_data", methods=['GET'])(self.raw_data)
         self.route("/next_loc", methods=['POST'])(self.next_loc)
@@ -33,6 +36,13 @@ class Pogom(Flask):
         self.session_mysql.flush()
         self.session_mysql.expunge_all()
         self.session_mysql.close()
+
+    def scanners(self):
+        return render_template('map.html',
+                               lat=config['ORIGINAL_LATITUDE'],
+                               lng=config['ORIGINAL_LONGITUDE'],
+                               gmaps_key=config['GMAPS_KEY'])
+
 
     def fullmap(self):
         return render_template('map.html',
