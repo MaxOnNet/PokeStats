@@ -232,11 +232,14 @@ function pokestopLabel(date_lure_expiration, date_change) {
     return str;
 }
 
-function scannedLabel(last_modified) {
+function scannedLabel(scanner_id, last_modified) {
     scanned_date = new Date(last_modified)
     var pad = function (number) { return number <= 99 ? ("0" + number).slice(-2) : number; }
 
     var contentstring = `
+        <div>
+            Идентификатор сканера: ${scanner_id}
+        </div>
         <div>
             Последние отклик от сканера ${pad(scanned_date.getHours())}:${pad(scanned_date.getMinutes())}:${pad(scanned_date.getSeconds())}
         </div>`;
@@ -340,7 +343,7 @@ function setupScannedMarker(item) {
     });
 
     marker.infoWindow = new google.maps.InfoWindow({
-         content: scannedLabel((item.date_change-6*60*60*1000)),
+         content: scannedLabel(item.id,(item.date_change-6*60*60*1000)),
          position: circleCenter
      });
 
