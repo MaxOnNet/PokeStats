@@ -41,6 +41,11 @@ class ScannerAccount(Base):
     password = Column(String(64), nullable=False, doc="")
     service = Column(String(64), nullable=False, doc="")
 
+    is_enable = Column(Boolean(), default=False)
+    is_active = Column(Boolean(), default=False)
+
+    status = Column(String(64), nullable=False, doc="")
+    description = Column(String(64), nullable=False, doc="")
 
 class ScannerLocation(Base):
     __tablename__ = 'scanner_location'
