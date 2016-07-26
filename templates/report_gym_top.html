@@ -38,7 +38,7 @@
                     <table cellpadding="0" cellspacing="1" class="clsTable">
                         <tr class="clsHeader">
                             <td class="clsHeader" rowspan="2">№</td>
-                            <td class="clsHeader" rowspan="1" colspan="6">GYM</td>
+                            <td class="clsHeader" rowspan="1" colspan="4">GYM</td>
                             <td class="clsHeader" rowspan="1" colspan="2">Team</td>
                             <td class="clsHeader" rowspan="1" colspan="2">Pokemon Guard</td>
                             <td class="clsHeader" rowspan="1" colspan="3">Update Date</td>
@@ -64,10 +64,8 @@
                         {% for db_row in table %}
                             <tr class="clsBodyRow">
                                 <td class="clsBodyRowId">{{ loop.index }}</td>
-                                <td class="clsBodyRowId">{{ db_row["gym_id"] }}</td>
-                                <td class="clsBodyRowName">{{ db_row["gym_name"] }}</td>
+                                <td class="clsBodyRowAddress">{{ db_row["gym_name"] }}</td>
                                 <td class="clsBodyRowAddress">{{ db_row["gym_address"] }}</td>
-                                <td class="clsBodyRowAddress">{{ db_row["gym_description"] }}</td>
                                 <td class="clsBodyRowGymPrestige">{{ db_row["gym_prestige"] }}</td>
                                 <td class="clsBodyRowMap"><a href="/?longitude={{ db_row['gym_longitude'] }}&latitude={{ db_row['gym_latitude'] }}" class="link">map</a></td>
 
