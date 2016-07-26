@@ -3,166 +3,7 @@
     <head>
         <title>Отчет: Топ арен.</title>
         <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-            <style type="text/css" media="screen">
-            body {
-                padding: 10px;
-                margin: 0px;
-                color: #FFFFFF;
-                background-color: #666666;
-                font-family: Arial, sans-serif;
-                font-size: 10px;
-            }
-
-
-            td, tr {
-                font-family: Arial, sans-serif;
-                font-size: 10px;
-
-                height: 15px;
-
-                padding: 0px;
-                margin: 0px;
-            }
-
-            td.clsTableParentBody {
-                background-color: #D2D2DC;
-            }
-
-            div.clsHeaderType {
-                display: block;
-                clear: left;
-                width: 60px;
-                font-size: 8px;
-                -webkit-transform: rotate(-90deg);
-                -moz-transform: rotate(-90deg);
-                filter: progid:DXImageTransform.Microsoft.BasicImage(rotation=3);
-            }
-
-            td.clsHeaderType {
-                height: 80px;
-                text-align: left;
-            }
-
-            tr.clsHeader td {
-                width: 60px;
-                color: #e6e6e6;
-                background-color: #999999;
-                text-align: center;
-                font-weight: bold;
-            }
-
-            tr.clsBodyRow {
-                color: #000000;
-                background-color: #FFFFFF;
-            }
-            td.clsBodyRowId {
-                width: 20px;
-                text-align: center;
-                background-color: #AAAAAA;
-                color: #e6e6e6;
-                padding-left: 3px;
-                padding-right: 3px;
-            }
-
-                td.clsBodyRowName {
-                width: 80px;
-                text-align: center;
-                background-color: #AAAAAA;
-                color: #e6e6e6;
-                padding-left: 3px;
-                padding-right: 3px;
-            }
-
-            td.clsBodyRowDate {
-                width: 120px;
-                text-align: center;
-                background-color: #999999;
-                color: #e6e6e6;
-                padding-left: 3px;
-                padding-right: 3px;
-            }
-
-            td.clsBodyRowTraffic {
-                width: 60px;
-                text-align: right;
-                padding-right: 3px;
-                color: #000000;
-                background-color: #FFFFFF;
-            }
-            td.clsBodyRowMoney {
-                width: 60px;
-                text-align: right;
-                padding-right: 3px;
-                color: #000000;
-                background-color: #FFFFFF;
-            }
-                .eg-tabs {
-            border: 0px;
-            margin:0;
-            margin-top: 20px;
-            padding: 0px;
-        }
-
-        .eg-tabs:after {
-            display: block;
-            content: ".";
-            height: 0px;
-            clear: both;
-            visibility: hidden;
-        }
-
-        .eg-tabs .tab-body {
-            float: right;
-            width: 100%;
-            padding: 0px;
-            margin:0;
-
-            margin-left: -100%;
-
-            visibility:hidden;
-        }
-
-        .eg-tabs .tab:target .tab-body{
-            visibility:visible;
-        }
-
-        .eg-tabs h3 {
-            font-variant: small-caps;
-            text-transform: none;
-            font-family: Arial, sans-serif;
-            font-size: 10px;
-            background-color: #999999;
-            color: #e6e6e6;
-            text-decoration:none;
-
-            margin:0;
-            padding-top: 3px;
-            padding-left: 3px;
-            padding-right: 3px;
-            padding-bottom: 0px;
-
-            margin-top: -20px;
-            margin-left: 1px;
-            margin-bottom: 20px;
-
-            float:left;
-            height: 17px;
-
-            border:1px solid #ccc;
-
-        }
-
-        .eg-tabs .tab:target h3 {
-            background: #333333;
-            border-bottom: none;
-        }
-
-        .eg-tabs h3 a {
-            color: #cccccc;
-            text-transform: none;
-            text-decoration:none;
-        }
-            </style>
+        <link rel="stylesheet" href="/static/reports/main.css" />
     </head>
     <body>
         <table cellpadding="0" cellspacing="1" border="0" class="clsTableParent" >
@@ -174,7 +15,7 @@
                             <td class="clsHeader" rowspan="1" colspan="3">GYM</td>
                             <td class="clsHeader" rowspan="1" colspan="2">Team</td>
                             <td class="clsHeader" rowspan="1" colspan="2">Pokemon Guard</td>
-                            <td class="clsHeader" rowspan="1" colspan="2">Update Date</td>
+                            <td class="clsHeader" rowspan="1" colspan="3">Update Date</td>
                         </tr>
                         <tr class="clsHeader">
                             <td class="clsHeader">ID</td>
@@ -189,22 +30,24 @@
 
                             <td class="clsHeader">Modified</td>
                             <td class="clsHeader">Vieved</td>
+                            <td class="clsHeader">AWait</td>
                         </tr>
                         {% for db_row in table %}
                             <tr class="clsBodyRow">
-                                <td class="clsBodyRowId"></td>
+                                <td class="clsBodyRowId">{{ loop.index }}</td>
                                 <td class="clsBodyRow">{{ db_row["gym_id"] }}</td>
-                                <td class="clsBodyRow">{{ db_row["gym_prestige"] }}</td>
-                                <td class="clsBodyRow">{{ db_row["gym_prestige"] }}</td>
+                                <td class="clsBodyRowGymPrestige">{{ db_row["gym_prestige"] }}</td>
+                                <td class="clsBodyRowMap"><a href="/?showAll=false&showPokestopslongitude={{ db_row['gym_longitude'] }}&latitude={{ db_row['gym_latitude'] }}" class="link">map</a></td>
 
                                 <td class="clsBodyRowId">{{ db_row["team_id"] }}</td>
-                                <td class="clsBodyRow">{{ db_row["team_name"] }}</td>
+                                <td class="clsBodyRowTeamName clsBodyRowTeam_{{ db_row["team_id"] }}">{{ db_row["team_name"] }}</td>
 
                                 <td class="clsBodyRowId">{{ db_row["pokemon_guard_id"] }}</td>
-                                <td class="clsBodyRow">{{ db_row["pokemon_guard_name"] }}</td>
+                                <td class="clsBodyRowGuardName">{{ db_row["pokemon_guard_name"] }}</td>
 
                                 <td class="clsBodyRowDate">{{ db_row["gym_modified"] }}</td>
-                                <td class="clsBodyRowDate">{{ db_row["gym_viewed"] }}d</td>
+                                <td class="clsBodyRowDate">{{ db_row["gym_viewed"] }}</td>
+                                <td class="clsBodyRowAWait">{{ db_row["gym_await"] }}</td>
                             </tr>
                         {% endfor %}
                     </table>

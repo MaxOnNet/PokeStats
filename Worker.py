@@ -49,7 +49,7 @@ def _thread_check(thread):
     scanner_id = int(thread.name)
     scanner = session_mysql.query(dbScanner).get(scanner_id)
 
-    if scanner.statistic.date_start + datetime.timedelta(minutes=5) < datetime.datetime.now():
+    if scanner.statistic.date_start + datetime.timedelta(minutes=10) < datetime.datetime.now():
         log.info("[{0} - Найден битый сканнер".format(scanner.id))
 
         thread.join()

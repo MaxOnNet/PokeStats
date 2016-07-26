@@ -28,7 +28,8 @@ class Pogom(Flask):
             g.cd_team as "team_id",
             t.name as "team_name",
             g.cd_guard_pokemon as "pokemon_cd",
-            p.name	as "pokemon_name"
+            p.name	as "pokemon_name",
+            (now() - g.date_change) as "srv_await"
 
         FROM
             db_pokestats.gym as g,
@@ -77,13 +78,15 @@ class Pogom(Flask):
             row_dict = {
                 "gym_id" : row[0],
                 "gym_prestige" : row[1],
-                "gym_position" : "{0},{1}".format(row[2], row[3]),
+                "gym_longitude" : row[2],
+                "gym_latitude" : row[3],
                 "gym_modified" : row[4],
                 "gym_viewed" : row[5],
                 "team_id" : row[6],
                 "team_name" : row[7],
                 "pokemon_guard_id" : row[8],
-                "pokemon_guard_name" : row[9]
+                "pokemon_guard_name" : row[9],
+                "gym_await" : row[10]
             }
             table.append(row_dict)
 
