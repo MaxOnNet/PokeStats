@@ -19,7 +19,10 @@ class Top(Report, View):
             t.name as "team_name",
             g.cd_guard_pokemon as "pokemon_cd",
             p.name	as "pokemon_name",
-            (now() - g.date_change) as "srv_await"
+            (now() - g.date_change) as "srv_await",
+            g.name as "gym_name",
+            g.address as "gym_address",
+            g.description as "gym_description"
 
         FROM
             db_pokestats.gym as g,
@@ -56,7 +59,10 @@ class Top(Report, View):
                 "team_name": row[7],
                 "pokemon_guard_id": row[8],
                 "pokemon_guard_name": row[9],
-                "gym_await": row[10]
+                "gym_await": row[10],
+                "gym_name": row[11],
+                "gym_address": row[12],
+                "gym_description": row[13]
             }
             self.data.append(row_dict)
 

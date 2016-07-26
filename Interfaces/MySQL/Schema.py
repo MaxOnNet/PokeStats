@@ -215,6 +215,10 @@ class Gym(Base):
 
     prestige = Column(Float(), default=0, nullable=False)
 
+    name = Column(String(256), default="", doc="")
+    address = Column(String(256), default="", doc="")
+    description = Column(String(256), default="", doc="")
+
     date_modified = Column(DateTime(), nullable=True)
     date_create = Column(DateTime(), nullable=False, default=func.now())
     date_change = Column(DateTime(), nullable=False, default=func.now(), onupdate=func.now())
@@ -247,11 +251,13 @@ def parse_map(map_dict, session):
                      p['time_till_hidden_ms']) / 1000.0)
             pokemon_spawnpoint.date_change = datetime.fromtimestamp((p['last_modified_timestamp_ms']/1000))
 
-            count_pokemons += 1
+            try:
+                count_pokemons += 1
 
-            session.merge(pokemon_spawnpoint)
-            session.commit()
-            session.flush()
+                session.merge(pokemon_spawnpoint)
+                session.commit()
+            finally:
+                session.flush()
 
         for f in cell.get('forts', []):
             if f.get('type') == 1:  # Pokestops
@@ -270,11 +276,14 @@ def parse_map(map_dict, session):
                 pokestop.date_modified=datetime.fromtimestamp(f['last_modified_timestamp_ms'] / 1000.0)
                 pokestop.date_lure_expiration = lure_expiration
 
-                count_pokestops += 1
 
-                session.merge(pokestop)
-                session.commit()
-                session.flush()
+                try:
+                    count_pokestops += 1
+
+                    session.merge(pokestop)
+                    session.commit()
+                finally:
+                    session.flush()
 
             else:  # Currently, there are only stops and gyms
                 gym = Gym()
@@ -293,11 +302,13 @@ def parse_map(map_dict, session):
                 gym.longitude = f['longitude']
                 gym.date_modified = datetime.fromtimestamp(f['last_modified_timestamp_ms'] / 1000.0)
 
-                count_gyms += 1
+                try:
+                    count_gyms += 1
 
-                session.merge(gym)
-                session.commit()
-                session.flush()
+                    session.merge(gym)
+                    session.commit()
+                finally:
+                    session.flush()
     session.flush()
 
     return {"gyms": count_gyms, "pokestops": count_pokestops, "pokemons": count_pokemons}

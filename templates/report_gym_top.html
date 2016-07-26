@@ -38,13 +38,16 @@
                     <table cellpadding="0" cellspacing="1" class="clsTable">
                         <tr class="clsHeader">
                             <td class="clsHeader" rowspan="2">№</td>
-                            <td class="clsHeader" rowspan="1" colspan="3">GYM</td>
+                            <td class="clsHeader" rowspan="1" colspan="6">GYM</td>
                             <td class="clsHeader" rowspan="1" colspan="2">Team</td>
                             <td class="clsHeader" rowspan="1" colspan="2">Pokemon Guard</td>
                             <td class="clsHeader" rowspan="1" colspan="3">Update Date</td>
                         </tr>
                         <tr class="clsHeader">
                             <td class="clsHeader">ID</td>
+                            <td class="clsHeader">Name</td>
+                            <td class="clsHeader">Address</td>
+                            <td class="clsHeader">Description</td>
                             <td class="clsHeader">Prestige</td>
                             <td class="clsHeader">Map</td>
 
@@ -62,6 +65,9 @@
                             <tr class="clsBodyRow">
                                 <td class="clsBodyRowId">{{ loop.index }}</td>
                                 <td class="clsBodyRowId">{{ db_row["gym_id"] }}</td>
+                                <td class="clsBodyRowName">{{ db_row["gym_name"] }}</td>
+                                <td class="clsBodyRowAddress">{{ db_row["gym_address"] }}</td>
+                                <td class="clsBodyRowAddress">{{ db_row["gym_description"] }}</td>
                                 <td class="clsBodyRowGymPrestige">{{ db_row["gym_prestige"] }}</td>
                                 <td class="clsBodyRowMap"><a href="/?longitude={{ db_row['gym_longitude'] }}&latitude={{ db_row['gym_latitude'] }}" class="link">map</a></td>
 
