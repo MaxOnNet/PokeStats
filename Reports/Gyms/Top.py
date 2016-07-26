@@ -31,7 +31,7 @@ class Top(Report, View):
             and g.cd_guard_pokemon = p.id
 
         ORDER BY
-            g.prestige DESC
+            g.prestige DESC, g.index ASC
         LIMIT 0,50;
     """
 
