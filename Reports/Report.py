@@ -10,7 +10,7 @@ import sqlalchemy
 from sqlalchemy import text as sql_text
 
 from Interfaces.Config import Config
-from Interfaces.MySQL import init
+from Interfaces.MySQL import init_fast as init
 from Interfaces.MySQL.Schema import PokemonSpawnpoint, Gym, Pokestop, Pokemon, Scanner, ScannerStatistic, ScannerLocation
 
 

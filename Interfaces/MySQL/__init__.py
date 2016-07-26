@@ -39,3 +39,20 @@ def init(config):
             )
         )
 
+def init_fast(config):
+    # Go ahead and use this engine
+    db_engine = create_engine('mysql+pymysql://{0}:{1}@{2}/{3}?charset={4}'.format(
+        config.get("database", "mysql", "user"),
+        config.get("database", "mysql", "password"),
+        config.get("database", "mysql", "server"),
+        config.get("database", "mysql", "database"),
+        config.get("database", "mysql", "charset", "utf8")
+    ))
+
+    return scoped_session(
+        sessionmaker(
+                autoflush=True,
+                autocommit=False,
+                bind=db_engine
+            )
+        )
