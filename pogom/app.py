@@ -103,13 +103,36 @@ class Pogom(Flask):
         ORDER BY p.id;
         """
 
+    sql_report_pokemon_now = """
+        SELECT
+            p.id as "pokemon_id",
+            p.name as "pokemon_name",
+            p.group as "pokemon_group",
+            p.evolution as "pokemon_evolution",
+            count(ps.cd_pokemon) as "respawn_count",
+            min((ps.date_disappear - now())) as "respawn_seconds_min",
+            max((ps.date_disappear - now())) as "respawn_seconds_max",
+            ps.latitude as "respawn_latitude",
+	        ps.longitude as "respawn_longitude"
+        FROM
+            db_pokestats.pokemon_spawnpoint ps,
+            db_pokestats.pokemon p
+        WHERE
+                ps.cd_pokemon = p.id
+            and ps.date_disappear > now()
+        GROUP BY
+            p.name, p.id
+        ORDER BY
+            p.id;
+
+        """
     def __init__(self, import_name, **kwargs):
         super(Pogom, self).__init__(import_name, **kwargs)
         self.json_encoder = CustomJSONEncoder
         self.route("/", methods=['GET'])(self.fullmap)
         self.route("/report/gym/top", methods=['GET'])(self.report_gym_top)
         self.route("/report/pokemon/average", methods=['GET'])(self.report_pokemon_average)
-
+        self.route("/report/pokemon/now", methods=['GET'])(self.report_pokemon_now)
 
         self.route("/raw_data", methods=['GET'])(self.raw_data)
         self.route("/next_loc", methods=['POST'])(self.next_loc)
@@ -170,6 +193,28 @@ class Pogom(Flask):
 
         return render_template('report_pokemon_average.html', table=table)
 
+
+    def report_pokemon_now(self):
+        self._database_init()
+        sql = sql_text(self.sql_report_pokemon_now)
+        result = self.session_mysql.execute(sql)
+        table = []
+        self._database_close()
+        for row in result:
+            row_dict = {
+                "pokemon_id" : row[0],
+                "pokemon_name" : row[1],
+                "pokemon_group" : row[2],
+                "pokemon_evolution" : row[3],
+                "respawn_count" : row[4],
+                "respawn_seconds_min" : row[5],
+                "respawn_seconds_max" : row[6],
+                "respawn_latitude": row[7],
+                "respawn_longitude": row[8]
+            }
+            table.append(row_dict)
+
+        return render_template('report_pokemon_now.html', table=table)
 
 
     def fullmap(self):

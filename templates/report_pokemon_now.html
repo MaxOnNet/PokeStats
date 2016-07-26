@@ -1,7 +1,7 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
 <html>
     <head>
-        <title>Отчет: Кто есть на карте 2го и 3го поколения а так же Эпики.</title>
+        <title>Отчет: Кто есть на карте.</title>
         <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
         <link rel="stylesheet" href="/static/reports/main.css" />
     </head>
@@ -37,7 +37,7 @@
                     <table cellpadding="0" cellspacing="1" class="clsTable">
                         <tr class="clsHeader">
                             <td class="clsHeader" rowspan="1" colspan="4">Pokemon</td>
-                            <td class="clsHeader" rowspan="1" colspan="4">Время</td>
+                            <td class="clsHeader" rowspan="1" colspan="4">Respawn</td>
                         </tr>
                         <tr class="clsHeader">
                             <td class="clsHeader">ID</td>
@@ -45,20 +45,22 @@
                             <td class="clsHeader">Group</td>
                             <td class="clsHeader">Evolution</td>
 
-                            <td class="clsHeader">Now</td>
-                            <td class="clsHeader">Hour</td>
-                            <td class="clsHeader">Day</td>
-                            <td class="clsHeader">All</td>
+                            <td class="clsHeader">Count</td>
+                            <td class="clsHeader">Min Sec</td>
+                            <td class="clsHeader">Max Sec</td>
+                            <td class="clsHeader">map</td>
                         </tr>
                         {% for db_row in table %}
                             <tr class="clsBodyRow">
                                 <td class="clsBodyRowId">{{ db_row["pokemon_id"] }}</td>
                                 <td class="clsBodyRowGuardName">{{ db_row["pokemon_name"] }}</td>
+                                <td class="clsBodyRowGuardGroup">{{ db_row["pokemon_group"] }}</td>
+                                <td class="clsBodyRowGuardEvolution clsBodyRowGuardEvolution_{{ db_row['pokemon_evolution'] }}">{{ db_row["pokemon_evolution"] }}</td>
 
-                                <td class="clsBodyRowCount">{{ db_row["count_now"] }}</td>
-                                <td class="clsBodyRowCount">{{ db_row["count_hour"] }}</td>
-                                <td class="clsBodyRowCount">{{ db_row["count_day"] }}</td>
-                                <td class="clsBodyRowCount">{{ db_row["count_all"] }}</td>
+                                <td class="clsBodyRowCount">{{ db_row["respawn_count"] }}</td>
+                                <td class="clsBodyRowCount">{{ db_row["respawn_seconds_min"] }}</td>
+                                <td class="clsBodyRowCount">{{ db_row["respawn_seconds_max"] }}</td>
+                                <td class="clsBodyRowMap"><a href="/?filterPokemon={{ db_row['pokemon_id'] }}&longitude={{ db_row['respawn_longitude'] }}&latitude={{ db_row['respawn_latitude'] }}">map</a></td>
                             </tr>
                         {% endfor %}
                     </table>

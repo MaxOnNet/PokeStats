@@ -114,13 +114,6 @@ td.clsBodyRowTeamName {
     color: #000000;
     background-color: #FFFFFF;
 }
-td.clsBodyRowGuardName {
-    width: 60px;
-    text-align: center;
-    padding-right: 3px;
-    color: #000000;
-    background-color: #FFFFFF;
-}
 
 td.clsBodyRowTeam_1 {
     background-color: #6495ED;
@@ -135,6 +128,40 @@ td.clsBodyRowTeam_3 {
     color: #000000;
 }
 
+td.clsBodyRowGuardName {
+    width: 60px;
+    text-align: center;
+    padding-right: 3px;
+    color: #000000;
+    background-color: #FFFFFF;
+}
+
+td.clsBodyRowGuardGroup {
+    width: 60px;
+    text-align: center;
+    padding-right: 3px;
+    color: #000000;
+    background-color: #FFFFFF;
+}
+td.clsBodyRowGuardEvolution {
+    width: 60px;
+    text-align: center;
+    padding-right: 3px;
+    color: #000000;
+    background-color: #FFFFFF;
+}
+td.clsBodyRowGuardEvolution_1 {
+    background-color: #6495ED;
+    color: #FFFFFF;
+}
+td.clsBodyRowGuardEvolution_2 {
+    background-color: #DAA520;
+    color: #FFFFFF;
+}
+td.clsBodyGuardEvolution_3 {
+    background-color: #B22222;
+    color: #000000;
+}
 a {
     color: #eeeeee;
     text-transform: none;
