@@ -94,6 +94,10 @@ class Pogom(Flask):
 
 
     def fullmap(self):
+        if request.args.get('latitude') and request.args.get('longitude'):
+            config['ORIGINAL_LATITUDE'] = request.args.get('latitude')
+            config['ORIGINAL_LONGITUDE'] = request.args.get('longitude')
+
         return render_template('map.html',
                                lat=config['ORIGINAL_LATITUDE'],
                                lng=config['ORIGINAL_LONGITUDE'],
