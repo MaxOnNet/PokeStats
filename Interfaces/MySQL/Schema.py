@@ -205,6 +205,7 @@ class Gym(Base):
                       'mysql_comment': ''}
 
     id = Column(String(64), primary_key=True, doc="")
+    index = Column(Integer(), primary_key=True, autoincrement=True, doc="")
     cd_team = Column(Integer(), nullable=False, doc="")
     cd_guard_pokemon = Column(Integer(), default=0, nullable=False, doc="")
 
