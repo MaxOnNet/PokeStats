@@ -60,7 +60,7 @@
                         {% for db_row in table %}
                             <tr class="clsBodyRow">
                                 <td class="clsBodyRowId">{{ loop.index }}</td>
-                                <td class="clsBodyRow">{{ db_row["gym_id"] }}</td>
+                                <td class="clsBodyRowId">{{ db_row["gym_id"] }}</td>
                                 <td class="clsBodyRowGymPrestige">{{ db_row["gym_prestige"] }}</td>
                                 <td class="clsBodyRowMap"><a href="/?longitude={{ db_row['gym_longitude'] }}&latitude={{ db_row['gym_latitude'] }}" class="link">map</a></td>
 
