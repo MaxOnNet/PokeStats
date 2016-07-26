@@ -11,6 +11,7 @@ class Average(Report, View):
         SELECT
             s.id as "s_id",
             s.is_enable as "s_enable",
+            s.state as "s_state",
             sl.id as "sl_id",
             sl.address as "sl_address",
             sl.latitude as "sl_latitude",
@@ -18,7 +19,7 @@ class Average(Report, View):
             sa.id as "sa_id",
             sa.username as "sa_username",
             sa.service as "sa_service",
-            sa.status as "sa_status",
+            sa.state as "sa_status",
             (now() - ss.date_start) as "ss_await",
             ss.date_start as "ss_reload",
             ss.pokemons as "ss_pokemons",
@@ -48,19 +49,20 @@ class Average(Report, View):
             row_dict = {
                 "s_id": row[0],
                 "s_enable": row[1],
-                "sl_id": row[2],
-                "sl_address": row[3],
-                "sl_latitude": row[4],
-                "sl_longitude": row[5],
-                "sa_id": row[6],
-                "sa_username": row[7],
-                "sa_service": row[8],
-                "sa_status": row[9],
-                "ss_await": row[10],
-                "ss_reload": row[11],
-                "ss_pokemons": row[12],
-                "ss_gyms": row[13],
-                "ss_pokestops": row[14]
+                "s_state": row[2],
+                "sl_id": row[3],
+                "sl_address": row[4],
+                "sl_latitude": row[5],
+                "sl_longitude": row[6],
+                "sa_id": row[7],
+                "sa_username": row[8],
+                "sa_service": row[9],
+                "sa_state": row[10],
+                "ss_await": row[11],
+                "ss_reload": row[12],
+                "ss_pokemons": row[13],
+                "ss_gyms": row[14],
+                "ss_pokestops": row[15]
             }
 
             self.data.append(row_dict)

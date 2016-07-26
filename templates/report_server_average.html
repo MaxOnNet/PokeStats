@@ -37,7 +37,7 @@
                 <td class="clsTableParentBody">
                     <table cellpadding="0" cellspacing="1" class="clsTable">
                         <tr class="clsHeader">
-                            <td class="clsHeader" rowspan="1" colspan="2">Scanner</td>
+                            <td class="clsHeader" rowspan="1" colspan="3">Scanner</td>
                             <td class="clsHeader" rowspan="1" colspan="3">Location</td>
                             <td class="clsHeader" rowspan="1" colspan="3">Account</td>
                             <td class="clsHeader" rowspan="1" colspan="5">Session Statistic</td>
@@ -45,6 +45,7 @@
                         <tr class="clsHeader">
                             <td class="clsHeader">ID</td>
                             <td class="clsHeader">Enabled</td>
+                            <td class="clsHeader">Status</td>
 
                             <td class="clsHeader">ID</td>
                             <td class="clsHeader">Address</td>
@@ -64,6 +65,7 @@
                             <tr class="clsBodyRow">
                                 <td class="clsBodyRowId">{{ db_row["s_id"] }}</td>
                                 <td class="clsBodyRowEnabled clsBodyRowEnabled_{{ db_row['s_enable'] }}">{{ db_row["s_enable"] }}</td>
+                                <td class="clsBodyRowStatusStr">{{ db_row["s_state"] }}</td>
 
                                 <td class="clsBodyRowId">{{ db_row["sl_id"] }}</td>
                                 <td class="clsBodyRowAddress">{{ db_row["sl_address"] }}</td>
@@ -71,7 +73,7 @@
 
                                 <td class="clsBodyRowId">{{ db_row["sa_id"] }}</td>
                                 <td class="clsBodyRowName">{{ db_row["sa_service"] }}</td>
-                                <td class="clsBodyRowStatusStr">{{ db_row["sa_status"] }}</td>
+                                <td class="clsBodyRowStatusStr">{{ db_row["sa_state"] }}</td>
 
                                 <td class="clsBodyRowAWait">{{ db_row["ss_await"] }}</td>
                                 <td class="clsBodyRowDate">{{ db_row["ss_reload"] }}</td>
