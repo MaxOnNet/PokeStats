@@ -41,7 +41,9 @@ class Scanner(threading.Thread):
         self.scanner = self.session_mysql.query(dbScanner).get(scanner_id)
 
         self._stopevent = threading.Event()
-        self._sleepperiod = 1
+
+        self._sleepperiod = 10
+        self._sleeplogin = 20
 
         self.api = PGoApi()
 
@@ -68,6 +70,27 @@ class Scanner(threading.Thread):
         except:
             log.error('Error save stats.')
 
+    def _status_scanner_apply(self, active=0, state=""):
+        log.info('[{0}] - {1} - {2}.'.format(self.scanner.id, active, state))
+
+        self.scanner.is_active = active
+
+        if state != "":
+            self.scanner.state = state
+
+        self.session_mysql.commit()
+        self.session_mysql.flush()
+
+    def _status_account_apply(self, active=0, state=""):
+        log.info('[{0}] - {1} - {2}.'.format(self.scanner.id, active, state))
+
+        self.scanner.account.is_active = active
+
+        if state != "":
+            self.scanner.account.state = state
+
+        self.session_mysql.commit()
+        self.session_mysql.flush()
 
     def send_map_request(self, position):
         try:
@@ -95,33 +118,49 @@ class Scanner(threading.Thread):
 
 
     def login(self):
-        log.info('[{0}] - Attempting login.'.format(self.scanner.id))
+        login_count = 0
+        login_count_max = 5
+
+        self._status_account_apply(1, "Попытка авторизации ({0})".format(login_count))
 
         self.api.set_position(*self.scanner.location.position)
 
         while not self.api.login(self.scanner.account.service, self.scanner.account.username, self.scanner.account.password):
-            log.info('[{0}] - Login failed. Trying again. [{1},{2}]'.format(self.scanner.id, self.scanner.account.username, self.scanner.account.password))
-            self._stopevent.wait(self._sleepperiod)
+            if login_count < login_count_max:
+                self._status_account_apply(1, "Ошибка авторизации ({0}), ожидаем".format(login_count))
 
-        log.info('[{0}] - Login successful.'.format(self.scanner.id))
+                self._stopevent.wait(self._sleeplogin)
 
+                login_count += 1
+            else:
+                self._status_account_apply(0, "Ошибка авторизации, выходим")
+
+                return False
+
+        self._status_account_apply(1, "Успешная авторизация")
+        return True
 
     def run(self):
         self.scanner.location.fix(self.geolocation)
 
         while not self._stopevent.isSet():
-            self.run_scanner()
-            self._stopevent.wait(self._sleepperiod)
+            if not self.run_scanner():
+                self._stopevent.set()
+                break
+            else:
+                self._status_scanner_apply(1, "Ожидаем следующего цикла")
+                self._stopevent.wait(self._sleepperiod)
 
-        log.info("[{0}] - Отключаем сканнер".format(self.scanner.id))
-        self.stop()
+        self._status_scanner_apply(0, "Сканнер отключен")
 
-    def stop(self):
+        self.session_mysql.commit()
+        self.session_mysql.flush()
         self.session_mysql.close()
 
+
     def run_scanner(self):
-        """ main control loop """
-        log.info("[{0}] - Запускаем сканнер".format(self.scanner.id))
+        self._status_account_apply(1, "Запускаем сканнер")
+        self._status_scanner_apply(1, "Запускаем сканнер")
 
         self._statistic_clean()
 
@@ -129,37 +168,63 @@ class Scanner(threading.Thread):
             remaining_time = self.api._auth_provider._ticket_expire/1000 - time.time()
 
             if remaining_time > 60:
-                log.info("[{0}] - Skipping login process since already logged in for another {1} seconds".format(self.scanner.id,remaining_time))
+                self._status_scanner_apply(1, "Skipping login process since already logged")
             else:
-                self.login()
+                if not self.login():
+                    self._status_scanner_apply(1, "Ошибка авторизации, выходим")
+
+                    return False
         else:
-            self.login()
+            if not self.login():
+                self._status_scanner_apply(1, "Ошибка авторизации, выходим")
+
+                return False
 
         i = 1
         for step_location in self.generate_location_steps(self.scanner.location.position, self.scanner.location.steps):
             if not self._stopevent.isSet():
-                log.info('[{:d}] - Scanning step {:d} of {:d}.'.format(self.scanner.id, i, self.scanner.location.steps**2))
-                log.debug('[{:d}] - Scan location is {:f}, {:f}'.format(self.scanner.id, step_location[0], step_location[1]))
+                self._status_scanner_apply(1, "Сканирование, шаг {:d} из {:d}.".format(self.scanner.id, i, self.scanner.location.steps**2))
+
+                response_count = 0
+                response_count_max = 5
 
                 response_dict = self.send_map_request(step_location)
                 while not response_dict and not self._stopevent.isSet():
-                    log.info('[{:d}] - Map Download failed. Trying again.'.format(self.scanner.id))
-                    response_dict = self.send_map_request(step_location)
-                    self._stopevent.wait(self._sleepperiod)
+                    if response_count < response_count_max:
+                        self._status_scanner_apply(1, "Загрузка карты не удалась ({0}), ожидаем.".format(response_count))
+
+                        self._stopevent.wait(self._sleepperiod)
+                        response_dict = self.send_map_request(step_location)
+
+                        response_count += 1
+                    else:
+                        self._status_scanner_apply(1, "Загрузка карты не удалась, завершаем.")
+                        return False
 
                 try:
                     self._statistic_apply(parse_map(response_dict, self.session_mysql))
                 except KeyError:
-                    log.error('[{:d}] - Scan step failed. Response dictionary key error.'.format(self.scanner.id))
+                    self._status_scanner_apply(1, "Scan step failed. Response dictionary key error, skip step")
 
-                log.info('[{:d}] - Completed {:5.2f}% of scan.'.format(self.scanner.id, (float(i) / 10**2)*100))
+                self._status_scanner_apply(1, "Completed {:5.2f}% of scan.".format(self.scanner.id, (float(i) / 10**2)*100))
+
                 i += 1
+            else:
+                self._status_scanner_apply(1, "Сигнал на выход, завершаем работу")
+                return False
+
+        return True
 
 
     def join(self, timeout=None):
         """ Stop the thread and wait for it to end. """
         self._stopevent.set()
+        self._status_scanner_apply(1, "Получен сигнал на выход")
+
         threading.Thread.join(self, timeout)
-        self.stop()
+
+        self.session_mysql.commit()
+        self.session_mysql.flush()
+        self.session_mysql.close()
 
 

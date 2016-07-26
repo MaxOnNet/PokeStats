@@ -44,7 +44,7 @@ class ScannerAccount(Base):
     is_enable = Column(Boolean(), default=False)
     is_active = Column(Boolean(), default=False)
 
-    status = Column(String(64), nullable=False, doc="")
+    state = Column(String(256), nullable=False, doc="")
     description = Column(String(64), nullable=False, doc="")
 
 class ScannerLocation(Base):
@@ -89,6 +89,8 @@ class Scanner(Base):
 
     is_enable = Column(Boolean(), default=False)
     is_active = Column(Boolean(), default=False)
+
+    state = Column(String(256), nullable=False, doc="")
 
     date_create = Column(DateTime(), nullable=False, default=func.now())
     date_change = Column(DateTime(), nullable=False, default=func.now(), onupdate=func.now())

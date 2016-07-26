@@ -12,7 +12,7 @@ from threading import Thread
 from Interfaces.Config import Config
 from Interfaces.Geolocation import Geolocation
 from Interfaces.Scanner import Scanner as tScanner
-from Interfaces.MySQL import init
+from Interfaces.MySQL import init_fast as init
 from Interfaces.MySQL.Schema import Scanner as dbScanner
 from Interfaces.MySQL.Schema import ScannerServer as dbScannerServer
 
@@ -94,6 +94,8 @@ if __name__ == '__main__':
     while scanner_alive == True:
         session_maker = init(config)
         session_mysql = session_maker()
+
+        log.info("Начинаем проверку, в пуле {0} потоков".format(len(threads)))
 
         for thread in threads:
             if thread.is_alive():
