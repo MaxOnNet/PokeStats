@@ -1,0 +1,90 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html>
+    <head>
+        <title>Отчет: Состояние сканеров.</title>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+        <link rel="stylesheet" href="/static/reports/main.css" />
+        <meta http-equiv="refresh" content="10">
+    </head>
+    <body>
+    <script type="text/javascript">
+    (function (d, w, c) {
+        (w[c] = w[c] || []).push(function() {
+            try {
+                w.yaCounter38654230 = new Ya.Metrika({
+                    id:38654230,
+                    clickmap:true,
+                    trackLinks:true,
+                    accurateTrackBounce:true
+                });
+            } catch(e) { }
+        });
+
+        var n = d.getElementsByTagName("script")[0],
+            s = d.createElement("script"),
+            f = function () { n.parentNode.insertBefore(s, n); };
+        s.type = "text/javascript";
+        s.async = true;
+        s.src = "https://mc.yandex.ru/metrika/watch.js";
+
+        if (w.opera == "[object Opera]") {
+            d.addEventListener("DOMContentLoaded", f, false);
+        } else { f(); }
+    })(document, window, "yandex_metrika_callbacks");
+</script>
+        <table cellpadding="0" cellspacing="1" border="0" class="clsTableParent" >
+            <tr>
+                <td class="clsTableParentBody">
+                    <table cellpadding="0" cellspacing="1" class="clsTable">
+                        <tr class="clsHeader">
+                            <td class="clsHeader" rowspan="1" colspan="2">Scanner</td>
+                            <td class="clsHeader" rowspan="1" colspan="3">Location</td>
+                            <td class="clsHeader" rowspan="1" colspan="3">Account</td>
+                            <td class="clsHeader" rowspan="1" colspan="5">Session Statistic</td>
+                        </tr>
+                        <tr class="clsHeader">
+                            <td class="clsHeader">ID</td>
+                            <td class="clsHeader">Enabled</td>
+
+                            <td class="clsHeader">ID</td>
+                            <td class="clsHeader">Address</td>
+                            <td class="clsHeader">Map</td>
+
+                            <td class="clsHeader">ID</td>
+                            <td class="clsHeader">Service</td>
+                            <td class="clsHeader">Status</td>
+
+                            <td class="clsHeader">AWait</td>
+                            <td class="clsHeader">Reload</td>
+                            <td class="clsHeader">Pokemons</td>
+                            <td class="clsHeader">Gyms</td>
+                            <td class="clsHeader">Pokestops</td>
+                        </tr>
+                        {% for db_row in table %}
+                            <tr class="clsBodyRow">
+                                <td class="clsBodyRowId">{{ db_row["s_id"] }}</td>
+                                <td class="clsBodyRowEnabled clsBodyRowEnabled_{{ db_row['s_enable'] }}">{{ db_row["s_enable"] }}</td>
+
+                                <td class="clsBodyRowId">{{ db_row["sl_id"] }}</td>
+                                <td class="clsBodyRowAddress">{{ db_row["sl_address"] }}</td>
+                                <td class="clsBodyRowMap"><a href="/?filterScaneer={{ db_row['s_id'] }}&longitude={{ db_row['sl_longitude'] }}&latitude={{ db_row['sl_latitude'] }}">map</a></td>
+
+                                <td class="clsBodyRowId">{{ db_row["sa_id"] }}</td>
+                                <td class="clsBodyRowName">{{ db_row["sa_service"] }}</td>
+                                <td class="clsBodyRowStatusStr">{{ db_row["sa_status"] }}</td>
+
+                                <td class="clsBodyRowAWait">{{ db_row["ss_await"] }}</td>
+                                <td class="clsBodyRowDate">{{ db_row["ss_reload"] }}</td>
+                                <td class="clsBodyRowCount">{{ db_row["ss_pokemons"] }}</td>
+                                <td class="clsBodyRowCount">{{ db_row["ss_gyms"] }}</td>
+                                <td class="clsBodyRowCount">{{ db_row["ss_pokestops"] }}</td>
+                            </tr>
+                        {% endfor %}
+                    </table>
+                </td>
+            </tr>
+        </table>
+        <br />Отчет составлен за {{ duration }} секунд.
+        <br />По всем вопросам обращаться к Татарникову Виктору [ viktor@tatarnikov.org ].
+    </body>
+</html>

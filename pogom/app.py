@@ -4,7 +4,7 @@
 import calendar
 from flask import Flask, jsonify, render_template, request
 from flask.json import JSONEncoder
-
+from flask.views import View
 
 from datetime import datetime
 
@@ -15,128 +15,29 @@ import sqlalchemy
 from sqlalchemy import text as sql_text
 from . import config
 
+from Reports.Gyms.Top import Top as ReportGymTop
+from Reports.Pokemons.Average import Average as ReportPokemonAverage
+from Reports.Pokemons.Now import Now as ReportPokemonNow
 
+from Reports.Servers.Average import Average as ReportServerAverage
 class Pogom(Flask):
-    sql_report_gym_top = """
-            SELECT
-            g.id as "gym_id",
-            g.prestige as "gym_prestige",
-            g.longitude as "gym_longitude",
-            g.latitude as "gym_latitude",
-            g.date_modified as "gym_modified",
-            g.date_change as "srv_viewed",
-            g.cd_team as "team_id",
-            t.name as "team_name",
-            g.cd_guard_pokemon as "pokemon_cd",
-            p.name	as "pokemon_name",
-            (now() - g.date_change) as "srv_await"
 
-        FROM
-            db_pokestats.gym as g,
-            db_pokestats.team as t,
-            db_pokestats.pokemon as p
-        Where
-                g.cd_team = t.id
-            and g.cd_team != 0
-            and g.cd_guard_pokemon = p.id
-
-        ORDER BY
-            g.prestige DESC
-        LIMIT 0,50;
-	"""
-
-    sql_report_pokemon_average = """
-        SELECT
-            p.id,
-            p.name,
-            COALESCE(ps_now.pokemon_count,"") as "count_now",
-            COALESCE(ps_hour.pokemon_count,"") as "count_hour",
-            COALESCE(ps_day.pokemon_count,"") as "count_day",
-            COALESCE(ps_all.pokemon_count,"") as "count_all"
-        FROM
-            db_pokestats.pokemon p
-            LEFT JOIN
-            (
-                SELECT
-                    ps.cd_pokemon as cd_pokemon,
-                    count(ps.id) as pokemon_count
-                FROM
-                    db_pokestats.pokemon_spawnpoint ps
-                WHERE
-                    ps.date_disappear > now()
-                GROUP BY
-                    ps.cd_pokemon) ps_now on (p.id = ps_now.cd_pokemon)
-            LEFT JOIN
-            (
-                SELECT
-                    ps.cd_pokemon as cd_pokemon,
-                    count(ps.id) as pokemon_count
-                FROM
-                    db_pokestats.pokemon_spawnpoint ps
-                WHERE
-                    DATE_ADD(ps.date_disappear, INTERVAL 1 HOUR) > now()
-                GROUP BY
-                    ps.cd_pokemon) ps_hour on (p.id = ps_hour.cd_pokemon)
-            LEFT JOIN
-            (
-                SELECT
-                    ps.cd_pokemon as cd_pokemon,
-                    count(ps.id) as pokemon_count
-                FROM
-                    db_pokestats.pokemon_spawnpoint ps
-                WHERE
-                    DATE_ADD(ps.date_disappear, INTERVAL 1 DAY) > now()
-                GROUP BY
-                    ps.cd_pokemon) ps_day on p.id = (ps_day.cd_pokemon)
-            LEFT JOIN
-            (
-                SELECT
-                    ps.cd_pokemon as cd_pokemon,
-                    count(ps.id) as pokemon_count
-                FROM
-                    db_pokestats.pokemon_spawnpoint ps
-                GROUP BY
-                    ps.cd_pokemon) ps_all on (p.id = ps_all.cd_pokemon)
-        where
-            p.id < 150
-        GROUP BY p.id
-        ORDER BY p.id;
-        """
-
-    sql_report_pokemon_now = """
-        SELECT
-            p.id as "pokemon_id",
-            p.name as "pokemon_name",
-            p.group as "pokemon_group",
-            p.evolution as "pokemon_evolution",
-            count(ps.cd_pokemon) as "respawn_count",
-            min((ps.date_disappear - now())) as "respawn_seconds_min",
-            max((ps.date_disappear - now())) as "respawn_seconds_max",
-            ps.latitude as "respawn_latitude",
-	        ps.longitude as "respawn_longitude"
-        FROM
-            db_pokestats.pokemon_spawnpoint ps,
-            db_pokestats.pokemon p
-        WHERE
-                ps.cd_pokemon = p.id
-            and ps.date_disappear > now()
-        GROUP BY
-            p.name, p.id
-        ORDER BY
-            p.id;
-
-        """
     def __init__(self, import_name, **kwargs):
         super(Pogom, self).__init__(import_name, **kwargs)
+
+        self.config_xml = Config()
         self.json_encoder = CustomJSONEncoder
         self.route("/", methods=['GET'])(self.fullmap)
-        self.route("/report/gym/top", methods=['GET'])(self.report_gym_top)
-        self.route("/report/pokemon/average", methods=['GET'])(self.report_pokemon_average)
-        self.route("/report/pokemon/now", methods=['GET'])(self.report_pokemon_now)
+
+        self.add_url_rule("/report/gym/top", view_func=ReportGymTop.as_view("report/gym/top", config=self.config_xml))
+        self.add_url_rule("/report/pokemon/average", view_func=ReportPokemonAverage.as_view("report/pokemon/average", config=self.config_xml))
+        self.add_url_rule("/report/pokemon/now", view_func=ReportPokemonNow.as_view("report/pokemon/now", config=self.config_xml))
+
+        self.add_url_rule("/report/server/average", view_func=ReportServerAverage.as_view("report/server/average", config=self.config_xml))
+
 
         self.route("/raw_data", methods=['GET'])(self.raw_data)
         self.route("/next_loc", methods=['POST'])(self.next_loc)
-        self.config_xml = Config()
 
 
 
@@ -148,74 +49,6 @@ class Pogom(Flask):
         self.session_mysql.flush()
         self.session_mysql.expunge_all()
         self.session_mysql.close()
-
-    def report_gym_top(self):
-        self._database_init()
-        sql = sql_text(self.sql_report_gym_top)
-        result = self.session_mysql.execute(sql)
-        table = []
-        self._database_close()
-        for row in result:
-            row_dict = {
-                "gym_id" : row[0],
-                "gym_prestige" : row[1],
-                "gym_longitude" : row[2],
-                "gym_latitude" : row[3],
-                "gym_modified" : row[4],
-                "gym_viewed" : row[5],
-                "team_id" : row[6],
-                "team_name" : row[7],
-                "pokemon_guard_id" : row[8],
-                "pokemon_guard_name" : row[9],
-                "gym_await" : row[10]
-            }
-            table.append(row_dict)
-
-        return render_template('report_gym_top.html', table=table)
-
-
-    def report_pokemon_average(self):
-        self._database_init()
-        sql = sql_text(self.sql_report_pokemon_average)
-        result = self.session_mysql.execute(sql)
-        table = []
-        self._database_close()
-        for row in result:
-            row_dict = {
-                "pokemon_id" : row[0],
-                "pokemon_name" : row[1],
-                "count_now" : row[2],
-                "count_hour" : row[3],
-                "count_day" : row[4],
-                "count_all" : row[5]
-            }
-            table.append(row_dict)
-
-        return render_template('report_pokemon_average.html', table=table)
-
-
-    def report_pokemon_now(self):
-        self._database_init()
-        sql = sql_text(self.sql_report_pokemon_now)
-        result = self.session_mysql.execute(sql)
-        table = []
-        self._database_close()
-        for row in result:
-            row_dict = {
-                "pokemon_id" : row[0],
-                "pokemon_name" : row[1],
-                "pokemon_group" : row[2],
-                "pokemon_evolution" : row[3],
-                "respawn_count" : row[4],
-                "respawn_seconds_min" : row[5],
-                "respawn_seconds_max" : row[6],
-                "respawn_latitude": row[7],
-                "respawn_longitude": row[8]
-            }
-            table.append(row_dict)
-
-        return render_template('report_pokemon_now.html', table=table)
-
 
     def fullmap(self):
         if request.args.get('latitude') and request.args.get('longitude'):

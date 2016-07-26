@@ -58,14 +58,33 @@
                 padding-right: 3px;
             }
 
-                td.clsBodyRowName {
-                width: 80px;
-                text-align: center;
-                background-color: #AAAAAA;
-                color: #e6e6e6;
-                padding-left: 3px;
-                padding-right: 3px;
-            }
+td.clsBodyRowName {
+    width: 80px;
+    text-align: center;
+    background-color: #AAAAAA;
+    color: #e6e6e6;
+    padding-left: 3px;
+    padding-right: 3px;
+}
+td.clsBodyRowAddress {
+    width: 180px;
+    text-align: left;
+    background-color: #EEEEEE;
+    color: #262626;
+    padding-left: 3px;
+    padding-right: 3px;
+}
+
+td.clsBodyRowStatusStr
+ {
+    width: 180px;
+    text-align: left;
+    background-color: #EEEEEE;
+    color: #262626;
+    padding-left: 3px;
+    padding-right: 3px;
+}
+
 td.clsBodyRowCount {
     width: 60px;
     text-align: center;
@@ -162,6 +181,23 @@ td.clsBodyRowGuardEvolution_3 {
     background-color: #B22222;
     color: #FFFFFF;
 }
+
+td.clsBodyRowEnabled {
+    width: 40px;
+    text-align: center;
+    padding-right: 3px;
+    color: #000000;
+    background-color: #FFFFFF;
+}
+td.clsBodyRowEnabled_1 {
+    background-color: #3CB371;
+    color: #3CB371;
+}
+td.clsBodyRowEnabled_0 {
+    background-color: #B22222;
+    color: #B22222;
+}
+
 a {
     color: #eeeeee;
     text-transform: none;
