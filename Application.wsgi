@@ -7,7 +7,7 @@ path="/home/apache/org-tatarnikov-pokestats/.python"
 sys.path.insert(0, path)
 os.chdir(path)
 
-from Application import app as application
+from Application import application as application
 
 import sys
 sys.stdout = sys.stderr
