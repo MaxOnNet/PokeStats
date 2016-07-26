@@ -9,7 +9,7 @@ class Top(Report, View):
 
     sql_report = """
         SELECT
-            g.index as "gym_id",
+            g.id as "gym_id",
             g.prestige as "gym_prestige",
             g.longitude as "gym_longitude",
             g.latitude as "gym_latitude",
