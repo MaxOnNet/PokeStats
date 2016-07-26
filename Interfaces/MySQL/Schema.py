@@ -131,6 +131,7 @@ class Pokemon(Base):
     group = Column(String(64), nullable=False, doc="")
     color = Column(String(16), nullable=False, doc="")
     zoom = Column(Float(), nullable=False, default=1)
+    evolution = Column(Integer(), nullable=False, default=1)
 
 
 class PokemonSpawnpoint(Base):
