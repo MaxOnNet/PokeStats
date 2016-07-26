@@ -66,6 +66,14 @@
                 padding-left: 3px;
                 padding-right: 3px;
             }
+td.clsBodyRowCount {
+    width: 60px;
+    text-align: center;
+    padding-left: 3px;
+    padding-right: 3px;
+    color: #ffffff;
+    background-color: #555555;
+}
 td.clsBodyRowMap {
     width: 40px;
     text-align: center;

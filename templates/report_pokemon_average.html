@@ -1,0 +1,68 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html>
+    <head>
+        <title>Отчет: Свод по найденным покемонам.</title>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+        <link rel="stylesheet" href="/static/reports/main.css" />
+    </head>
+    <body>
+    <script type="text/javascript">
+    (function (d, w, c) {
+        (w[c] = w[c] || []).push(function() {
+            try {
+                w.yaCounter38654230 = new Ya.Metrika({
+                    id:38654230,
+                    clickmap:true,
+                    trackLinks:true,
+                    accurateTrackBounce:true
+                });
+            } catch(e) { }
+        });
+
+        var n = d.getElementsByTagName("script")[0],
+            s = d.createElement("script"),
+            f = function () { n.parentNode.insertBefore(s, n); };
+        s.type = "text/javascript";
+        s.async = true;
+        s.src = "https://mc.yandex.ru/metrika/watch.js";
+
+        if (w.opera == "[object Opera]") {
+            d.addEventListener("DOMContentLoaded", f, false);
+        } else { f(); }
+    })(document, window, "yandex_metrika_callbacks");
+</script>
+        <table cellpadding="0" cellspacing="1" border="0" class="clsTableParent" >
+            <tr>
+                <td class="clsTableParentBody">
+                    <table cellpadding="0" cellspacing="1" class="clsTable">
+                        <tr class="clsHeader">
+                            <td class="clsHeader" rowspan="1" colspan="2">Pokemon</td>
+                            <td class="clsHeader" rowspan="1" colspan="4">Количество</td>
+                        </tr>
+                        <tr class="clsHeader">
+                            <td class="clsHeader">ID</td>
+                            <td class="clsHeader">Name</td>
+
+                            <td class="clsHeader">Now</td>
+                            <td class="clsHeader">Hour</td>
+                            <td class="clsHeader">Day</td>
+                            <td class="clsHeader">All</td>
+                        </tr>
+                        {% for db_row in table %}
+                            <tr class="clsBodyRow">
+                                <td class="clsBodyRowId">{{ db_row["pokemon_id"] }}</td>
+                                <td class="clsBodyRowGuardName">{{ db_row["pokemon_name"] }}</td>
+
+                                <td class="clsBodyRowCount">{{ db_row["count_now"] }}</td>
+                                <td class="clsBodyRowCount">{{ db_row["count_hour"] }}</td>
+                                <td class="clsBodyRowCount">{{ db_row["count_day"] }}</td>
+                                <td class="clsBodyRowCount">{{ db_row["count_all"] }}</td>
+                            </tr>
+                        {% endfor %}
+                    </table>
+                </td>
+            </tr>
+        </table>
+        <br />По всем вопросам обращаться к Татарникову Виктору [ viktor@tatarnikov.org ].
+    </body>
+</html>

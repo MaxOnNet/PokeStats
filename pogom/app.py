@@ -45,12 +45,70 @@ class Pogom(Flask):
         LIMIT 0,50;
 	"""
 
+    sql_report_pokemon_average = """
+        SELECT
+            p.id,
+            p.name,
+            COALESCE(ps_now.pokemon_count,"") as "count_now",
+            COALESCE(ps_hour.pokemon_count,"") as "count_hour",
+            COALESCE(ps_day.pokemon_count,"") as "count_day",
+            COALESCE(ps_all.pokemon_count,"") as "count_all"
+        FROM
+            db_pokestats.pokemon p
+            LEFT JOIN
+            (
+                SELECT
+                    ps.cd_pokemon as cd_pokemon,
+                    count(ps.id) as pokemon_count
+                FROM
+                    db_pokestats.pokemon_spawnpoint ps
+                WHERE
+                    ps.date_disappear > now()
+                GROUP BY
+                    ps.cd_pokemon) ps_now on (p.id = ps_now.cd_pokemon)
+            LEFT JOIN
+            (
+                SELECT
+                    ps.cd_pokemon as cd_pokemon,
+                    count(ps.id) as pokemon_count
+                FROM
+                    db_pokestats.pokemon_spawnpoint ps
+                WHERE
+                    DATE_ADD(ps.date_disappear, INTERVAL 1 HOUR) > now()
+                GROUP BY
+                    ps.cd_pokemon) ps_hour on (p.id = ps_hour.cd_pokemon)
+            LEFT JOIN
+            (
+                SELECT
+                    ps.cd_pokemon as cd_pokemon,
+                    count(ps.id) as pokemon_count
+                FROM
+                    db_pokestats.pokemon_spawnpoint ps
+                WHERE
+                    DATE_ADD(ps.date_disappear, INTERVAL 1 DAY) > now()
+                GROUP BY
+                    ps.cd_pokemon) ps_day on p.id = (ps_day.cd_pokemon)
+            LEFT JOIN
+            (
+                SELECT
+                    ps.cd_pokemon as cd_pokemon,
+                    count(ps.id) as pokemon_count
+                FROM
+                    db_pokestats.pokemon_spawnpoint ps
+                GROUP BY
+                    ps.cd_pokemon) ps_all on (p.id = ps_all.cd_pokemon)
+        where
+            p.id < 150
+        GROUP BY p.id
+        ORDER BY p.id;
+        """
 
     def __init__(self, import_name, **kwargs):
         super(Pogom, self).__init__(import_name, **kwargs)
         self.json_encoder = CustomJSONEncoder
         self.route("/", methods=['GET'])(self.fullmap)
         self.route("/report/gym/top", methods=['GET'])(self.report_gym_top)
+        self.route("/report/pokemon/average", methods=['GET'])(self.report_pokemon_average)
 
 
         self.route("/raw_data", methods=['GET'])(self.raw_data)
@@ -91,6 +149,27 @@ class Pogom(Flask):
             table.append(row_dict)
 
         return render_template('report_gym_top.html', table=table)
+
+
+    def report_pokemon_average(self):
+        self._database_init()
+        sql = sql_text(self.sql_report_pokemon_average)
+        result = self.session_mysql.execute(sql)
+        table = []
+        self._database_close()
+        for row in result:
+            row_dict = {
+                "pokemon_id" : row[0],
+                "pokemon_name" : row[1],
+                "count_now" : row[2],
+                "count_hour" : row[3],
+                "count_day" : row[4],
+                "count_all" : row[5]
+            }
+            table.append(row_dict)
+
+        return render_template('report_pokemon_average.html', table=table)
+
 
 
     def fullmap(self):
