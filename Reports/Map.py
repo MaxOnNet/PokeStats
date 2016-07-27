@@ -18,6 +18,7 @@ from Interfaces.MySQL.Schema import PokemonSpawnpoint, Gym, Pokestop, Pokemon, S
 
 # Reports
 from Reports.Gyms.Top import Top as ReportGymTop
+from Reports.Gyms.Team import Team as ReportGymTeam
 from Reports.Pokemons.Average import Average as ReportPokemonAverage
 from Reports.Pokemons.Now import Now as ReportPokemonNow
 
@@ -51,6 +52,7 @@ class Map(Flask):
     def _flask_report(self):
         # Gyms
         self.add_url_rule("/report/gym/top", view_func=ReportGymTop.as_view("report/gym/top", config=self.config_xml))
+        self.add_url_rule("/report/gym/team", view_func=ReportGymTeam.as_view("report/gym/team", config=self.config_xml))
 
         # Pokemon
         self.add_url_rule("/report/pokemon/average", view_func=ReportPokemonAverage.as_view("report/pokemon/average", config=self.config_xml))
