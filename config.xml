@@ -8,4 +8,8 @@
     <map>
         <google key="AIzaSyA3OUM5s1t1mX3mqtSMNSToPD_uaTAdP3M" />
     </map>
+    <AI>
+        <account service="ptc" username="mapdefender" password="28rLgWeq9AJMoz" />
+        <location longitude="55.0467" latitude="55.0467" />
+    </AI>
 </configuration>

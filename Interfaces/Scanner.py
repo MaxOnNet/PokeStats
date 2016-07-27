@@ -111,6 +111,7 @@ class Scanner(threading.Thread):
                                 longitude=f2i(position[1]),
                                 since_timestamp_ms=TIMESTAMP,
                                 cell_id=cell_ids)
+            self.api.fort_data()
             return self.api.call()
 
         except Exception as e:

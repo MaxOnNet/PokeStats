@@ -88,7 +88,7 @@ if __name__ == '__main__':
     session_mysql.flush()
 
     for scanner in server.scanners:
-        if scanner.is_enable:
+        if scanner.is_enable == 1:
             threads.append(_thread_start(scanner))
         else:
             scanner.is_active = 0
