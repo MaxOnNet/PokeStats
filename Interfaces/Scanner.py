@@ -8,6 +8,7 @@ import json
 import struct
 import logging
 import requests
+from random import randint
 import time
 import datetime
 import threading
@@ -138,7 +139,7 @@ class Scanner(threading.Thread):
             if login_count < login_count_max:
                 self._status_account_apply(1, "Ошибка авторизации ({0}), ожидаем".format(login_count))
 
-                self._stopevent.wait(self._sleeplogin)
+                self._stopevent.wait(randint(self._sleeplogin, self._sleeplogin*3))
 
                 login_count += 1
             else:
@@ -162,7 +163,7 @@ class Scanner(threading.Thread):
                 break
             else:
                 self._status_scanner_apply(1, "Ожидаем следующего цикла")
-                self._stopevent.wait(self._sleepperiod)
+                self._stopevent.wait(randint(self._sleepperiod, self._sleepperiod*2))
         try:
             self._status_scanner_apply(0, "Сканнер отключен")
 
@@ -180,7 +181,7 @@ class Scanner(threading.Thread):
                 remaining_time = self.api._auth_provider._ticket_expire/1000 - time.time()
 
                 if remaining_time > 60:
-                    self._status_scanner_apply(1, "Skipping login process since already logged")
+                    self._status_scanner_apply(1, "Уже залогинены, прускаем")
                 else:
                     if not self.login():
                         self._status_scanner_apply(1, "Ошибка авторизации, выходим")
@@ -198,7 +199,7 @@ class Scanner(threading.Thread):
         i = 1
         for step_location in self.generate_location_steps(self.scanner.location.position, self.scanner.location.steps):
             if not self._stopevent.isSet():
-                self._status_scanner_apply(1, "Сканирование, шаг {:d} из {:d}.".format(self.scanner.id, i, self.scanner.location.steps**2))
+                self._status_scanner_apply(1, "Сканирование, шаг {0} из {1}.".format(i, self.scanner.location.steps**2))
 
                 response_count = 0
                 response_count_max = 5
@@ -222,6 +223,7 @@ class Scanner(threading.Thread):
                     self._status_scanner_apply(1, "Scan step failed. Response dictionary key error, skip step")
 
                 i += 1
+                self._stopevent.wait(0.1)
             else:
                 self._status_scanner_apply(1, "Сигнал на выход, завершаем работу")
                 return False

@@ -64,7 +64,7 @@ class Top(Report, View):
                 "team_duration": self.format_timedelta(datetime.datetime.now() - row[4]),
                 "pokemon_guard_id": row[8],
                 "pokemon_guard_name": row[9],
-                "gym_await": row[10],
+                "gym_await": self.format_timedelta(datetime.timedelta(seconds=row[10]), "{minutes2}m{seconds2}s"),
                 "gym_name": row[11],
                 "gym_address": row[12],
                 "gym_description": row[13]
