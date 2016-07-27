@@ -15,6 +15,7 @@ from Interfaces.Scanner import Scanner as tScanner
 from Interfaces.MySQL import init_fast as init
 from Interfaces.MySQL.Schema import Scanner as dbScanner
 from Interfaces.MySQL.Schema import ScannerServer as dbScannerServer
+from Interfaces.MySQL.Schema import ScannerStatistic as dbScannerStatistic
 
 
 #from pogom.search import search_loop
@@ -49,11 +50,12 @@ def _thread_check(thread):
     scanner_id = int(thread.name)
     scanner = session_mysql.query(dbScanner).get(scanner_id)
 
-    if scanner.statistic.date_start + datetime.timedelta(minutes=10) < datetime.datetime.now():
+
+# Проверка на только включенные при рабочем сервере
+    if thread.await + datetime.timedelta(minutes=15) < datetime.datetime.now():
         log.info("[{0} - Найден битый сканнер".format(scanner.id))
 
         thread.join()
-        #thread = thread_start(scanner)
 
 
 arguments = _arg_parse()
@@ -82,9 +84,30 @@ if __name__ == '__main__':
         sys.exit()
 
     for scanner in server.scanners:
+        scanner.state = ""
+        scanner.is_active = 0
+        scanner.statistic.date_start = datetime.datetime.now()
+        scanner.statistic.pokemons = 0
+        scanner.statistic.pokestops = 0
+        scanner.statistic.gyms = 0
+        scanner.account.state = ""
+        scanner.account.is_active = 0
+
+    session_mysql.commit()
+    session_mysql.flush()
+
+    for scanner in server.scanners:
         if scanner.is_enable:
             threads.append(_thread_start(scanner))
         else:
+            scanner.is_active = 0
+            scanner.state = "Отключен, пропуск"
+
+            try:
+                session_mysql.commit()
+                session_mysql.flush()
+            finally:
+                pass
             log.info("Cканнер id={0}, отключен, пропускаем".format(scanner.id))
 
 
@@ -92,36 +115,35 @@ if __name__ == '__main__':
     log.info("Проверяем состояния тредов.")
 
     while scanner_alive == True:
-        session_maker = init(config)
-        session_mysql = session_maker()
-
         log.info("Начинаем проверку, в пуле {0} потоков".format(len(threads)))
 
         for thread in threads:
-            if thread.is_alive():
+            if thread.is_alive() and thread.alive:
                 _thread_check(thread)
             else:
+                log.info("Тред мертв, удаляем из пула")
                 threads.remove(thread)
 
         server = session_mysql.query(dbScannerServer).get(arguments.server)
-
+        log.info("После сканирования осталось {0} потоков".format(len(threads)))
         for scanner in server.scanners:
             if scanner.is_enable:
                 scanner_exist = False
 
                 for thread in threads:
-                    if thread.name == scanner.id:
+                    if str(thread.name) == str(scanner.id):
                         scanner_exist = True
 
                 if not scanner_exist:
+                    print "Сканнер не найден, запускаем"
                     threads.append(_thread_start(scanner))
             else:
                 log.info("Cканнер id={0}, отключен, пропускаем".format(scanner.id))
 
-        session_mysql.close()
+
         time.sleep(10)
 
-
+    session_mysql.close()
     log.info("Отработали, закрываемся")
 
 

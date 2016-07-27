@@ -1,5 +1,8 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
+from math import floor
+import datetime
+
 from Reports.Report import Report
 from flask.views import View
 
@@ -44,6 +47,7 @@ class Top(Report, View):
     def dispatch_request(self):
         return self.render()
 
+
     def _prepare_data(self):
         result = self._database_execute(self.sql_report)
 
@@ -57,6 +61,7 @@ class Top(Report, View):
                 "gym_viewed": row[5],
                 "team_id": row[6],
                 "team_name": row[7],
+                "team_duration": self.format_timedelta(datetime.datetime.now() - row[4]),
                 "pokemon_guard_id": row[8],
                 "pokemon_guard_name": row[9],
                 "gym_await": row[10],

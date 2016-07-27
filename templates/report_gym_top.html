@@ -39,7 +39,7 @@
                         <tr class="clsHeader">
                             <td class="clsHeader" rowspan="2">№</td>
                             <td class="clsHeader" rowspan="1" colspan="4">GYM</td>
-                            <td class="clsHeader" rowspan="1" colspan="2">Team</td>
+                            <td class="clsHeader" rowspan="1" colspan="3">Team</td>
                             <td class="clsHeader" rowspan="1" colspan="2">Pokemon Guard</td>
                             <td class="clsHeader" rowspan="1" colspan="3">Update Date</td>
                         </tr>
@@ -51,6 +51,7 @@
 
                             <td class="clsHeader">ID</td>
                             <td class="clsHeader">Name</td>
+                            <td class="clsHeader">Duration</td>
 
                             <td class="clsHeader">ID</td>
                             <td class="clsHeader">Name</td>
@@ -69,6 +70,7 @@
 
                                 <td class="clsBodyRowId">{{ db_row["team_id"] }}</td>
                                 <td class="clsBodyRowTeamName clsBodyRowTeam_{{ db_row["team_id"] }}">{{ db_row["team_name"] }}</td>
+                                <td class="clsBodyRowGymPrestige">{{ db_row["team_duration"] }}</td>
 
                                 <td class="clsBodyRowId">{{ db_row["pokemon_guard_id"] }}</td>
                                 <td class="clsBodyRowGuardName">{{ db_row["pokemon_guard_name"] }}</td>

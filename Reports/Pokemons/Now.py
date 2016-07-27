@@ -1,5 +1,7 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
+import datetime
+
 from Reports.Report import Report
 from flask.views import View
 
@@ -46,8 +48,8 @@ class Now(Report, View):
                 "pokemon_group": row[2],
                 "pokemon_evolution": row[3],
                 "respawn_count": row[4],
-                "respawn_seconds_min": row[5],
-                "respawn_seconds_max": row[6],
+                "respawn_seconds_min": self.format_timedelta(datetime.timedelta(seconds=row[5]), "{minutes2}m{seconds2}s"),
+                "respawn_seconds_max": self.format_timedelta(datetime.timedelta(seconds=row[6]), "{minutes2}m{seconds2}s"),
                 "respawn_latitude": row[7],
                 "respawn_longitude": row[8]
             }

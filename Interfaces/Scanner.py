@@ -48,7 +48,8 @@ class Scanner(threading.Thread):
         self.api = PGoApi()
 
         self.daemon = True
-
+        self.alive = False
+        self.await = datetime.datetime.now()
 
     def _statistic_clean(self):
         self.scanner.statistic.date_start = datetime.datetime.now()
@@ -61,6 +62,8 @@ class Scanner(threading.Thread):
 
     def _statistic_apply(self, report):
         try:
+            self.await = datetime.datetime.now()
+            self.scanner.statistic.date_start = datetime.datetime.now()
             self.scanner.statistic.pokemons += report['pokemons']
             self.scanner.statistic.pokestops += report['pokestops']
             self.scanner.statistic.gyms += report['gyms']
@@ -71,26 +74,32 @@ class Scanner(threading.Thread):
             log.error('Error save stats.')
 
     def _status_scanner_apply(self, active=0, state=""):
-        log.info('[{0}] - {1} - {2}.'.format(self.scanner.id, active, state))
+    #    log.info('[{0}] - {1} - {2}.'.format(self.scanner.id, active, state))
 
         self.scanner.is_active = active
 
         if state != "":
             self.scanner.state = state
 
-        self.session_mysql.commit()
-        self.session_mysql.flush()
+        try:
+            self.session_mysql.commit()
+            self.session_mysql.flush()
+        finally:
+            pass
 
     def _status_account_apply(self, active=0, state=""):
-        log.info('[{0}] - {1} - {2}.'.format(self.scanner.id, active, state))
+      #  log.info('[{0}] - {1} - {2}.'.format(self.scanner.id, active, state))
 
         self.scanner.account.is_active = active
 
         if state != "":
             self.scanner.account.state = state
 
-        self.session_mysql.commit()
-        self.session_mysql.flush()
+        try:
+            self.session_mysql.commit()
+            self.session_mysql.flush()
+        finally:
+            pass
 
     def send_map_request(self, position):
         try:
@@ -141,7 +150,11 @@ class Scanner(threading.Thread):
         return True
 
     def run(self):
+        self.alive = True
         self.scanner.location.fix(self.geolocation)
+
+        self._status_account_apply(1, "Запускаем сканнер")
+        self._status_scanner_apply(1, "Запускаем сканнер")
 
         while not self._stopevent.isSet():
             if not self.run_scanner():
@@ -150,35 +163,37 @@ class Scanner(threading.Thread):
             else:
                 self._status_scanner_apply(1, "Ожидаем следующего цикла")
                 self._stopevent.wait(self._sleepperiod)
+        try:
+            self._status_scanner_apply(0, "Сканнер отключен")
 
-        self._status_scanner_apply(0, "Сканнер отключен")
-
-        self.session_mysql.commit()
-        self.session_mysql.flush()
-        self.session_mysql.close()
-
+            self.session_mysql.commit()
+            self.session_mysql.flush()
+        finally:
+            self.session_mysql.close()
+            self.alive = False
 
     def run_scanner(self):
-        self._status_account_apply(1, "Запускаем сканнер")
-        self._status_scanner_apply(1, "Запускаем сканнер")
-
         self._statistic_clean()
 
-        if self.api._auth_provider and self.api._auth_provider._ticket_expire:
-            remaining_time = self.api._auth_provider._ticket_expire/1000 - time.time()
+        try:
+            if self.api._auth_provider and self.api._auth_provider._ticket_expire:
+                remaining_time = self.api._auth_provider._ticket_expire/1000 - time.time()
 
-            if remaining_time > 60:
-                self._status_scanner_apply(1, "Skipping login process since already logged")
+                if remaining_time > 60:
+                    self._status_scanner_apply(1, "Skipping login process since already logged")
+                else:
+                    if not self.login():
+                        self._status_scanner_apply(1, "Ошибка авторизации, выходим")
+
+                        return False
             else:
                 if not self.login():
                     self._status_scanner_apply(1, "Ошибка авторизации, выходим")
 
                     return False
-        else:
-            if not self.login():
-                self._status_scanner_apply(1, "Ошибка авторизации, выходим")
-
-                return False
+        except:
+            self._status_scanner_apply(1, "Ошибка авторизации, выходим")
+            return False
 
         i = 1
         for step_location in self.generate_location_steps(self.scanner.location.position, self.scanner.location.steps):
@@ -206,8 +221,6 @@ class Scanner(threading.Thread):
                 except KeyError:
                     self._status_scanner_apply(1, "Scan step failed. Response dictionary key error, skip step")
 
-                self._status_scanner_apply(1, "Completed {:5.2f}% of scan.".format(self.scanner.id, (float(i) / 10**2)*100))
-
                 i += 1
             else:
                 self._status_scanner_apply(1, "Сигнал на выход, завершаем работу")
@@ -219,12 +232,13 @@ class Scanner(threading.Thread):
     def join(self, timeout=None):
         """ Stop the thread and wait for it to end. """
         self._stopevent.set()
-        self._status_scanner_apply(1, "Получен сигнал на выход")
 
         threading.Thread.join(self, timeout)
 
-        self.session_mysql.commit()
-        self.session_mysql.flush()
-        self.session_mysql.close()
-
+        try:
+            self._status_scanner_apply(1, "Был получен сигнал на выход")
+            self.session_mysql.commit()
+            self.session_mysql.flush()
+        finally:
+            self.session_mysql.close()
 
