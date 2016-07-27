@@ -228,7 +228,7 @@ def parse_map(map_dict, session):
     count_pokemons = 0
     count_gyms = 0
     count_pokestops = 0
-    print map_dict['responses']
+    
     cells = map_dict['responses']['GET_MAP_OBJECTS']['map_cells']
     for cell in cells:
         for p in cell.get('wild_pokemons', []):
