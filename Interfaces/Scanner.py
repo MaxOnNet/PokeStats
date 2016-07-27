@@ -1,29 +1,26 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-import os
-import re
-import sys
-import json
-import struct
-import logging
-import requests
-from random import randint
-import time
 import datetime
+import logging
+import random
 import threading
-import thread
+import time
+from random import randint
 
-from pogom.pgoapi import PGoApi
-from pogom.pgoapi.utilities import f2i, h2f, get_cellid, encode, get_pos_by_name
+from google.protobuf.internal import encoder
+from s2sphere import CellId, LatLng
 
 from Interfaces.Config import Config
 from Interfaces.Geolocation import Geolocation
 from Interfaces.MySQL import init
-
 from Interfaces.MySQL.Schema import Scanner as dbScanner
 from Interfaces.MySQL.Schema import parse_map
 
+from Interfaces.pgoapi.utilities import f2i
+from Interfaces.pgoapi import PGoApi
+
+from AI.Profile import Profile
 
 log = logging.getLogger(__name__)
 
@@ -75,7 +72,7 @@ class Scanner(threading.Thread):
             log.error('Error save stats.')
 
     def _status_scanner_apply(self, active=0, state=""):
-    #    log.info('[{0}] - {1} - {2}.'.format(self.scanner.id, active, state))
+        log.info('[{0}] - {1} - {2}.'.format(self.scanner.id, active, state))
 
         self.scanner.is_active = active
 
@@ -89,7 +86,7 @@ class Scanner(threading.Thread):
             pass
 
     def _status_account_apply(self, active=0, state=""):
-      #  log.info('[{0}] - {1} - {2}.'.format(self.scanner.id, active, state))
+        log.info('[{0}] - {1} - {2}.'.format(self.scanner.id, active, state))
 
         self.scanner.account.is_active = active
 
@@ -102,30 +99,48 @@ class Scanner(threading.Thread):
         finally:
             pass
 
+
     def send_map_request(self, position):
         try:
-            self.api.set_position(*position)
+            self.api.set_position(position[0], position[1], 0)
+
+            cell_ids = self.get_cell_ids(position[0], position[1])
+            timestamps = [0,] * len(cell_ids)
+
             self.api.get_map_objects(latitude=f2i(position[0]),
                                 longitude=f2i(position[1]),
                                 since_timestamp_ms=TIMESTAMP,
-                                cell_id=get_cellid(position[0], position[1]))
+                                cell_id=cell_ids)
             return self.api.call()
+
         except Exception as e:
             log.warn("Uncaught exception when downloading map "+ e)
             return False
 
 
-    def generate_location_steps(self, initial_location, num_steps):
-        pos, x, y, dx, dy = 1, 0, 0, 0, -1
+    def generate_spiral(self, latitude, longitude, step_size, step_limit):
+        coords = [{'lat': latitude, 'lng': longitude}]
+        steps,x,y,d,m = 1, 0, 0, 1, 1
+        rlow = 0.0
+        rhigh = 0.0005
 
-        while -num_steps / 2 < x <= num_steps / 2 and -num_steps / 2 < y <= num_steps / 2:
-            yield (x * 0.0025 + initial_location[0], y * 0.0025 + initial_location[1], 0)
+        while steps < step_limit:
+            while 2 * x * d < m and steps < step_limit:
+                x = x + d
+                steps += 1
+                lat = x * step_size + latitude + random.uniform(rlow, rhigh)
+                lng = y * step_size + longitude + random.uniform(rlow, rhigh)
+                coords.append({'lat': lat, 'lng': lng})
+            while 2 * y * d < m and steps < step_limit:
+                y = y + d
+                steps += 1
+                lat = x * step_size + latitude + random.uniform(rlow, rhigh)
+                lng = y * step_size + longitude + random.uniform(rlow, rhigh)
+                coords.append({'lat': lat, 'lng': lng})
 
-            if x == y or (x < 0 and x == -y) or (x > 0 and x == 1 - y):
-                dx, dy = -dy, dx
-
-            x, y = x + dx, y + dy
-
+            d = -1 * d
+            m = m + 1
+        return coords
 
     def login(self):
         login_count = 0
@@ -148,6 +163,7 @@ class Scanner(threading.Thread):
                 return False
 
         self._status_account_apply(1, "Успешная авторизация")
+
         return True
 
     def run(self):
@@ -192,19 +208,27 @@ class Scanner(threading.Thread):
                     self._status_scanner_apply(1, "Ошибка авторизации, выходим")
 
                     return False
-        except:
+        except Exception as e:
             self._status_scanner_apply(1, "Ошибка авторизации, выходим")
+            log.error(str(e))
             return False
 
-        i = 1
-        for step_location in self.generate_location_steps(self.scanner.location.position, self.scanner.location.steps):
+        #profile = Profile(self.api)
+
+        step_size = 0.00111
+        step_index = 1
+        step_max = self.scanner.location.steps
+
+        for step_location in self.generate_spiral(self.scanner.location.position[0], self.scanner.location.position[1], step_size,step_max):
+            step_position = (step_location['lat'], step_location['lng'])
+
             if not self._stopevent.isSet():
-                self._status_scanner_apply(1, "Сканирование, шаг {0} из {1}.".format(i, self.scanner.location.steps**2))
+                self._status_scanner_apply(1, "Сканирование, шаг {0} из {1}.".format(step_index, step_max))
 
                 response_count = 0
                 response_count_max = 5
 
-                response_dict = self.send_map_request(step_location)
+                response_dict = self.send_map_request(step_position)
                 while not response_dict and not self._stopevent.isSet():
                     if response_count < response_count_max:
                         self._status_scanner_apply(1, "Загрузка карты не удалась ({0}), ожидаем.".format(response_count))
@@ -219,11 +243,11 @@ class Scanner(threading.Thread):
 
                 try:
                     self._statistic_apply(parse_map(response_dict, self.session_mysql))
-                except KeyError:
+                except Exception as e:
                     self._status_scanner_apply(1, "Scan step failed. Response dictionary key error, skip step")
+                    log.error(str(e))
 
-                i += 1
-                self._stopevent.wait(0.1)
+                step_index += 1
             else:
                 self._status_scanner_apply(1, "Сигнал на выход, завершаем работу")
                 return False
@@ -244,3 +268,26 @@ class Scanner(threading.Thread):
         finally:
             self.session_mysql.close()
 
+
+
+    def get_cell_ids(self, lat, long, radius = 10):
+        origin = CellId.from_lat_lng(LatLng.from_degrees(lat, long)).parent(15)
+        walk = [origin.id()]
+        right = origin.next()
+        left = origin.prev()
+
+        # Search around provided radius
+        for i in range(radius):
+            walk.append(right.id())
+            walk.append(left.id())
+            right = right.next()
+            left = left.prev()
+
+        # Return everything
+        return ''.join(map(self.encode, sorted(walk)))
+
+
+    def encode(self, cellid):
+        output = []
+        encoder._VarintEncoder()(output.append, cellid)
+        return ''.join(output)

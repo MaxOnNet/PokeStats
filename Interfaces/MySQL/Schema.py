@@ -3,18 +3,16 @@
 
 import logging
 
-from sqlalchemy import Column, Integer, String, DateTime, Boolean, ColumnDefault, Float, BigInteger
+from sqlalchemy import Column, Integer, String, DateTime, Boolean, Float
 from sqlalchemy.schema import ForeignKey
 from sqlalchemy.sql import func, select
 from sqlalchemy.orm import relationship
 from sqlalchemy.orm import object_session
 
-from sqlalchemy_utils import URLType, CountryType, PhoneNumberType, UUIDType, IPAddressType
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.ext.hybrid import hybrid_property, hybrid_method
 
 from datetime import datetime, timedelta
-from base64 import b64encode
 
 log = logging.getLogger(__name__)
 Base = declarative_base()
@@ -230,7 +228,7 @@ def parse_map(map_dict, session):
     count_pokemons = 0
     count_gyms = 0
     count_pokestops = 0
-
+    print map_dict['responses']
     cells = map_dict['responses']['GET_MAP_OBJECTS']['map_cells']
     for cell in cells:
         for p in cell.get('wild_pokemons', []):

@@ -7,19 +7,11 @@ import time
 import argparse
 import datetime
 
-from threading import Thread
-
 from Interfaces.Config import Config
-from Interfaces.Geolocation import Geolocation
 from Interfaces.Scanner import Scanner as tScanner
 from Interfaces.MySQL import init_fast as init
 from Interfaces.MySQL.Schema import Scanner as dbScanner
 from Interfaces.MySQL.Schema import ScannerServer as dbScannerServer
-from Interfaces.MySQL.Schema import ScannerStatistic as dbScannerStatistic
-
-
-#from pogom.search import search_loop
-#from pogom.pgoapi.utilities import get_pos_by_name
 
 log = logging.getLogger(__name__)
 
@@ -69,11 +61,10 @@ scanner_alive = True
 if __name__ == '__main__':
     logging.basicConfig(level=logging.INFO, format='%(asctime)s [%(module)11s] [%(levelname)7s] %(message)s')
 
-    logging.getLogger("peewee").setLevel(logging.INFO)
+    logging.getLogger("peewee").setLevel(logging.WARNING)
     logging.getLogger("requests").setLevel(logging.WARNING)
-    logging.getLogger("pogom.pgoapi.pgoapi").setLevel(logging.WARNING)
-    logging.getLogger("pogom.pgoapi.rpc_api").setLevel(logging.INFO)
-
+    logging.getLogger("Interfaces.pgoapi.pgoapi").setLevel(logging.WARNING)
+    logging.getLogger("Interfaces.pgoapi.rpc_api").setLevel(logging.WARNING)
 
     threads = []
 
