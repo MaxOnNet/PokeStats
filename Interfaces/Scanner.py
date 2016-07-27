@@ -111,7 +111,7 @@ class Scanner(threading.Thread):
                                 longitude=f2i(position[1]),
                                 since_timestamp_ms=TIMESTAMP,
                                 cell_id=cell_ids)
-            self.api.fort_data()
+
             return self.api.call()
 
         except Exception as e:
@@ -217,8 +217,12 @@ class Scanner(threading.Thread):
         #profile = Profile(self.api)
 
         step_size = 0.00111
-        step_index = 1
         step_max = self.scanner.location.steps
+        step_index = 1
+
+        if self.scanner.location.is_fast:
+            log.info("User FAST mode")
+            step_size = 0.005
 
         for step_location in self.generate_spiral(self.scanner.location.position[0], self.scanner.location.position[1], step_size,step_max):
             step_position = (step_location['lat'], step_location['lng'])

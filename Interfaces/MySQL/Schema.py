@@ -58,6 +58,7 @@ class ScannerLocation(Base):
     longitude = Column(Float(), default=0)
 
     steps = Column(Integer(), default=10)
+    is_fast = Column(Boolean(), default=False)
 
     def fix(self, geolocation):
         if self.latitude == 0 or self.longitude == 0:
