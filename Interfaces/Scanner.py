@@ -72,7 +72,7 @@ class Scanner(threading.Thread):
             log.error('Error save stats.')
 
     def _status_scanner_apply(self, active=0, state=""):
-        log.info('[{0}] - {1} - {2}.'.format(self.scanner.id, active, state))
+        #log.info('[{0}] - {1} - {2}.'.format(self.scanner.id, active, state))
 
         self.scanner.is_active = active
 
@@ -86,7 +86,7 @@ class Scanner(threading.Thread):
             pass
 
     def _status_account_apply(self, active=0, state=""):
-        log.info('[{0}] - {1} - {2}.'.format(self.scanner.id, active, state))
+        #log.info('[{0}] - {1} - {2}.'.format(self.scanner.id, active, state))
 
         self.scanner.account.is_active = active
 
