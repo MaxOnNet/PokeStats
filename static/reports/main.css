@@ -188,6 +188,48 @@ td.clsBodyRowGuardEvolution_3 {
     color: #FFFFFF;
 }
 
+td.clsBodyRowGuardRarity {
+    width: 60px;
+    text-align: center;
+    padding-right: 3px;
+    color: #000000;
+    background-color: #FFFFFF;
+}
+td.clsBodyRowGuardRarity_0 {
+    background-color: #80b1dc;
+    color: #FFFFFF;
+}
+td.clsBodyRowGuardRarity_1 {
+    background-color: #355876;
+    color: #FFFFFF;
+}
+td.clsBodyRowGuardRarity_2 {
+    background-color: #b3e164;
+    color: #000000;
+}
+td.clsBodyRowGuardRarity_3 {
+    background-color: #668631;
+    color: #FFFFFF;
+}
+td.clsBodyRowGuardRarity_4 {
+    background-color: #f8df69;
+    color: #FFFFFF;
+}
+td.clsBodyRowGuardRarity_5 {
+    background-color: #eaa847;
+    color: #FFFFFF;
+}
+td.clsBodyRowGuardRarity_6 {
+    background-color: #df5f5e;
+    color: #FFFFFF;
+}
+td.clsBodyRowGuardRarity_7 {
+    background-color: #8a46b5;
+    color: #FFFFFF;
+}
+
+
+
 td.clsBodyRowEnabled {
     width: 20px;
     text-align: center;

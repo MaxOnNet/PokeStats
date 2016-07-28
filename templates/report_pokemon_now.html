@@ -16,7 +16,7 @@
                     <tr class="clsHeader">
                         <td class="clsHeader">ID</td>
                         <td class="clsHeader">Name</td>
-                        <td class="clsHeader">Group</td>
+                        <td class="clsHeader">Rarity</td>
                         <td class="clsHeader">Evolution</td>
 
                         <td class="clsHeader">Count</td>
@@ -28,7 +28,7 @@
                         <tr class="clsBodyRow">
                             <td class="clsBodyRowId">{{ db_row["pokemon_id"] }}</td>
                             <td class="clsBodyRowGuardName">{{ db_row["pokemon_name"] }}</td>
-                            <td class="clsBodyRowGuardGroup">{{ db_row["pokemon_group"] }}</td>
+                            <td class="clsBodyRowGuardRarity clsBodyRowGuardRarity_{{ db_row['pokemon_rarity'] }}">{{ db_row["pokemon_rarity_name"] }}</td>
                             <td class="clsBodyRowGuardEvolution clsBodyRowGuardEvolution_{{ db_row['pokemon_evolution'] }}">{{ db_row["pokemon_evolution"] }}</td>
 
                             <td class="clsBodyRowCount">{{ db_row["respawn_count"] }}</td>

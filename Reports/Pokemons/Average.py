@@ -1,7 +1,10 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
+from Interfaces.Pokedex import Pokedex
 from Reports.Report import Report
 from flask.views import View
+
+pokedex = Pokedex()
 
 
 class Average(Report, View):
@@ -85,7 +88,10 @@ class Average(Report, View):
                 "count_now": row[4],
                 "count_hour": row[5],
                 "count_day": row[6],
-                "count_all": row[7]
+                "count_all": row[7],
+                "pokemon_rarity": pokedex.get_rarity_by_id(row[0]),
+                "pokemon_rarity_name": pokedex.get_rarity_name_by_id(pokedex.get_rarity_by_id(row[0])),
+                "pokemon_evolve": pokedex.get_evolve_by_id(row[0])
             }
             self.data.append(row_dict)
 
