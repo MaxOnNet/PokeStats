@@ -38,19 +38,25 @@
             }
 
             tr.clsHeader td {
-                width: 60px;
+
                 color: #e6e6e6;
                 background-color: #999999;
                 text-align: center;
                 font-weight: bold;
             }
-
+            tr.clsHeaderE td {
+                width: 20px;
+                color: #e6e6e6;
+                background-color: #999999;
+                text-align: center;
+                font-weight: bold;
+            }
             tr.clsBodyRow {
                 color: #000000;
                 background-color: #FFFFFF;
             }
             td.clsBodyRowId {
-                width: 20px;
+                width: 30px;
                 text-align: center;
                 background-color: #666666;
                 color: #e6e6e6;
@@ -110,7 +116,7 @@ td.clsBodyRowDate {
     padding-right: 3px;
 }
 td.clsBodyRowAWait {
-    width: 30px;
+    width: 60px;
     text-align: center;
     background-color: #666666;
     color: #e6e6e6;
@@ -183,11 +189,14 @@ td.clsBodyRowGuardEvolution_3 {
 }
 
 td.clsBodyRowEnabled {
-    width: 40px;
+    width: 20px;
     text-align: center;
-    padding-right: 3px;
     color: #000000;
     background-color: #FFFFFF;
+}
+td.clsBodyRowEnabled_2 {
+    background-color: #9932CC;
+    color: #9932CC;
 }
 td.clsBodyRowEnabled_1 {
     background-color: #3CB371;

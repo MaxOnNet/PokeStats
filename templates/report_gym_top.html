@@ -1,90 +1,60 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
-<html>
-    <head>
-        <title>Отчет: Топ арен.</title>
-        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-        <link rel="stylesheet" href="/static/reports/main.css" />
-        <meta http-equiv="refresh" content="10">
-    </head>
-    <body>
-    <script type="text/javascript">
-    (function (d, w, c) {
-        (w[c] = w[c] || []).push(function() {
-            try {
-                w.yaCounter38654230 = new Ya.Metrika({
-                    id:38654230,
-                    clickmap:true,
-                    trackLinks:true,
-                    accurateTrackBounce:true
-                });
-            } catch(e) { }
-        });
+{% extends "report.html" %}
+{% block title %}Report: Gym TOP 50{% endblock %}
+{% block head %}
+    {{ super() }}
+{% endblock %}
 
-        var n = d.getElementsByTagName("script")[0],
-            s = d.createElement("script"),
-            f = function () { n.parentNode.insertBefore(s, n); };
-        s.type = "text/javascript";
-        s.async = true;
-        s.src = "https://mc.yandex.ru/metrika/watch.js";
+{% block content %}
+    <table cellpadding="0" cellspacing="1" border="0" class="clsTableParent" >
+        <tr>
+            <td class="clsTableParentBody">
+                <table cellpadding="0" cellspacing="1" class="clsTable">
+                    <tr class="clsHeader">
+                        <td class="clsHeader" rowspan="2">№</td>
+                        <td class="clsHeader" rowspan="1" colspan="4">GYM</td>
+                        <td class="clsHeader" rowspan="1" colspan="3">Team</td>
+                        <td class="clsHeader" rowspan="1" colspan="2">Pokemon Guard</td>
+                        <td class="clsHeader" rowspan="1" colspan="3">Update Date</td>
+                    </tr>
+                    <tr class="clsHeader">
+                        <td class="clsHeader">Name</td>
+                        <td class="clsHeader">Address</td>
+                        <td class="clsHeader">Prestige</td>
+                        <td class="clsHeader">Map</td>
 
-        if (w.opera == "[object Opera]") {
-            d.addEventListener("DOMContentLoaded", f, false);
-        } else { f(); }
-    })(document, window, "yandex_metrika_callbacks");
-</script>
-        <table cellpadding="0" cellspacing="1" border="0" class="clsTableParent" >
-            <tr>
-                <td class="clsTableParentBody">
-                    <table cellpadding="0" cellspacing="1" class="clsTable">
-                        <tr class="clsHeader">
-                            <td class="clsHeader" rowspan="2">№</td>
-                            <td class="clsHeader" rowspan="1" colspan="4">GYM</td>
-                            <td class="clsHeader" rowspan="1" colspan="3">Team</td>
-                            <td class="clsHeader" rowspan="1" colspan="2">Pokemon Guard</td>
-                            <td class="clsHeader" rowspan="1" colspan="3">Update Date</td>
+                        <td class="clsHeader">ID</td>
+                        <td class="clsHeader">Name</td>
+                        <td class="clsHeader">Duration</td>
+
+                        <td class="clsHeader">ID</td>
+                        <td class="clsHeader">Name</td>
+
+                        <td class="clsHeader">Modified</td>
+                        <td class="clsHeader">Vieved</td>
+                        <td class="clsHeader">AWait</td>
+                    </tr>
+                    {% for db_row in table %}
+                        <tr class="clsBodyRow">
+                            <td class="clsBodyRowId">{{ loop.index }}</td>
+                            <td class="clsBodyRowAddress">{{ db_row["gym_name"] }}</td>
+                            <td class="clsBodyRowAddress">{{ db_row["gym_address"] }}</td>
+                            <td class="clsBodyRowGymPrestige">{{ db_row["gym_prestige"] }}</td>
+                            <td class="clsBodyRowMap"><a href="/?longitude={{ db_row['gym_longitude'] }}&latitude={{ db_row['gym_latitude'] }}" class="link">map</a></td>
+
+                            <td class="clsBodyRowId">{{ db_row["team_id"] }}</td>
+                            <td class="clsBodyRowTeamName clsBodyRowTeam_{{ db_row["team_id"] }}">{{ db_row["team_name"] }}</td>
+                            <td class="clsBodyRowGymPrestige">{{ db_row["team_duration"] }}</td>
+
+                            <td class="clsBodyRowId">{{ db_row["pokemon_guard_id"] }}</td>
+                            <td class="clsBodyRowGuardName">{{ db_row["pokemon_guard_name"] }}</td>
+
+                            <td class="clsBodyRowDate">{{ db_row["gym_modified"] }}</td>
+                            <td class="clsBodyRowDate">{{ db_row["gym_viewed"] }}</td>
+                            <td class="clsBodyRowAWait">{{ db_row["gym_await"] }}</td>
                         </tr>
-                        <tr class="clsHeader">
-                            <td class="clsHeader">Name</td>
-                            <td class="clsHeader">Address</td>
-                            <td class="clsHeader">Prestige</td>
-                            <td class="clsHeader">Map</td>
-
-                            <td class="clsHeader">ID</td>
-                            <td class="clsHeader">Name</td>
-                            <td class="clsHeader">Duration</td>
-
-                            <td class="clsHeader">ID</td>
-                            <td class="clsHeader">Name</td>
-
-                            <td class="clsHeader">Modified</td>
-                            <td class="clsHeader">Vieved</td>
-                            <td class="clsHeader">AWait</td>
-                        </tr>
-                        {% for db_row in table %}
-                            <tr class="clsBodyRow">
-                                <td class="clsBodyRowId">{{ loop.index }}</td>
-                                <td class="clsBodyRowAddress">{{ db_row["gym_name"] }}</td>
-                                <td class="clsBodyRowAddress">{{ db_row["gym_address"] }}</td>
-                                <td class="clsBodyRowGymPrestige">{{ db_row["gym_prestige"] }}</td>
-                                <td class="clsBodyRowMap"><a href="/?longitude={{ db_row['gym_longitude'] }}&latitude={{ db_row['gym_latitude'] }}" class="link">map</a></td>
-
-                                <td class="clsBodyRowId">{{ db_row["team_id"] }}</td>
-                                <td class="clsBodyRowTeamName clsBodyRowTeam_{{ db_row["team_id"] }}">{{ db_row["team_name"] }}</td>
-                                <td class="clsBodyRowGymPrestige">{{ db_row["team_duration"] }}</td>
-
-                                <td class="clsBodyRowId">{{ db_row["pokemon_guard_id"] }}</td>
-                                <td class="clsBodyRowGuardName">{{ db_row["pokemon_guard_name"] }}</td>
-
-                                <td class="clsBodyRowDate">{{ db_row["gym_modified"] }}</td>
-                                <td class="clsBodyRowDate">{{ db_row["gym_viewed"] }}</td>
-                                <td class="clsBodyRowAWait">{{ db_row["gym_await"] }}</td>
-                            </tr>
-                        {% endfor %}
-                    </table>
-                </td>
-            </tr>
-        </table>
-        <br />Отчет составлен за {{ duration }} секунд.
-        <br />По всем вопросам обращаться к Татарникову Виктору [ viktor@tatarnikov.org ].
-    </body>
-</html>
+                    {% endfor %}
+                </table>
+            </td>
+        </tr>
+    </table>
+{% endblock %}
