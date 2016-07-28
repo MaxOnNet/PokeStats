@@ -262,7 +262,6 @@ class Scanner(threading.Thread):
 
 
     def fort_scanner(self, map_dict):
-
         cells = map_dict['responses']['GET_MAP_OBJECTS']['map_cells']
         for cell in cells:
             for f in cell.get('forts', []):
@@ -271,23 +270,28 @@ class Scanner(threading.Thread):
                 fort_name = ""
                 fort_image = ""
                 fort_description = ""
+
                 try:
                     self.api.fort_details(fort_id=f['id'],
                                   latitude=f['latitude'],
                                   longitude=f['longitude'])
 
-                    #if fort_type != 1:
-                    #    self.api.gym_state(fort_id=f['id'],
-                    #              latitude=f['latitude'],
-                    #              longitude=f['longitude'])
-
                     response_dict = self.api.call()
-                    #print response_dict
+
                     parse_fort(fort_id, fort_type, response_dict, self.session_mysql)
                 except Exception as e:
-                    print e
+                    pass
+                    #print e
+                #try:
+                #self.api.gym_state(fort_id=f['id'],
+                #              latitude=f['latitude'],
+                #              longitude=f['longitude'])
 
-
+                #response_dict = self.api.call()
+                #print response_dict
+                    #parse_fort(fort_id, fort_type, response_dict, self.session_mysql)
+               #except Exception as e:
+               #     print e
 
 
     def join(self, timeout=None):
