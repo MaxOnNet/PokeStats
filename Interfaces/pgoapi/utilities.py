@@ -26,31 +26,17 @@ Author: tjado <https://github.com/tejado>
 import struct
 import re
 
-from importlib import import_module
-from s2sphere import CellId, LatLng
-from google.protobuf.internal import encoder
-from geopy.geocoders import GoogleV3
-
-
 def f2i(float):
-    return struct.unpack('<Q', struct.pack('<d', float))[0]
+  return struct.unpack('<Q', struct.pack('<d', float))[0]
 
 def f2h(float):
-    return hex(struct.unpack('<Q', struct.pack('<d', float))[0])
+  return hex(struct.unpack('<Q', struct.pack('<d', float))[0])
 
 def h2f(hex):
-    return struct.unpack('<d', struct.pack('<Q', int(hex,16)))[0]
+  return struct.unpack('<d', struct.pack('<Q', int(hex,16)))[0]
   
 def to_camel_case(value):
-    def camelcase():
-        while True:
-            yield str.capitalize
+  return ''.join(word.capitalize() if word else '_' for word in value.split('_'))
 
-    c = camelcase()
-    return "".join(c.next()(x) if x else '_' for x in value.split("_"))
 
-def get_class(cls):
-    module_, class_ = cls.rsplit('.', 1)
-    class_ = getattr(import_module(module_), class_)
-    return class_
-
+            

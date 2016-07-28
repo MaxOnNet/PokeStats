@@ -57,7 +57,6 @@ session_maker = init(config)
 session_mysql = session_maker()
 
 scanner_alive = True
-
 if __name__ == '__main__':
     logging.basicConfig(level=logging.INFO, format='%(asctime)s [%(module)11s] [%(levelname)7s] %(message)s')
 

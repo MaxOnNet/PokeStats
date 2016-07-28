@@ -23,20 +23,25 @@ OR OTHER DEALINGS IN THE SOFTWARE.
 Author: tjado <https://github.com/tejado>
 """
 
+from __future__ import absolute_import
+
 import re
 import logging
 import requests
 import subprocess
 
-from exceptions import NotLoggedInException, ServerBusyOrOfflineException
+from google.protobuf import message
 
-from protobuf_to_dict import protobuf_to_dict
-from utilities import f2i, h2f, to_camel_case, get_class
+from importlib import import_module
 
-import protos.RpcEnum_pb2 as RpcEnum
-import protos.RpcEnvelope_pb2 as RpcEnvelope
-import protos.RpcSub_pb2 as RpcSub
+from Interfaces.pgoapi.protobuf_to_dict import protobuf_to_dict
+from Interfaces.pgoapi.exceptions import NotLoggedInException, ServerBusyOrOfflineException
+from Interfaces.pgoapi.utilities import f2i, h2f, to_camel_case
 
+from . import protos
+from Interfaces.pgoapi.protos.POGOProtos.Networking.Envelopes_pb2 import RequestEnvelope
+from Interfaces.pgoapi.protos.POGOProtos.Networking.Envelopes_pb2 import ResponseEnvelope
+from Interfaces.pgoapi.protos.POGOProtos.Networking.Requests_pb2 import RequestType
 
 class RpcApi:
     
@@ -54,21 +59,26 @@ class RpcApi:
         return 8145806132888207460
 
     def decode_raw(self, raw):
-        process = subprocess.Popen(['protoc', '--decode_raw'], stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         output = error = None
         try:
+            process = subprocess.Popen(['protoc', '--decode_raw'], stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
             output, error = process.communicate(raw)
         except:
-            pass
-        
+            output = "Couldn't find protoc in your environment OR other issue..."
+            
         return output
+    
+    def get_class(self, cls):
+        module_, class_ = cls.rsplit('.', 1)
+        class_ = getattr(import_module(module_), class_)
+        return class_
         
     def _make_rpc(self, endpoint, request_proto_plain):
         self.log.debug('Execution of RPC')
         
         request_proto_serialized = request_proto_plain.SerializeToString()
         try:
-            http_response = self._session.post(endpoint, data=request_proto_serialized, timeout=20)
+            http_response = self._session.post(endpoint, data=request_proto_serialized)
         except requests.exceptions.ConnectionError as e:
             raise ServerBusyOrOfflineException
         
@@ -82,27 +92,32 @@ class RpcApi:
         request_proto = self._build_main_request(subrequests, player_position)
         response = self._make_rpc(endpoint, request_proto)
         
-        response_dict = self._parse_main_request(response, subrequests)
-        
+        response_dict = self._parse_main_response(response, subrequests)
+
+        if isinstance(response_dict, dict) and 'status_code' in response_dict:
+            sc = response_dict['status_code']
+            if sc == 102:
+                raise NotLoggedInException()
+
         return response_dict
     
     def _build_main_request(self, subrequests, player_position = None):
         self.log.debug('Generating main RPC request...')
         
-        request = RpcEnvelope.Request()
-        request.direction = RpcEnum.REQUEST
-        request.rpc_id = self.get_rpc_id()
+        request = RequestEnvelope()
+        request.status_code = 2
+        request.request_id = self.get_rpc_id()
         
         if player_position is not None:
             request.latitude, request.longitude, request.altitude = player_position
         
-        #ticket = self._auth_provider.get_ticket()
-        #if ticket:
-        #    request.auth_ticket.expire_timestamp_ms, request.auth_ticket.start, request.auth_ticket.end = ticket
-       # else:
-            request.auth.provider = self._auth_provider.get_name()
-            request.auth.token.contents = self._auth_provider.get_token()
-            request.auth.token.unknown13 = 59
+        # ticket = self._auth_provider.get_ticket()
+        # if ticket:
+            # request.auth_ticket.expire_timestamp_ms, request.auth_ticket.start, request.auth_ticket.end = ticket
+        # else:
+        request.auth_info.provider = self._auth_provider.get_name()
+        request.auth_info.token.contents = self._auth_provider.get_token()
+        request.auth_info.token.unknown2 = 59
         
         # unknown stuff
         request.unknown12 = 989
@@ -119,59 +134,75 @@ class RpcApi:
         for entry in subrequest_list:
             if isinstance(entry, dict):
             
-                entry_id = entry.items()[0][0]
+                entry_id = list(entry.items())[0][0]
                 entry_content = entry[entry_id]
 
-                entry_name = RpcEnum.RequestMethod.Name(entry_id)
+                entry_name = RequestType.Name(entry_id)
                 
-                proto_name = to_camel_case(entry_name.lower()) + 'Request'
-                proto_classname = 'Interfaces.pgoapi.protos.RpcSub_pb2.' + proto_name
-                subrequest_extension = get_class(proto_classname)()
+                proto_name = to_camel_case(entry_name.lower()) + 'Message'
+                proto_classname = 'Interfaces.pgoapi.protos.POGOProtos.Networking.Requests.Messages_pb2.' + proto_name
+                subrequest_extension = self.get_class(proto_classname)()
+                
+                self.log.debug("Subrequest class: %s", proto_classname)
 
                 for (key, value) in entry_content.items():
-                    # if isinstance(value, list):
-                        # for i in value:
-                            # r = getattr(subrequest_extension, key)
-                            # setattr(r, key, value)
-                    # else:
-                    try:
-                        setattr(subrequest_extension, key, value)
-                    except Exception as e:
-                       self.log.info('Argument %s with value %s unknown inside %s', key, value, proto_name)
+                    if isinstance(value, list):
+                        self.log.debug("Found list: %s - trying as repeated", key)
+                        for i in value:
+                            try:
+                                self.log.debug("%s -> %s", key, i)
+                                r = getattr(subrequest_extension, key)
+                                r.append(i)
+                            except Exception as e:
+                                self.log.warning('Argument %s with value %s unknown inside %s (Exception: %s)', key, i, proto_name, str(e))
+                    else:
+                        try:
+                            setattr(subrequest_extension, key, value)
+                        except Exception as e:
+                            try:
+                                self.log.debug("%s -> %s", key, value)
+                                r = getattr(subrequest_extension, key)
+                                r.append(value)
+                            except Exception as e:
+                                self.log.warning('Argument %s with value %s unknown inside %s (Exception: %s)', key, value, proto_name, str(e))
 
                 subrequest = mainrequest.requests.add()
-                subrequest.type = entry_id
-                subrequest.parameters = subrequest_extension.SerializeToString()
+                subrequest.request_type = entry_id
+                subrequest.request_message = subrequest_extension.SerializeToString()
                 
             elif isinstance(entry, int):
                 subrequest = mainrequest.requests.add()
-                subrequest.type = entry
+                subrequest.request_type = entry
             else:
                 raise Exception('Unknown value in request list')
     
         return mainrequest
         
     
-    def _parse_main_request(self, response_raw, subrequests):
+    def _parse_main_response(self, response_raw, subrequests):
         self.log.debug('Parsing main RPC response...')
         
         if response_raw.status_code != 200:
             self.log.warning('Unexpected HTTP server response - needs 200 got %s', response_raw.status_code)
-            self.log.debug('HTTP output: \n%s', response_raw.content)
+            self.log.debug('HTTP output: \n%s', response_raw.content.decode('utf-8'))
             return False
         
         if response_raw.content is None:
             self.log.warning('Empty server response!')
             return False
     
-        response_proto = RpcEnvelope.Response()
+        response_proto = ResponseEnvelope()
         try:
             response_proto.ParseFromString(response_raw.content)
-        except google.protobuf.message.DecodeError as e:
+        except message.DecodeError as e:
             self.log.warning('Could not parse response: %s', str(e))
             return False
         
         self.log.debug('Protobuf structure of rpc response:\n\r%s', response_proto)
+        try:
+            self.log.debug('Decode raw over protoc (protoc has to be in your PATH):\n\r%s', self.decode_raw(response_raw.content).decode('utf-8'))
+        except:
+            self.log.debug('Error during protoc parsing - ignored.')
        
         response_proto_dict = protobuf_to_dict(response_proto)
         response_proto_dict = self._parse_sub_responses(response_proto, subrequests, response_proto_dict)
@@ -181,12 +212,13 @@ class RpcApi:
     def _parse_sub_responses(self, response_proto, subrequests_list, response_proto_dict):
         self.log.debug('Parsing sub RPC responses...')
         response_proto_dict['responses'] = {}
+        
+        if 'returns' in response_proto_dict:
+            del response_proto_dict['returns']
 
         list_len = len(subrequests_list) -1
         i = 0
-        for subresponse in response_proto.responses:
-            #self.log.debug( self.decode_raw(subresponse) )
-            
+        for subresponse in response_proto.returns:
             if i > list_len:
                 self.log.info("Error - something strange happend...")
             
@@ -194,15 +226,17 @@ class RpcApi:
             if isinstance(request_entry, int):
                 entry_id = request_entry
             else:
-                entry_id = request_entry.items()[0][0]
+                entry_id =  list(request_entry.items())[0][0]
                 
-            entry_name = RpcEnum.RequestMethod.Name(entry_id)
+            entry_name = RequestType.Name(entry_id)
             proto_name = to_camel_case(entry_name.lower()) + 'Response'
-            proto_classname = 'Interfaces.pgoapi.protos.RpcSub_pb2.' + proto_name
+            proto_classname = 'Interfaces.pgoapi.protos.POGOProtos.Networking.Responses_pb2.' + proto_name
+            
+            self.log.debug("Parsing class: %s", proto_classname)
             
             subresponse_return = None
             try:
-                subresponse_extension = get_class(proto_classname)()            
+                subresponse_extension = self.get_class(proto_classname)()         
             except Exception as e:
                 subresponse_extension = None
                 error = 'Protobuf definition for {} not found'.format(proto_classname)

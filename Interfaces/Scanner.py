@@ -15,7 +15,7 @@ from Interfaces.Config import Config
 from Interfaces.Geolocation import Geolocation
 from Interfaces.MySQL import init
 from Interfaces.MySQL.Schema import Scanner as dbScanner
-from Interfaces.MySQL.Schema import parse_map
+from Interfaces.MySQL.Schema import parse_map, parse_fort
 
 from Interfaces.pgoapi.utilities import f2i
 from Interfaces.pgoapi import PGoApi
@@ -24,7 +24,7 @@ from AI.Profile import Profile
 
 log = logging.getLogger(__name__)
 
-TIMESTAMP = '\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000'
+#TIMESTAMP = '\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000'
 
 
 class Scanner(threading.Thread):
@@ -109,7 +109,7 @@ class Scanner(threading.Thread):
 
             self.api.get_map_objects(latitude=f2i(position[0]),
                                 longitude=f2i(position[1]),
-                                since_timestamp_ms=TIMESTAMP,
+                                since_timestamp_ms = timestamps,
                                 cell_id=cell_ids)
 
             return self.api.call()
@@ -248,6 +248,7 @@ class Scanner(threading.Thread):
 
                 try:
                     self._statistic_apply(parse_map(response_dict, self.session_mysql))
+                    self.fort_scanner(response_dict)
                 except Exception as e:
                     self._status_scanner_apply(1, "Scan step failed. Response dictionary key error, skip step")
                     log.error(str(e))
@@ -258,6 +259,35 @@ class Scanner(threading.Thread):
                 return False
 
         return True
+
+
+    def fort_scanner(self, map_dict):
+
+        cells = map_dict['responses']['GET_MAP_OBJECTS']['map_cells']
+        for cell in cells:
+            for f in cell.get('forts', []):
+                fort_id = f['id']
+                fort_type = f.get('type')
+                fort_name = ""
+                fort_image = ""
+                fort_description = ""
+                try:
+                    self.api.fort_details(fort_id=f['id'],
+                                  latitude=f['latitude'],
+                                  longitude=f['longitude'])
+
+                    #if fort_type != 1:
+                    #    self.api.gym_state(fort_id=f['id'],
+                    #              latitude=f['latitude'],
+                    #              longitude=f['longitude'])
+
+                    response_dict = self.api.call()
+                    #print response_dict
+                    parse_fort(fort_id, fort_type, response_dict, self.session_mysql)
+                except Exception as e:
+                    print e
+
+
 
 
     def join(self, timeout=None):
@@ -289,8 +319,7 @@ class Scanner(threading.Thread):
             left = left.prev()
 
         # Return everything
-        return ''.join(map(self.encode, sorted(walk)))
-
+        return  sorted(walk)
 
     def encode(self, cellid):
         output = []

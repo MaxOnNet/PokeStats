@@ -177,6 +177,10 @@ class Pokestop(Base):
     latitude = Column(Float())
     longitude = Column(Float())
 
+    name = Column(String(256), default="", doc="")
+    address = Column(String(256), default="", doc="")
+    description = Column(String(256), default="", doc="")
+    image_url = Column(String(256), default="", doc="")
 
     date_modified = Column(DateTime(), nullable=True)
     date_lure_expiration = Column(DateTime(), nullable=True)
@@ -219,6 +223,7 @@ class Gym(Base):
     name = Column(String(256), default="", doc="")
     address = Column(String(256), default="", doc="")
     description = Column(String(256), default="", doc="")
+    image_url = Column(String(256), default="", doc="")
 
     date_modified = Column(DateTime(), nullable=True)
     date_create = Column(DateTime(), nullable=False, default=func.now())
@@ -277,7 +282,6 @@ def parse_map(map_dict, session):
                 pokestop.date_modified=datetime.fromtimestamp(f['last_modified_timestamp_ms'] / 1000.0)
                 pokestop.date_lure_expiration = lure_expiration
 
-
                 try:
                     count_pokestops += 1
 
@@ -288,7 +292,9 @@ def parse_map(map_dict, session):
 
             else:  # Currently, there are only stops and gyms
                 gym = Gym()
+
                 gym.id = f['id']
+
                 if not "owned_by_team" in f:
                     gym.cd_guard_pokemon = 0
                     gym.cd_team = 0
@@ -297,7 +303,7 @@ def parse_map(map_dict, session):
                     gym.cd_team = f['owned_by_team']
                     gym.cd_guard_pokemon = f['guard_pokemon_id']
                     gym.prestige = f['gym_points']
-
+                    # is_in_battle
                 gym.is_enabled = f['enabled']
                 gym.latitude = f['latitude']
                 gym.longitude = f['longitude']
@@ -315,3 +321,44 @@ def parse_map(map_dict, session):
     return {"gyms": count_gyms, "pokestops": count_pokestops, "pokemons": count_pokemons}
 
 
+
+def parse_fort(fort_id, fort_type, map_dict, session):
+    fort_name = ""
+    fort_image = ""
+    fort_description = ""
+
+    if 'responses' in map_dict \
+            and'FORT_DETAILS' in map_dict['responses'] \
+            and 'name' in map_dict['responses']['FORT_DETAILS']:
+        fort_details = map_dict['responses']['FORT_DETAILS']
+        fort_name = fort_details['name'].encode('utf8', 'replace')
+
+
+    if 'responses' in map_dict \
+            and'FORT_DETAILS' in map_dict['responses'] \
+            and 'image_urls' in map_dict['responses']['FORT_DETAILS']:
+        fort_details = map_dict['responses']['FORT_DETAILS']
+        fort_image = fort_details['image_urls'][0].encode('utf8', 'replace')
+
+    if 'responses' in map_dict \
+            and'FORT_DETAILS' in map_dict['responses'] \
+            and 'description' in map_dict['responses']['FORT_DETAILS']:
+        fort_details = map_dict['responses']['FORT_DETAILS']
+        fort_description = fort_details['description'].encode('utf8', 'replace')
+
+    if fort_type == 1:
+        pokestop = session.query(Pokestop).get(fort_id)
+
+        pokestop.name = fort_name
+        pokestop.description = fort_description
+        pokestop.image_url = fort_image
+
+    else:
+        gym = session.query(Gym).get(fort_id)
+
+        gym.name = fort_name
+        gym.description = fort_description
+        gym.image_url = fort_image
+
+    session.commit()
+    session.flush()
