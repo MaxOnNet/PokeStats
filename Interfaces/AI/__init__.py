@@ -39,11 +39,7 @@ class AI(object):
     def work_on_cell(self, cell, position, include_fort_on_path):
         self.position = position
 
-        report = {
-            "pokemons": 0,
-            "pokestops": 0,
-            "gyms": 0
-        }
+        report = {"pokemons": 0,"pokestops": 0, "gyms": 0}
 
         if 'catchable_pokemons' in cell and len(cell['catchable_pokemons']) > 0:
             cell['catchable_pokemons'].sort(key=lambda x: distance(position[0], position[1], x['latitude'], x['longitude']))
@@ -63,13 +59,10 @@ class AI(object):
 
         self.scanner_thread._statistic_apply(report)
 
-        report = {
-            "pokemons": 0,
-            "pokestops": 0,
-            "gyms": 0
-        }
+
         if include_fort_on_path:
             if 'forts' in cell:
+                report = {"pokemons": 0,"pokestops": 0, "gyms": 0}
                 # Only include those with a lat/long
                 pokestops = [pokestop for pokestop in cell['forts'] if 'latitude' in pokestop and 'type' in pokestop]
                 gyms = [gym for gym in cell['forts'] if 'gym_points' in gym]
@@ -80,6 +73,7 @@ class AI(object):
                 for gym in gyms:
                     report['gyms'] += parse_gym(gym, self.scanner_thread.session_mysql)
 
+                self.scanner_thread._statistic_apply(report)
                 # Sort all by distance from current pos- eventually this should
                 # build graph & A* it
                 pokestops.sort(key=lambda x: distance(position[0], position[1], x['latitude'], x['longitude']))
@@ -88,6 +82,7 @@ class AI(object):
 
 
                 for pokestop in pokestops:
+                    self.scanner_thread._statistic_apply({"pokemons": 0,"pokestops": 0, "gyms": 0})
                     worker = MoveToPokestop(pokestop, self)
                     worker.work()
 
@@ -98,6 +93,8 @@ class AI(object):
                         print('need a rest')
                         break
 
+                    self.scanner_thread.profile.update_profile()
+                    self.scanner_thread.profile.update_inventory()
                 #for gym in gyms:
                 #    worker = MoveToGym(fort, self)
                 #    worker.work()
@@ -108,7 +105,6 @@ class AI(object):
                 #        print('need a rest')
                 #        break
 
-        self.scanner_thread._statistic_apply(report)
 
 
     def catch_pokemon(self, pokemon):
