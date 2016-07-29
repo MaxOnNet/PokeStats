@@ -32,9 +32,10 @@ class AI(object):
     def take_step(self):
        # worker = InitialTransfer(self)
        # worker.work()
-
-        self.update_inventory()
-        self.stepper.take_step()
+        try:
+            self.update_inventory()
+        finally:
+            self.stepper.take_step()
 
     def work_on_cell(self, cell, position, include_fort_on_path):
         self.position = position

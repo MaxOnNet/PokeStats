@@ -225,9 +225,11 @@ class Scanner(threading.Thread):
             log.error(str(e))
             return False
 
-        self.profile.update_profile()
-        self.profile.update_inventory()
-        self.ai.heartbeat()
+        try:
+            self.profile.update_profile()
+            self.profile.update_inventory()
+        finally:
+            self.ai.heartbeat()
 
         if not self.scanner.location.use_ai:
             step_size = 0.00111
