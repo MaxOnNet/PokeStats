@@ -61,6 +61,13 @@ class AI(object):
             #    if self.catch_pokemon(pokemon) == PokemonCatch.NO_POKEBALLS:
             #        break
 
+        self.scanner_thread._statistic_apply(report)
+
+        report = {
+            "pokemons": 0,
+            "pokestops": 0,
+            "gyms": 0
+        }
         if include_fort_on_path:
             if 'forts' in cell:
                 # Only include those with a lat/long
@@ -78,9 +85,12 @@ class AI(object):
                 pokestops.sort(key=lambda x: distance(position[0], position[1], x['latitude'], x['longitude']))
                 gyms.sort(key=lambda x: distance(position[0], position[1], x['latitude'], x['longitude']))
 
+
+
                 for pokestop in pokestops:
                     worker = MoveToPokestop(pokestop, self)
                     worker.work()
+
 
                 #    worker = SeenPokestop(pokestop, self)
                 #    hack_chain = worker.work()
