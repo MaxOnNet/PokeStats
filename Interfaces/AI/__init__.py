@@ -96,9 +96,9 @@ class AI(object):
 
                     #self.scanner_thread.profile.update_profile()
                     #self.scanner_thread.profile.update_inventory()
-                for gym in gyms:
-                    worker = MoveToGym(gym, self)
-                    worker.work()
+                #for gym in gyms:
+                #    worker = MoveToGym(gym, self)
+                #    worker.work()
 
                 #    worker = SeenGym(gym, self)
                 #    hack_chain = worker.work()
