@@ -78,9 +78,9 @@ class AI(object):
                 pokestops.sort(key=lambda x: distance(position[0], position[1], x['latitude'], x['longitude']))
                 gyms.sort(key=lambda x: distance(position[0], position[1], x['latitude'], x['longitude']))
 
-                #for pokestop in pokestops:
-                #    worker = MoveToPokestop(pokestop, self)
-                #    worker.work()
+                for pokestop in pokestops:
+                    worker = MoveToPokestop(pokestop, self)
+                    worker.work()
 
                 #    worker = SeenPokestop(pokestop, self)
                 #    hack_chain = worker.work()
