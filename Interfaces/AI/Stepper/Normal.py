@@ -31,7 +31,7 @@ class Normal(object):
         self.y = 0
         self.dx = 0
         self.dy = -1
-
+        self.walk = self.scanner.location.walk
         self.steplimit = self.scanner.location.steps
         self.steplimit2 = self.scanner.location.steps**2
 
@@ -44,17 +44,16 @@ class Normal(object):
         self.api.set_position(*position)
         for step in range(self.steplimit2):
             # starting at 0 index
-            self.scanner_thread._status_scanner_apply(1, '[AI] Scanning area for objects ({} / {})'.format((step + 1), self.steplimit**2))
+            log.info('[AI] Scanning area for objects ({} / {})'.format((step + 1), self.steplimit**2))
 
-            log.debug('steplimit: {} x: {} y: {} pos: {} dx: {} dy {}'.format(
-                        self.steplimit2, self.x, self.y, self.pos, self.dx,self.dy))
+            log.debug('steplimit: {} x: {} y: {} pos: {} dx: {} dy {}'.format(self.steplimit2, self.x, self.y, self.pos, self.dx,self.dy))
 
             # Scan location math
             if -self.steplimit2 / 2 < self.x <= self.steplimit2 / 2 and -self.steplimit2 / 2 < self.y <= self.steplimit2 / 2:
                 position = (self.x * 0.0025 + self.origin_lat,
                             self.y * 0.0025 + self.origin_lon, 0)
-                if self.scanner.location.walk > 0:
-                    self._walk_to(self.scanner.location.walk, *position)
+                if self.walk > 0:
+                    self._walk_to(self.walk, *position)
                 else:
                     self.api.set_position(*position)
             if self.x == self.y or self.x < 0 and self.x == -self.y or self.x > 0 and self.x == 1 - self.y:
@@ -71,7 +70,7 @@ class Normal(object):
         intSteps = int(steps)
         residuum = steps - intSteps
 
-        self.scanner_thread._status_scanner_apply(1, '[AI] Walking from ' + str((i2f(self.api._position_lat), i2f(self.api._position_lng))) + " to " + str(str((lat, lng))) +
+        log.info('[AI] Walking from ' + str((i2f(self.api._position_lat), i2f(self.api._position_lng))) + " to " + str(str((lat, lng))) +
                    " for approx. " + str(format_time(ceil(steps))))
 
         if steps != 0:
