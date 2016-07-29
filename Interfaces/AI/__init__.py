@@ -87,11 +87,11 @@ class AI(object):
                     worker.work()
 
 
-                    worker = SeenPokestop(pokestop, self)
-                    hack_chain = worker.work()
-                    if hack_chain > 10:
-                        print('need a rest')
-                        break
+                    #worker = SeenPokestop(pokestop, self)
+                    #hack_chain = worker.work()
+                    #if hack_chain > 10:
+                    #    print('need a rest')
+                    #    break
 
                     self.scanner_thread.profile.update_profile()
                     self.scanner_thread.profile.update_inventory()
