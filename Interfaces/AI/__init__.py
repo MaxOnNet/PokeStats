@@ -82,20 +82,20 @@ class AI(object):
 
 
 
-                for pokestop in pokestops:
-                    self.scanner_thread._statistic_apply({"pokemons": 0,"pokestops": 0, "gyms": 0})
-                    worker = MoveToPokestop(pokestop, self)
-                    worker.work()
+                #for pokestop in pokestops:
+                #    self.scanner_thread._statistic_apply({"pokemons": 0,"pokestops": 0, "gyms": 0})
+                #    worker = MoveToPokestop(pokestop, self)
+                #    worker.work()
 
 
-                    worker = SeenPokestop(pokestop, self)
-                    worker.work()
+                    #worker = SeenPokestop(pokestop, self)
+                    #worker.work()
                     #if hack_chain > 10:
                     #    print('need a rest')
                     #    break
 
-                    self.scanner_thread.profile.update_profile()
-                    self.scanner_thread.profile.update_inventory()
+                    #self.scanner_thread.profile.update_profile()
+                    #self.scanner_thread.profile.update_inventory()
                 #for gym in gyms:
                 #    worker = MoveToGym(fort, self)
                 #    worker.work()
