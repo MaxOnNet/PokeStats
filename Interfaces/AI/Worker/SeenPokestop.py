@@ -36,7 +36,7 @@ class SeenPokestop(object):
         else:
             fort_name = 'Unknown'
         log.info('[#] Now at Pokestop: ' + fort_name + ' - Spinning...')
-        sleep(5)
+        sleep(2)
         self.api.fort_search(fort_id=self.pokestop['id'],
                              fort_latitude=lat,
                              fort_longitude=lng,

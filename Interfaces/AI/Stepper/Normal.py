@@ -63,7 +63,7 @@ class Normal(object):
             (self.x, self.y) = (self.x + self.dx, self.y + self.dy)
 
             self._work_at_position(position[0], position[1], position[2], True)
-            #sleep(0.1)
+            sleep(1)
 
     def _walk_to(self, speed, lat, lng, alt):
         dist = distance(i2f(self.api._position_lat), i2f(self.api._position_lng), lat, lng)
@@ -85,7 +85,7 @@ class Normal(object):
                 self.ai.heartbeat()
 
                 self._work_at_position(i2f(self.api._position_lat), i2f(self.api._position_lng), alt, False)
-                #sleep(0.1)
+                sleep(1)
             self.api.set_position(lat, lng, alt)
             self.ai.heartbeat()
 
