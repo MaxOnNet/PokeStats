@@ -55,7 +55,7 @@ class Normal(object):
             #if -self.steplimit2 / 2 < self.x <= self.steplimit2 / 2 and -self.steplimit2 / 2 < self.y <= self.steplimit2 / 2:
             #    position = (self.x * 0.0025 + self.origin_lat,
             #                self.y * 0.0025 + self.origin_lon, 0)
-            position = (coords['lat'], coords['lng'], 0)
+            position = (coord['lat'], coord['lng'], 0)
             if self.walk > 0:
                 self._walk_to(self.walk, *position)
             else:
