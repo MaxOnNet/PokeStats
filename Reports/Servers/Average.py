@@ -17,7 +17,7 @@ class Average(Report, View):
             sl.address as "sl_address",
             sl.latitude as "sl_latitude",
             sl.longitude as "sl_longitude",
-            sl.is_fast as "sl_fast",
+            s.is_active as "sl_fast",
             sa.id as "sa_id",
             sa.username as "sa_username",
             sa.service as "sa_service",

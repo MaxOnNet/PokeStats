@@ -25,6 +25,8 @@ if __name__ == '__main__':
     logging.getLogger("Interfaces.pgoapi.pgoapi").setLevel(logging.WARNING)
     logging.getLogger("Interfaces.pgoapi.rpc_api").setLevel(logging.WARNING)
 
+    logging.getLogger("Interfaces.AI").setLevel(logging.INFO)
+
     threads = []
 
     scanner = tScanner(scanner_id)

@@ -7,8 +7,8 @@ import random
 import re
 import sys
 
-#from Interfaces.AI.Worker import PokemonCatch, EvolveAll, MoveToPokestop, SeenFort, InitialTransfer
-from Interfaces.AI.Worker import MoveToPokestop
+#from Interfaces.AI.Worker import PokemonCatch, EvolveAll, MoveToPokestop, , InitialTransfer
+from Interfaces.AI.Worker import MoveToPokestop, SeenPokestop
 from Interfaces.AI.Worker.Utils import distance
 from Interfaces.AI.Stepper.Normal import Normal as Stepper
 
@@ -27,7 +27,7 @@ class AI(object):
         self.scanner = scanner_thread.scanner
         self.stepper = Stepper(self)
 
-        self.position = [0,0,0]
+        self.position = [0, 0, 0]
 
     def take_step(self):
        # worker = InitialTransfer(self)
@@ -39,6 +39,12 @@ class AI(object):
     def work_on_cell(self, cell, position, include_fort_on_path):
         self.position = position
 
+        report = {
+            "pokemons": 0,
+            "pokestops": 0,
+            "gyms": 0
+        }
+
         if 'catchable_pokemons' in cell and len(cell['catchable_pokemons']) > 0:
             cell['catchable_pokemons'].sort(key=lambda x: distance(position[0], position[1], x['latitude'], x['longitude']))
 
@@ -49,7 +55,7 @@ class AI(object):
         if 'wild_pokemons' in cell and len(cell['wild_pokemons']) > 0:
             cell['wild_pokemons'].sort(key=lambda x: distance(position[0], position[1], x['latitude'], x['longitude']))
 
-            parse_pokemon_cell(cell, self.scanner_thread.session_mysql)
+            report['pokemons'] += parse_pokemon_cell(cell, self.scanner_thread.session_mysql)
 
             #for pokemon in cell['wild_pokemons']:
             #    if self.catch_pokemon(pokemon) == PokemonCatch.NO_POKEBALLS:
@@ -62,21 +68,21 @@ class AI(object):
                 gyms = [gym for gym in cell['forts'] if 'gym_points' in gym]
 
                 for pokestop in pokestops:
-                    parse_pokestop(pokestop, self.scanner_thread.session_mysql)
+                    report['pokestops'] += parse_pokestop(pokestop, self.scanner_thread.session_mysql)
 
                 for gym in gyms:
-                    parse_gym(gym, self.scanner_thread.session_mysql)
+                    report['gyms'] += parse_gym(gym, self.scanner_thread.session_mysql)
 
                 # Sort all by distance from current pos- eventually this should
                 # build graph & A* it
                 pokestops.sort(key=lambda x: distance(position[0], position[1], x['latitude'], x['longitude']))
                 gyms.sort(key=lambda x: distance(position[0], position[1], x['latitude'], x['longitude']))
 
-                #for fort in forts:
-                #    worker = MoveToPokestop(fort, self)
+                #for pokestop in pokestops:
+                #    worker = MoveToPokestop(pokestop, self)
                 #    worker.work()
 
-                #    worker = SeenFort(fort, self)
+                #    worker = SeenPokestop(pokestop, self)
                 #    hack_chain = worker.work()
                 #    if hack_chain > 10:
                 #        print('need a rest')
@@ -92,6 +98,7 @@ class AI(object):
                 #        print('need a rest')
                 #        break
 
+        self.scanner_thread._statistic_apply(report)
 
 
     def catch_pokemon(self, pokemon):
@@ -112,6 +119,9 @@ class AI(object):
         # Example of good request response
         #{'responses': {'RECYCLE_INVENTORY_ITEM': {'result': 1, 'new_count': 46}}, 'status_code': 1, 'auth_ticket': {'expire_timestamp_ms': 1469306228058L, 'start': '/HycFyfrT4t2yB2Ij+yoi+on778aymMgxY6RQgvrGAfQlNzRuIjpcnDd5dAxmfoTqDQrbz1m2dGqAIhJ+eFapg==', 'end': 'f5NOZ95a843tgzprJo4W7Q=='}, 'request_id': 8145806132888207460L}
         return inventory_req
+
+    def inventory_recucle(self):
+        pass
 
     def update_inventory(self):
         self.api.get_inventory()

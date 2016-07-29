@@ -98,7 +98,7 @@ class PokemonCatch(object):
                                     '[x] Out of pokeballs, switching to farming mode...', 'red')
                                 # Begin searching for pokestops.
                                 self.config.mode = 'farm'
-                                return PokemonCatchWorker.NO_POKEBALLS
+                                return PokemonCatch.NO_POKEBALLS
 
                             balls_stock[pokeball] = balls_stock[pokeball] - 1
                             success_percentage = '{0:.2f}'.format(catch_rate[pokeball-1]*100)
