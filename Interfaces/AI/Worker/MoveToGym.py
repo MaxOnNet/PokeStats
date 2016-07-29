@@ -12,7 +12,7 @@ class MoveToGym(object):
         self.api = ai.api
         self.stepper = ai.stepper
         self.position = ai.position
-        self.scanner = ai.scaner
+        self.scanner = ai.scanner
 
     def work(self):
         lat = self.gym['latitude']
