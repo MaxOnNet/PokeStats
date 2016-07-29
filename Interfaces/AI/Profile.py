@@ -100,6 +100,6 @@ class Profile:
                 self.scanner.account.statistic.stardust = profile_res['currencies'][1]['amount']
         except:
             pass
-        
+
         self.session_mysql.commit()
         self.session_mysql.flush()
