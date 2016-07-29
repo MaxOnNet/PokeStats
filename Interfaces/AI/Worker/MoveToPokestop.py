@@ -35,7 +35,7 @@ class MoveToPokestop(object):
             self.api.player_update(latitude=lat, longitude=lng)
             response_dict = self.api.call()
             log.info('[#] Arrived at Pokestop')
-            sleep(2)
+            #sleep(2)
             return response_dict
 
         return None
