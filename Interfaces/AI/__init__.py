@@ -82,10 +82,10 @@ class AI(object):
 
 
 
-                #for pokestop in pokestops:
-                #    self.scanner_thread._statistic_apply({"pokemons": 0,"pokestops": 0, "gyms": 0})
-                #    worker = MoveToPokestop(pokestop, self)
-                #    worker.work()
+                for pokestop in pokestops:
+                    self.scanner_thread._statistic_apply({"pokemons": 0,"pokestops": 0, "gyms": 0})
+                    worker = MoveToPokestop(pokestop, self)
+                    worker.work()
 
 
                     #worker = SeenPokestop(pokestop, self)
