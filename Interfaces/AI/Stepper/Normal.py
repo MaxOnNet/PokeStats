@@ -40,9 +40,11 @@ class Normal(object):
 
     def take_step(self):
         position = (self.scanner.location.latitude, self.scanner.location.longitude, 0.0)
-        coords = self.generate_spiral(self.scanner.location.latitude, self.scanner.location.longitude, 0.0015, self.steplimit2)
+        coords = self.generate_spiral(self.scanner.location.latitude, self.scanner.location.longitude, 0.0009, self.steplimit2)
         self.api.set_position(*position)
-        for step in range(self.steplimit2):
+        step = 1
+        #for step in range(self.steplimit2):
+        for coord in coords:
             # starting at 0 index
             self.scanner_thread._status_scanner_apply(1, '[AI] Scanning area for objects ({} / {})'.format((step + 1), self.steplimit**2))
 
@@ -53,7 +55,7 @@ class Normal(object):
             #if -self.steplimit2 / 2 < self.x <= self.steplimit2 / 2 and -self.steplimit2 / 2 < self.y <= self.steplimit2 / 2:
             #    position = (self.x * 0.0025 + self.origin_lat,
             #                self.y * 0.0025 + self.origin_lon, 0)
-            position = (coords[step]['lat'], coords[step]['lng'], 0)
+            position = (coords['lat'], coords['lng'], 0)
             if self.walk > 0:
                 self._walk_to(self.walk, *position)
             else:
@@ -65,6 +67,7 @@ class Normal(object):
 
             self._work_at_position(position[0], position[1], position[2], True)
             sleep(1)
+            step += 1
 
     def generate_spiral(self, latitude, longitude, step_size, step_limit):
         coords = [{'lat': latitude, 'lng': longitude}]
