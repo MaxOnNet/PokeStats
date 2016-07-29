@@ -8,8 +8,7 @@ import threading
 import time
 from random import randint
 
-from google.protobuf.internal import encoder
-from s2sphere import CellId, LatLng
+
 
 from Interfaces.Config import Config
 from Interfaces.Geolocation import Geolocation
@@ -20,7 +19,9 @@ from Interfaces.MySQL.Schema import parse_map, parse_fort
 from Interfaces.pgoapi.utilities import f2i
 from Interfaces.pgoapi import PGoApi
 
-from AI.Profile import Profile
+from Interfaces.AI import AI
+from Interfaces.AI.Profile import Profile
+from Interfaces.AI.Stepper import get_cell_ids
 
 log = logging.getLogger(__name__)
 
@@ -44,8 +45,11 @@ class Scanner(threading.Thread):
         self._sleeplogin = 20
 
         self.api = PGoApi()
+        self.ai = AI(self)
+        self.profile = Profile(self)
 
         self.daemon = True
+        self.ai_stepper = True
         self.alive = False
         self.await = datetime.datetime.now()
 
@@ -57,7 +61,6 @@ class Scanner(threading.Thread):
 
         self.session_mysql.commit()
         self.session_mysql.flush()
-
     def _statistic_apply(self, report):
         try:
             self.await = datetime.datetime.now()
@@ -70,7 +73,6 @@ class Scanner(threading.Thread):
             self.session_mysql.flush()
         except:
             log.error('Error save stats.')
-
     def _status_scanner_apply(self, active=0, state=""):
         #log.info('[{0}] - {1} - {2}.'.format(self.scanner.id, active, state))
 
@@ -84,7 +86,6 @@ class Scanner(threading.Thread):
             self.session_mysql.flush()
         finally:
             pass
-
     def _status_account_apply(self, active=0, state=""):
         #log.info('[{0}] - {1} - {2}.'.format(self.scanner.id, active, state))
 
@@ -99,12 +100,22 @@ class Scanner(threading.Thread):
         finally:
             pass
 
+    def _position_scanner_apply(self, position):
+        try:
+            self.scanner.latitude = position[0]
+            self.scanner.longitude = position[1]
+
+            self.session_mysql.commit()
+            self.session_mysql.flush()
+        except:
+            log.error('Error save stats.')
+
 
     def send_map_request(self, position):
         try:
             self.api.set_position(position[0], position[1], 0)
 
-            cell_ids = self.get_cell_ids(position[0], position[1])
+            cell_ids = get_cell_ids(position[0], position[1])
             timestamps = [0,] * len(cell_ids)
 
             self.api.get_map_objects(latitude=f2i(position[0]),
@@ -214,49 +225,55 @@ class Scanner(threading.Thread):
             log.error(str(e))
             return False
 
-        #profile = Profile(self.api)
+        self.profile.update_profile()
+        self.profile.update_inventory()
+        self.ai.heartbeat()
 
-        step_size = 0.00111
-        step_max = self.scanner.location.steps
-        step_index = 1
+        if not self.scanner.location.use_ai:
+            step_size = 0.00111
+            step_max = self.scanner.location.steps
+            step_index = 1
 
-        if self.scanner.location.is_fast:
-            log.info("User FAST mode")
-            step_size = 0.005
+            for step_location in self.generate_spiral(self.scanner.location.position[0], self.scanner.location.position[1], step_size,step_max):
+                step_position = (step_location['lat'], step_location['lng'])
 
-        for step_location in self.generate_spiral(self.scanner.location.position[0], self.scanner.location.position[1], step_size,step_max):
-            step_position = (step_location['lat'], step_location['lng'])
+                if not self._stopevent.isSet():
+                    self._status_scanner_apply(1, "Сканирование, шаг {0} из {1}.".format(step_index, step_max))
 
-            if not self._stopevent.isSet():
-                self._status_scanner_apply(1, "Сканирование, шаг {0} из {1}.".format(step_index, step_max))
+                    response_count = 0
+                    response_count_max = 5
 
-                response_count = 0
-                response_count_max = 5
+                    response_dict = self.send_map_request(step_position)
+                    while not response_dict and not self._stopevent.isSet():
+                        if response_count < response_count_max:
+                            self._status_scanner_apply(1, "Загрузка карты не удалась ({0}), ожидаем.".format(response_count))
 
-                response_dict = self.send_map_request(step_position)
-                while not response_dict and not self._stopevent.isSet():
-                    if response_count < response_count_max:
-                        self._status_scanner_apply(1, "Загрузка карты не удалась ({0}), ожидаем.".format(response_count))
+                            self._stopevent.wait(self._sleepperiod)
+                            response_dict = self.send_map_request(step_location)
 
-                        self._stopevent.wait(self._sleepperiod)
-                        response_dict = self.send_map_request(step_location)
+                            response_count += 1
+                        else:
+                            self._status_scanner_apply(1, "Загрузка карты не удалась, завершаем.")
+                            return False
 
-                        response_count += 1
-                    else:
-                        self._status_scanner_apply(1, "Загрузка карты не удалась, завершаем.")
-                        return False
+                    try:
+                        self._statistic_apply(parse_map(response_dict, self.session_mysql))
+                        self.fort_scanner(response_dict)
+                    except Exception as e:
+                        self._status_scanner_apply(1, "Scan step failed. Response dictionary key error, skip step")
+                        log.error(str(e))
 
-                try:
-                    self._statistic_apply(parse_map(response_dict, self.session_mysql))
-                    self.fort_scanner(response_dict)
-                except Exception as e:
-                    self._status_scanner_apply(1, "Scan step failed. Response dictionary key error, skip step")
-                    log.error(str(e))
-
-                step_index += 1
+                    step_index += 1
+                else:
+                    self._status_scanner_apply(1, "Сигнал на выход, завершаем работу")
+                    return False
+        else:
+            log.info("USE AI")
+            if self.scanner.location.use_ai_stepper:
+                print "Take step"
+                self.ai.take_step()
             else:
-                self._status_scanner_apply(1, "Сигнал на выход, завершаем работу")
-                return False
+                pass
 
         return True
 
@@ -307,25 +324,3 @@ class Scanner(threading.Thread):
         finally:
             self.session_mysql.close()
 
-
-
-    def get_cell_ids(self, lat, long, radius = 10):
-        origin = CellId.from_lat_lng(LatLng.from_degrees(lat, long)).parent(15)
-        walk = [origin.id()]
-        right = origin.next()
-        left = origin.prev()
-
-        # Search around provided radius
-        for i in range(radius):
-            walk.append(right.id())
-            walk.append(left.id())
-            right = right.next()
-            left = left.prev()
-
-        # Return everything
-        return  sorted(walk)
-
-    def encode(self, cellid):
-        output = []
-        encoder._VarintEncoder()(output.append, cellid)
-        return ''.join(output)
