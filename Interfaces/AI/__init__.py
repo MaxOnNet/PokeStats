@@ -99,7 +99,7 @@ class AI(object):
                 if self.scanner.mode.is_farm:
                     for pokestop in pokestops:
                         pokestop_distance = round(distance(position[0], position[1], pokestop['latitude'], pokestop['longitude']))
-                        if pokestop_distance > self.scanner.mode.step*300000:
+                        if pokestop_distance > self.scanner.mode.step*150000:
                             log.info("Покестоп находится на большом растоянии ({0}), вернемся к нему позже.".format(pokestop_distance))
                             continue
 
@@ -132,7 +132,7 @@ class AI(object):
                 gyms.sort(key=lambda x: distance(position[0], position[1], x['latitude'], x['longitude']))
 
                 for gym in gyms:
-                    gym_distance = round(distance(position[0], position[1], pokestop['latitude'], pokestop['longitude']))
+                    gym_distance = round(distance(position[0], position[1], gym['latitude'], gym['longitude']))
                     if gym_distance > self.scanner.mode.step*300000:
                         log.info("Покестоп находится на большом растоянии ({0}), вернемся к нему позже.".format(gym_distance))
                         continue
