@@ -135,5 +135,5 @@ class Normal(object):
         return coords
 
     def get_google_path(self, coords):
-        self.google_path = 'http://maps.googleapis.com/maps/api/staticmap?size=400x400&key={1}&path=enc:{0}'.format(encode_coords(coords), self.scanner_thread.config.get("map", "google", "key", ""))
+        self.google_path = 'http://maps.googleapis.com/maps/api/staticmap?size=400x400&apikey={1}&path=enc:{0}'.format(encode_coords(coords), self.scanner_thread.config.get("map", "google", "key", ""))
 
