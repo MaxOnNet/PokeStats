@@ -29,6 +29,7 @@ class Normal(object):
         self.scanner_thread = ai.scanner_thread
 
         self.walk = self.scanner.mode.walk
+        self.step = self.scanner.mode.step
         self.distance = self.scanner.location.distance * 1000
 
         self.origin_lat = ai.position[0]
@@ -38,7 +39,7 @@ class Normal(object):
 
     def take_step(self):
         position = [self.origin_lat, self.origin_lon, 0]
-        coords = self.generate_coords(self.origin_lat, self.origin_lon, 0.001, self.distance)
+        coords = self.generate_coords(self.origin_lat, self.origin_lon, self.step, self.distance)
 
         self.get_google_path(coords)
         self.api.set_position(*position)
