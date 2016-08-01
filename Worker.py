@@ -62,7 +62,8 @@ if __name__ == '__main__':
     pidfile = "../.log/worker.pid"
     file(pidfile, 'w').write(pid)
 
-    logging.basicConfig(filename='../.log/worker.log', filemode='w', level=logging.INFO, format='%(asctime)s [%(module)11s] [%(levelname)7s] %(message)s')
+    logging.basicConfig(filename="{0}.log/worker.log".format(os.path.abspath(os.path.join(os.path.dirname(
+            os.path.realpath(__file__)), '..'))), filemode='w', level=logging.INFO, format='%(asctime)s [%(module)11s] [%(levelname)7s] %(message)s')
 
     logging.getLogger("peewee").setLevel(logging.WARNING)
     logging.getLogger("requests").setLevel(logging.WARNING)
