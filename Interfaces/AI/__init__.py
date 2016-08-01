@@ -59,7 +59,7 @@ class AI(object):
         #finally:
         self.stepper.take_step()
 
-    def work_on_cell(self, cell, position):
+    def work_on_cell(self, cell, position, pokemon_only):
         self.position = position
 
         report = {"pokemons": 0,"pokestops": 0, "gyms": 0}
@@ -84,8 +84,7 @@ class AI(object):
 
         self.scanner_thread._statistic_update(report)
 
-
-        if 'forts' in cell:
+        if 'forts' in cell and not pokemon_only:
             report = {"pokemons": 0, "pokestops": 0, "gyms": 0}
             # Only include those with a lat/long
             pokestops = [pokestop for pokestop in cell['forts'] if 'latitude' in pokestop and 'type' in pokestop]
