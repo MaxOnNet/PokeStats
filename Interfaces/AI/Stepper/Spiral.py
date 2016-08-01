@@ -28,7 +28,7 @@ class Spiral(Normal):
             else:
                 self.api.set_position(*position)
             sleep(1)
-            self._work_at_position(position[0], position[1], position[2], True)
+            self._work_at_position(position[0], position[1], position[2], seen_pokemon=True, seen_pokestop=True, seen_gym=True)
 
             sleep(10*self.scanner.mode.is_human_sleep)
             step += 1

@@ -55,7 +55,7 @@ class Normal(object):
             else:
                 self.api.set_position(*position)
             sleep(1)
-            self._work_at_position(position[0], position[1], position[2], False)
+            self._work_at_position(position[0], position[1], position[2], seen_pokemon=True, seen_pokestop=True, seen_gym=True)
 
             sleep(10*self.scanner.mode.is_human_sleep)
             step += 1
@@ -79,13 +79,13 @@ class Normal(object):
                 self.api.set_position(cLat, cLng, alt)
                 self.ai.heartbeat()
 
-                self._work_at_position(i2f(self.api._position_lat), i2f(self.api._position_lng), alt, True)
+                self._work_at_position(i2f(self.api._position_lat), i2f(self.api._position_lng), alt, seen_pokemon=True, seen_pokestop=False, seen_gym=False)
                 sleep(2*self.scanner.mode.is_human_sleep)
             self.api.set_position(lat, lng, alt)
             self.ai.heartbeat()
 
 
-    def _work_at_position(self, lat, lng, alt, pokemon_only=False):
+    def _work_at_position(self, lat, lng, alt, seen_pokemon=False, seen_pokestop=False, seen_gym=False):
         cellid = get_cell_ids(lat, lng)
         timestamp = [0, ] * len(cellid)
 
@@ -108,7 +108,7 @@ class Normal(object):
                         map_cells.sort(key=lambda x: distance(lat, lng, x['forts'][0]['latitude'], x['forts'][0]['longitude']) if 'forts' in x and x['forts'] != [] else 1e6)
 
                         for cell in map_cells:
-                            self.ai.work_on_cell(cell, position, pokemon_only)
+                            self.ai.work_on_cell(cell, position,  seen_pokemon=seen_pokemon,  seen_pokestop=seen_pokestop, seen_gym=seen_gym)
 
     @staticmethod
     def generate_coords(latitude, longitude, step_size, distance_limit):

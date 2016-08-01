@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 import logging
 
 from Interfaces.AI.Human import sleep
@@ -10,6 +12,7 @@ class MoveToGym(object):
     def __init__(self, gym, ai):
         self.gym = gym
         self.api = ai.api
+        self.ai = ai
         self.stepper = ai.stepper
         self.position = ai.position
         self.scanner = ai.scanner
@@ -18,24 +21,25 @@ class MoveToGym(object):
         lat = self.gym['latitude']
         lng = self.gym['longitude']
         gym_id = self.gym['id']
-
         dist = distance(self.position[0], self.position[1], lat, lng)
 
-        log.info('[#] Found GYM {} at distance {}'.format(gym_id, format_dist(dist)))
+        log.info('[#] Видим GYM {} на удалении {}'.format(gym_id, format_dist(dist)))
 
         if dist > 10:
-            log.info('[#] Need to move closer to GYM')
+            log.info('[#] GYM дальше 10 метров, бежим...')
             position = (lat, lng, 0.0)
 
-            if self.scanner.location.walk > 0:
-                self.stepper._walk_to(self.scanner.location.walk, *position)
+            if self.scanner.mode.walk > 0:
+                self.stepper._walk_to(self.scanner.mode.walk, *position)
             else:
                 self.api.set_position(*position)
 
             self.api.player_update(latitude=lat, longitude=lng)
+            self.ai.position = position
             response_dict = self.api.call()
-            log.info('[#] Arrived at GYM')
-            sleep(2)
+            log.info('[#] Прибыли к GYM\'у')
+            sleep(2*self.scanner.mode.is_human_sleep)
             return response_dict
 
         return None
+

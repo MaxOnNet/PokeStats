@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 import logging
+import base64
 
 from sqlalchemy import Column, Integer, String, DateTime, Boolean, Float
 from sqlalchemy.schema import ForeignKey
@@ -17,19 +18,19 @@ from datetime import datetime, timedelta
 log = logging.getLogger(__name__)
 Base = declarative_base()
 
+
 class Trainer(Base):
     __tablename__ = 'trainer'
     __table_args__ = {'mysql_engine': 'InnoDB', 'mysql_charset': 'utf8', 'mysql_collate': 'utf8_general_ci',
                       'mysql_comment': ''}
-    id = Column(Integer(), primary_key=True, autoincrement=True, doc="")
+    id = Column(String(64), nullable=False, primary_key=True, doc="")
     cd_team = Column(Integer(), default=0, nullable=False)
 
-    username = Column(String(64), nullable=False, doc="")
+    name = Column(String(64), nullable=False, doc="")
     level = Column(Integer(), default=1, nullable=False)
 
     date_create = Column(DateTime(), nullable=False, default=func.now())
     date_change = Column(DateTime(), nullable=False, default=func.now(), onupdate=func.now())
-
 
 
 class ScannerServer(Base):
@@ -146,6 +147,7 @@ class ScannerAccountStatistic(Base):
         if item_id == 705: return (self.item_berry_pinap, self.item_berry_pinap_max)
 
         return (0, 999)
+
 
 class ScannerLocation(Base):
     __tablename__ = 'scanner_location'
@@ -367,55 +369,46 @@ class GymMembership(Base):
     __table_args__ = {'mysql_engine': 'InnoDB', 'mysql_charset': 'utf8', 'mysql_collate': 'utf8_general_ci',
                       'mysql_comment': ''}
 
-    cd_gym = Column(String(64), primary_key=True, doc="")
+    id = Column(Integer(), primary_key=True, autoincrement=True, doc="")
+    cd_gym = Column(String(64), nullable=False, doc="")
     cd_team = Column(Integer(), nullable=False, doc="")
+    cd_trainer = Column(String(64), nullable=False, doc="")
     cd_pokemon = Column(Integer(), default=0, nullable=False, doc="")
 
     pokemon_cp = Column(Integer(), default=0, nullable=False, doc="")
+    pokemon_nickname = Column(String(256), default="", doc="")
 
-def parse_map(map_dict, session):
+
+def parse_map_cell(map_cell, session):
     count_pokemons = 0
     count_gyms = 0
     count_pokestops = 0
 
-    if not 'GET_MAP_OBJECTS' in map_dict['responses']:
-        print map_dict['responses']
-    cells = map_dict['responses']['GET_MAP_OBJECTS']['map_cells']
-    for cell in cells:
-        count_pokemons += parse_pokemon_cell(cell, session)
+    count_pokemons += parse_pokemon_cell(map_cell, session)
 
-        for f in cell.get('forts', []):
-            if f.get('type') == 1:  # Pokestops
-                count_pokemons + parse_pokestop(f, session)
-            else:  # Currently, there are only stops and gyms
-                count_gyms + parse_gym(f, session)
-    session.flush()
+    for f in map_cell.get('forts', []):
+        if f.get('type') == 1:  # Pokestops
+            count_pokestops += parse_pokestop(f, session)
+        else:  # Currently, there are only stops and gyms
+            count_gyms += parse_gym(f, session)
+
 
     return {"gyms": count_gyms, "pokestops": count_pokestops, "pokemons": count_pokemons}
 
-def parse_fort(fort_id, fort_type, map_dict, session):
+
+def parse_fort_details(fort_id, fort_type, fort_dict, session):
     fort_name = ""
     fort_image = ""
     fort_description = ""
 
-    if 'responses' in map_dict \
-            and'FORT_DETAILS' in map_dict['responses'] \
-            and 'name' in map_dict['responses']['FORT_DETAILS']:
-        fort_details = map_dict['responses']['FORT_DETAILS']
-        fort_name = fort_details['name'].encode('utf8', 'replace')
+    if 'name' in fort_dict:
+        fort_name = fort_dict['name'].encode('utf8', 'replace')
 
+    if 'image_urls' in fort_dict:
+        fort_image = fort_dict['image_urls'][0].encode('utf8', 'replace')
 
-    if 'responses' in map_dict \
-            and'FORT_DETAILS' in map_dict['responses'] \
-            and 'image_urls' in map_dict['responses']['FORT_DETAILS']:
-        fort_details = map_dict['responses']['FORT_DETAILS']
-        fort_image = fort_details['image_urls'][0].encode('utf8', 'replace')
-
-    if 'responses' in map_dict \
-            and'FORT_DETAILS' in map_dict['responses'] \
-            and 'description' in map_dict['responses']['FORT_DETAILS']:
-        fort_details = map_dict['responses']['FORT_DETAILS']
-        fort_description = fort_details['description'].encode('utf8', 'replace')
+    if 'description' in fort_dict:
+        fort_description = fort_dict['description'].encode('utf8', 'replace')
 
     if fort_type == 1:
         pokestop = session.query(Pokestop).get(fort_id)
@@ -433,6 +426,7 @@ def parse_fort(fort_id, fort_type, map_dict, session):
 
     session.commit()
     session.flush()
+
 
 def parse_pokemon_cell(cell, session):
     count_pokemons = 0
@@ -467,6 +461,7 @@ def parse_pokemon_cell(cell, session):
 
     return count_pokemons
 
+
 def parse_pokestop(f, session):
     if 'lure_info' in f:
         lure_expiration = datetime.fromtimestamp(
@@ -490,6 +485,7 @@ def parse_pokestop(f, session):
         session.flush()
 
     return 1
+
 
 def parse_gym(f, session):
     gym = Gym()
@@ -517,3 +513,51 @@ def parse_gym(f, session):
         session.flush()
 
     return 1
+
+
+def clear_gym_membership(gym_id, session):
+    membership = session.query(GymMembership).filter(GymMembership.cd_gym == gym_id)
+    membership.delete()
+
+    session.commit()
+    session.flush()
+
+
+def parse_gym_membership(membership, gym_id, team_id, session):
+    trainer_name = membership['trainer_public_profile']['name']
+    trainer_level = membership['trainer_public_profile']['level']
+    trainer_uuid = base64.encodestring(trainer_name)
+
+    pokemon_id = membership['pokemon_data']['pokemon_id']
+    pokemon_cp = membership['pokemon_data']['cp']
+    pokemon_nickname = ""
+
+    if 'nickname' in membership['pokemon_data']:
+        pokemon_nickname = membership['pokemon_data']['nickname']
+
+    trainer = session.query(Trainer).get(trainer_uuid)
+
+    if not trainer:
+        trainer = Trainer()
+        trainer.id = trainer_uuid
+        trainer.level = trainer_level
+        trainer.cd_team = team_id
+        trainer.name = trainer_name
+
+        session.add(trainer)
+    else:
+        trainer.level = max(trainer.level, trainer_level)
+
+    member = GymMembership()
+    member.cd_team = team_id
+    member.cd_trainer = trainer_uuid
+    member.cd_gym = gym_id
+    member.cd_pokemon = pokemon_id
+    member.pokemon_cp = pokemon_cp
+    member.pokemon_nickname = pokemon_nickname
+
+    session.add(member)
+    session.commit()
+    session.flush()
+
+

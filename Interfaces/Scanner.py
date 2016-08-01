@@ -13,14 +13,11 @@ from Interfaces.Config import Config
 from Interfaces.Geolocation import Geolocation
 from Interfaces.MySQL import init
 from Interfaces.MySQL.Schema import Scanner as dbScanner
-from Interfaces.MySQL.Schema import parse_map, parse_fort
 
-from Interfaces.pgoapi.utilities import f2i
 from Interfaces.pgoapi import PGoApi
 
 from Interfaces.AI import AI
 from Interfaces.AI.Profile import Profile
-from Interfaces.AI.Stepper import get_cell_ids
 
 log = logging.getLogger(__name__)
 
@@ -108,49 +105,6 @@ class Scanner(threading.Thread):
             log.error('Error save stats.')
 
 
-    def send_map_request(self, position):
-        try:
-            self.api.set_position(position[0], position[1], 0)
-
-            cell_ids = get_cell_ids(position[0], position[1])
-            timestamps = [0,] * len(cell_ids)
-
-            self.api.get_map_objects(latitude=f2i(position[0]),
-                                longitude=f2i(position[1]),
-                                since_timestamp_ms = timestamps,
-                                cell_id=cell_ids)
-
-            return self.api.call()
-
-        except Exception as e:
-            log.warn("Uncaught exception when downloading map "+ e)
-            return False
-
-
-    def generate_spiral(self, latitude, longitude, step_size, step_limit):
-        coords = [{'lat': latitude, 'lng': longitude}]
-        steps,x,y,d,m = 1, 0, 0, 1, 1
-        rlow = 0.0
-        rhigh = 0.0005
-
-        while steps < step_limit:
-            while 2 * x * d < m and steps < step_limit:
-                x = x + d
-                steps += 1
-                lat = x * step_size + latitude + random.uniform(rlow, rhigh)
-                lng = y * step_size + longitude + random.uniform(rlow, rhigh)
-                coords.append({'lat': lat, 'lng': lng})
-            while 2 * y * d < m and steps < step_limit:
-                y = y + d
-                steps += 1
-                lat = x * step_size + latitude + random.uniform(rlow, rhigh)
-                lng = y * step_size + longitude + random.uniform(rlow, rhigh)
-                coords.append({'lat': lat, 'lng': lng})
-
-            d = -1 * d
-            m = m + 1
-        return coords
-
     def login(self):
         login_count = 0
         login_count_max = 5
@@ -232,39 +186,6 @@ class Scanner(threading.Thread):
         self.ai.heartbeat()
 
         return True
-
-
-    def fort_scanner(self, map_dict):
-        cells = map_dict['responses']['GET_MAP_OBJECTS']['map_cells']
-        for cell in cells:
-            for f in cell.get('forts', []):
-                fort_id = f['id']
-                fort_type = f.get('type')
-                fort_name = ""
-                fort_image = ""
-                fort_description = ""
-
-                try:
-                    self.api.fort_details(fort_id=f['id'],
-                                  latitude=f['latitude'],
-                                  longitude=f['longitude'])
-
-                    response_dict = self.api.call()
-
-                    parse_fort(fort_id, fort_type, response_dict, self.session_mysql)
-                except Exception as e:
-                    pass
-                    #print e
-                #try:
-                #self.api.gym_state(fort_id=f['id'],
-                #              latitude=f['latitude'],
-                #              longitude=f['longitude'])
-
-                #response_dict = self.api.call()
-                #print response_dict
-                    #parse_fort(fort_id, fort_type, response_dict, self.session_mysql)
-               #except Exception as e:
-               #     print e
 
 
     def join(self, timeout=None):

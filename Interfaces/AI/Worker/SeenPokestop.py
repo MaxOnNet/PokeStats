@@ -6,7 +6,7 @@ import logging
 
 from Interfaces.AI.Human import sleep, random_lat_long_delta
 from Interfaces.AI.Worker.Utils import distance, i2f, format_time
-
+from Interfaces.MySQL.Schema import parse_fort_details
 from Interfaces.pgoapi.utilities import f2i, h2f
 
 log = logging.getLogger(__name__)
@@ -33,10 +33,12 @@ class SeenPokestop(object):
                 and 'name' in response_dict['responses']['FORT_DETAILS']:
             fort_details = response_dict['responses']['FORT_DETAILS']
             fort_name = fort_details['name'].encode('utf8', 'replace')
+
+            parse_fort_details(self.pokestop['id'], 1, fort_details, self.ai.scanner_thread.session_mysql)
         else:
             fort_name = 'Unknown'
         log.info('[#] Now at Pokestop: ' + fort_name + ' - Spinning...')
-        sleep(4)
+        sleep(1)
         self.api.fort_search(fort_id=self.pokestop['id'],
                              fort_latitude=lat,
                              fort_longitude=lng,

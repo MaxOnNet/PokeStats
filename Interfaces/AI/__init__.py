@@ -9,7 +9,7 @@ import re
 import sys
 
 #from Interfaces.AI.Worker import , EvolveAll, MoveToPokestop, , InitialTransfer
-from Interfaces.AI.Worker import MoveToPokestop, SeenPokestop, MoveToGym, PokemonCatch
+from Interfaces.AI.Worker import MoveToPokestop, SeenPokestop, MoveToGym, SeenGym, PokemonCatch
 from Interfaces.AI.Worker.Utils import distance
 from Interfaces.AI.Human import sleep
 
@@ -17,7 +17,7 @@ from Interfaces.AI.Stepper.Normal import Normal
 from Interfaces.AI.Stepper.Spiral import Spiral
 #from Interfaces.AI.Stepper.Polyline import Polyline
 
-from Interfaces.MySQL.Schema import parse_pokemon_cell, parse_gym, parse_pokestop
+from Interfaces.MySQL.Schema import parse_map_cell
 from Interfaces.Geolocation import Geolocation
 
 from Interfaces import Logger
@@ -36,6 +36,7 @@ class AI(object):
         self.position = self.scanner.location.position
 
         self.seen_pokestop = {}
+        self.seen_gym = {}
 
         if self.scanner.mode.stepper == "normal":
             self.stepper = Normal(self)
@@ -52,88 +53,106 @@ class AI(object):
        # worker.work()
        # InventoryRecycle
        #
-        #try:
+
         self.inventory_update()
         self.inventory_recycle()
 
-        #finally:
         self.stepper.take_step()
 
-    def work_on_cell(self, cell, position, pokemon_only):
+    def work_on_cell(self, cell, position, seen_pokemon=False, seen_pokestop=False, seen_gym=False):
         self.position = position
 
-        report = {"pokemons": 0,"pokestops": 0, "gyms": 0}
+        #
+        #  Парсим данные, плевать на задвоения, логика БД вывезет
+        #  парсим целым скопом, для минимизации нагрузки на БД
+        self.scanner_thread._statistic_update(parse_map_cell(cell, self.scanner_thread.session_mysql))
 
-        if 'catchable_pokemons' in cell and len(cell['catchable_pokemons']) > 0:
-            cell['catchable_pokemons'].sort(key=lambda x: distance(position[0], position[1], x['latitude'], x['longitude']))
-
+        #
+        # Искать ли покемонов на пути следования
+        #
+        if seen_pokemon:
             if self.scanner.mode.is_catch:
-                for pokemon in cell['catchable_pokemons']:
-                    if self.catch_pokemon(pokemon) == PokemonCatch.NO_POKEBALLS:
-                        break
+                if 'catchable_pokemons' in cell and len(cell['catchable_pokemons']) > 0:
+                    cell['catchable_pokemons'].sort(key=lambda x: distance(position[0], position[1], x['latitude'], x['longitude']))
 
-        if 'wild_pokemons' in cell and len(cell['wild_pokemons']) > 0:
-            cell['wild_pokemons'].sort(key=lambda x: distance(position[0], position[1], x['latitude'], x['longitude']))
+                    for pokemon in cell['catchable_pokemons']:
+                        if self.catch_pokemon(pokemon) == PokemonCatch.NO_POKEBALLS:
+                            break
 
-            report['pokemons'] += parse_pokemon_cell(cell, self.scanner_thread.session_mysql)
+                if 'wild_pokemons' in cell and len(cell['wild_pokemons']) > 0:
+                    cell['wild_pokemons'].sort(key=lambda x: distance(position[0], position[1], x['latitude'], x['longitude']))
 
-            if self.scanner.mode.is_catch:
-                for pokemon in cell['wild_pokemons']:
-                    if self.catch_pokemon(pokemon) == PokemonCatch.NO_POKEBALLS:
-                        break
+                    for pokemon in cell['wild_pokemons']:
+                        if self.catch_pokemon(pokemon) == PokemonCatch.NO_POKEBALLS:
+                            break
 
-        self.scanner_thread._statistic_update(report)
+        #
+        # Отвлекаться ли на покестопы
+        #
+        if seen_pokestop:
+            if 'forts' in cell:
+                # Only include those with a lat/long
+                pokestops = [pokestop for pokestop in cell['forts'] if 'latitude' in pokestop and 'type' in pokestop]
+                pokestops.sort(key=lambda x: distance(position[0], position[1], x['latitude'], x['longitude']))
 
-        if 'forts' in cell and not pokemon_only:
-            report = {"pokemons": 0, "pokestops": 0, "gyms": 0}
-            # Only include those with a lat/long
-            pokestops = [pokestop for pokestop in cell['forts'] if 'latitude' in pokestop and 'type' in pokestop]
-            gyms = [gym for gym in cell['forts'] if 'gym_points' in gym]
-
-            for pokestop in pokestops:
-                report['pokestops'] += parse_pokestop(pokestop, self.scanner_thread.session_mysql)
-
-            for gym in gyms:
-                report['gyms'] += parse_gym(gym, self.scanner_thread.session_mysql)
-
-            self.scanner_thread._statistic_update(report)
-            # Sort all by distance from current pos- eventually this should
-            # build graph & A* it
-            pokestops.sort(key=lambda x: distance(position[0], position[1], x['latitude'], x['longitude']))
-            gyms.sort(key=lambda x: distance(position[0], position[1], x['latitude'], x['longitude']))
-
-            if self.scanner.mode.is_farm:
-                for pokestop in pokestops:
-                    pokestop_id = str(pokestop['id'])
-                    if pokestop_id in self.seen_pokestop:
-                        if self.seen_pokestop[pokestop_id] + 600 > time.time():
+                if self.scanner.mode.is_farm:
+                    for pokestop in pokestops:
+                        pokestop_distance = distance(position[0], position[1], pokestop['latitude'], pokestop['longitude'])
+                        if pokestop_distance > 150:
+                            log.info("Покестоп находится на большом растоянии ({0}), вернемся к нему позже.".format(pokestop_distance))
                             continue
 
-                    worker = MoveToPokestop(pokestop, self)
+                        pokestop_id = str(pokestop['id'])
+
+                        if pokestop_id in self.seen_pokestop:
+                            if self.seen_pokestop[pokestop_id] + 350 > time.time():
+                                continue
+
+                        worker = MoveToPokestop(pokestop, self)
+                        worker.work()
+
+                        worker = SeenPokestop(pokestop, self)
+                        hack_chain = worker.work()
+
+                        if hack_chain > 10:
+                            sleep(10*self.scanner.mode.is_human_sleep)
+
+                        self.seen_pokestop[pokestop_id] = time.time()
+
+                        self.inventory_update()
+                        self.inventory_recycle()
+
+                        self.scanner_thread._statistic_update({"pokemons": 0, "pokestops": 0, "gyms": 0})
+
+
+        if seen_gym:
+            if 'forts' in cell:
+                gyms = [gym for gym in cell['forts'] if 'gym_points' in gym]
+                gyms.sort(key=lambda x: distance(position[0], position[1], x['latitude'], x['longitude']))
+
+                for gym in gyms:
+                    gym_distance = distance(position[0], position[1], pokestop['latitude'], pokestop['longitude'])
+                    if gym_distance > 150:
+                        log.info("Покестоп находится на большом растоянии ({0}), вернемся к нему позже.".format(gym_distance))
+                        continue
+
+                    gym_id = str(gym['id'])
+                    if gym_id in self.seen_gym:
+                        if self.seen_gym[gym_id] + 350 > time.time():
+                            continue
+
+                    worker = MoveToGym(gym, self)
                     worker.work()
 
-                    worker = SeenPokestop(pokestop, self)
+                    worker = SeenGym(gym, self)
                     hack_chain = worker.work()
+
                     if hack_chain > 10:
                         sleep(10*self.scanner.mode.is_human_sleep)
 
-                    self.seen_pokestop[pokestop_id] = time.time()
-
-                    self.inventory_update()
-                    self.inventory_recycle()
+                    self.seen_gym[gym_id] = time.time()
 
                     self.scanner_thread._statistic_update({"pokemons": 0, "pokestops": 0, "gyms": 0})
-
-                #for gym in gyms:
-                #    worker = MoveToGym(gym, self)
-                #    worker.work()
-
-                #    worker = SeenGym(gym, self)
-                #    hack_chain = worker.work()
-                #    if hack_chain > 10:
-                #        print('need a rest')
-                #        break
-
 
 
     def catch_pokemon(self, pokemon):
@@ -159,7 +178,7 @@ class AI(object):
 
             item_db = self.scanner.account.statistic.get_by_item_id(int(item["item_id"]))
             if item['count'] > item_db[1]:
-                log.info("Item {0} is overdraft, drop {1} items".format(item["item_id"],(item['count']-item_db[1])))
+                log.info("Item {0} is overdraft, drop {1} items".format(item["item_id"], (item['count']-item_db[1])))
                 self.drop_item(item["item_id"],(item['count']-item_db[1]))
 
         self.inventory_update()
