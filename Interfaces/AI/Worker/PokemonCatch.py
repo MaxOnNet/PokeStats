@@ -114,6 +114,7 @@ class PokemonCatch(object):
                             # @TODO, use the best ball in stock to catch VIP (Very Important Pokemon: Configurable)
 
                             if pokeball is 0:
+                                log.warning(balls_stock)
                                 log.warning('[x] Out of pokeballs, switching to farming mode...')
                                 # Begin searching for pokestops.
                                 return PokemonCatch.NO_POKEBALLS
