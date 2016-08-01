@@ -132,7 +132,7 @@ class AI(object):
 
                 for gym in gyms:
                     gym_distance = distance(position[0], position[1], pokestop['latitude'], pokestop['longitude'])
-                    if gym_distance > self.scanner.mode.step**300000:
+                    if gym_distance > self.scanner.mode.step*300000:
                         log.info("Покестоп находится на большом растоянии ({0}), вернемся к нему позже.".format(gym_distance))
                         continue
 
