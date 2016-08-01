@@ -27,15 +27,15 @@ class MoveToPokestop(object):
             log.info('[#] Need to move closer to Pokestop')
             position = (lat, lng, 0.0)
 
-            if self.scanner.location.walk > 0:
-                self.stepper._walk_to(self.scanner.location.walk, *position)
+            if self.scanner.mode.walk > 0:
+                self.stepper._walk_to(self.scanner.mode.walk, *position)
             else:
                 self.api.set_position(*position)
 
             self.api.player_update(latitude=lat, longitude=lng)
             response_dict = self.api.call()
             log.info('[#] Arrived at Pokestop')
-            #sleep(2)
+            sleep(2*self.scanner.mode.is_human_sleep)
             return response_dict
 
         return None

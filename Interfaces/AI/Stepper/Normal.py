@@ -31,65 +31,39 @@ class Normal(object):
         self.y = 0
         self.dx = 0
         self.dy = -1
-        self.walk = self.scanner.location.walk
+        self.walk = self.scanner.mode.walk
         self.steplimit = self.scanner.location.steps
         self.steplimit2 = self.scanner.location.steps**2
 
-        self.origin_lat = self.scanner.location.latitude
-        self.origin_lon = self.scanner.location.longitude
+        self.origin_lat = ai.position[0]
+        self.origin_lon = ai.position[1]
 
     def take_step(self):
-        position = (self.scanner.location.latitude, self.scanner.location.longitude, 0.0)
-        coords = self.generate_spiral(self.scanner.location.latitude, self.scanner.location.longitude, 0.0009, self.steplimit2)
-        self.api.set_position(*position)
-        step = 1
-        #for step in range(self.steplimit2):
-        for coord in coords:
-            # starting at 0 index
-            self.scanner_thread._status_scanner_apply(1, '[AI] Scanning area for objects ({} / {})'.format((step + 1), self.steplimit**2))
+            position = (self.origin_lat, self.origin_lon, 0.0)
 
-            log.debug('steplimit: {} x: {} y: {} pos: {} dx: {} dy {}'.format(
-                        self.steplimit2, self.x, self.y, self.pos, self.dx,self.dy))
+            self.api.set_position(*position)
+            for step in range(self.steplimit2):
+                # starting at 0 index
+                self.scanner_thread._status_scanner_apply(1, '[#] Scanning area for objects ({} / {})'.format((step + 1), self.steplimit**2))
+                log.debug('steplimit: {} x: {} y: {} pos: {} dx: {} dy {}'.format(self.steplimit2, self.x, self.y, self.pos, self.dx,self.dy))
+                # Scan location math
+                if -self.steplimit2 / 2 < self.x <= self.steplimit2 / 2 and -self.steplimit2 / 2 < self.y <= self.steplimit2 / 2:
+                    position = (self.x * 0.0025 + self.origin_lat,
+                                self.y * 0.0025 + self.origin_lon, 0)
+                    if self.walk > 0:
+                        self._walk_to(self.walk, *position)
+                    else:
+                        self.api.set_position(*position)
 
-            # Scan location math
-            #if -self.steplimit2 / 2 < self.x <= self.steplimit2 / 2 and -self.steplimit2 / 2 < self.y <= self.steplimit2 / 2:
-            #    position = (self.x * 0.0025 + self.origin_lat,
-            #                self.y * 0.0025 + self.origin_lon, 0)
-            position = (coord['lat'], coord['lng'], 0)
-            if self.walk > 0:
-                self._walk_to(self.walk, *position)
-            else:
-                self.api.set_position(*position)
-            #if self.x == self.y or self.x < 0 and self.x == -self.y or self.x > 0 and self.x == 1 - self.y:
-            #    (self.dx, self.dy) = (-self.dy, self.dx)
+                    log.info('[#] {}'.format(position))
+                if self.x == self.y or self.x < 0 and self.x == -self.y or self.x > 0 and self.x == 1 - self.y:
+                    (self.dx, self.dy) = (-self.dy, self.dx)
 
-            #(self.x, self.y) = (self.x + self.dx, self.y + self.dy)
+                (self.x, self.y) = (self.x + self.dx, self.y + self.dy)
 
-            self._work_at_position(position[0], position[1], position[2], True)
-            sleep(1)
-            step += 1
+                self._work_at_position(position[0], position[1], position[2], True)
+                sleep(10*self.scanner.mode.is_human_sleep)
 
-    def generate_spiral(self, latitude, longitude, step_size, step_limit):
-        coords = [{'lat': latitude, 'lng': longitude}]
-        steps,x,y,d,m = 1, 0, 0, 1, 1
-
-        while steps < step_limit:
-            while 2 * x * d < m and steps < step_limit:
-                x = x + d
-                steps += 1
-                lat = x * step_size + latitude + random_lat_long_delta()
-                lng = y * step_size + longitude + random_lat_long_delta()
-                coords.append({'lat': lat, 'lng': lng})
-            while 2 * y * d < m and steps < step_limit:
-                y = y + d
-                steps += 1
-                lat = x * step_size + latitude + random_lat_long_delta()
-                lng = y * step_size + longitude + random_lat_long_delta()
-                coords.append({'lat': lat, 'lng': lng})
-
-            d = -1 * d
-            m = m + 1
-        return coords
 
     def _walk_to(self, speed, lat, lng, alt):
         dist = distance(i2f(self.api._position_lat), i2f(self.api._position_lng), lat, lng)
@@ -111,9 +85,10 @@ class Normal(object):
                 self.ai.heartbeat()
 
                 self._work_at_position(i2f(self.api._position_lat), i2f(self.api._position_lng), alt, False)
-                sleep(1)
+                sleep(1*self.scanner.mode.is_human_sleep)
             self.api.set_position(lat, lng, alt)
             self.ai.heartbeat()
+
 
     def _work_at_position(self, lat, lng, alt, pokemon_only=False):
         cellid = get_cell_ids(lat, lng)

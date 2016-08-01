@@ -9,7 +9,6 @@ import time
 from random import randint
 
 
-
 from Interfaces.Config import Config
 from Interfaces.Geolocation import Geolocation
 from Interfaces.MySQL import init
@@ -24,8 +23,6 @@ from Interfaces.AI.Profile import Profile
 from Interfaces.AI.Stepper import get_cell_ids
 
 log = logging.getLogger(__name__)
-
-#TIMESTAMP = '\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000'
 
 
 class Scanner(threading.Thread):
@@ -49,30 +46,29 @@ class Scanner(threading.Thread):
         self.profile = Profile(self)
 
         self.daemon = True
-        self.ai_stepper = True
-        self.alive = False
+
         self.await = datetime.datetime.now()
 
-    def _statistic_clean(self):
-        self.scanner.statistic.date_start = datetime.datetime.now()
-        self.scanner.statistic.pokemons = 0
-        self.scanner.statistic.pokestops = 0
-        self.scanner.statistic.gyms = 0
+    def _statistic_update(self, report=None):
+        self.await = datetime.datetime.now()
 
-        self.session_mysql.commit()
-        self.session_mysql.flush()
-    def _statistic_apply(self, report):
-        try:
-            self.await = datetime.datetime.now()
-            self.scanner.statistic.date_start = datetime.datetime.now()
+        self.scanner.statistic.date_start = datetime.datetime.now()
+
+        if report is None:
+            self.scanner.statistic.pokemons = 0
+            self.scanner.statistic.pokestops = 0
+            self.scanner.statistic.gyms = 0
+        else:
             self.scanner.statistic.pokemons += report['pokemons']
             self.scanner.statistic.pokestops += report['pokestops']
             self.scanner.statistic.gyms += report['gyms']
+        try:
 
             self.session_mysql.commit()
             self.session_mysql.flush()
         except:
             log.error('Error save stats.')
+
     def _status_scanner_apply(self, active=0, state=""):
         log.info('[{0}] - {1} - {2}.'.format(self.scanner.id, active, state))
 
@@ -202,7 +198,7 @@ class Scanner(threading.Thread):
             self.alive = False
 
     def run_scanner(self):
-        self._statistic_clean()
+        self._statistic_update()
 
         try:
             if self.api._auth_provider and self.api._auth_provider._ticket_expire:
@@ -230,6 +226,13 @@ class Scanner(threading.Thread):
             self.profile.update_inventory()
         finally:
             self.ai.heartbeat()
+
+
+        try:
+            self.ai.take_step()
+        finally:
+            self.ai.heartbeat()
+
 
         if not self.scanner.location.use_ai:
             step_size = 0.00111
@@ -259,7 +262,7 @@ class Scanner(threading.Thread):
                             return False
 
                     try:
-                        self._statistic_apply(parse_map(response_dict, self.session_mysql))
+                        self._statistic_update(parse_map(response_dict, self.session_mysql))
                         self.fort_scanner(response_dict)
                     except Exception as e:
                         self._status_scanner_apply(1, "Scan step failed. Response dictionary key error, skip step")
@@ -273,7 +276,7 @@ class Scanner(threading.Thread):
             log.info("USE AI")
             if self.scanner.location.use_ai_stepper:
                 print "Take step"
-                self.ai.take_step()
+
             else:
                 pass
 

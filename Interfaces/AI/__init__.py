@@ -10,7 +10,11 @@ import sys
 #from Interfaces.AI.Worker import PokemonCatch, EvolveAll, MoveToPokestop, , InitialTransfer
 from Interfaces.AI.Worker import MoveToPokestop, SeenPokestop, MoveToGym
 from Interfaces.AI.Worker.Utils import distance
-from Interfaces.AI.Stepper.Normal import Normal as Stepper
+from Interfaces.AI.Human import sleep
+
+from Interfaces.AI.Stepper.Normal import Normal
+from Interfaces.AI.Stepper.Spiral import Spiral
+#from Interfaces.AI.Stepper.Polyline import Polyline
 
 from Interfaces.MySQL.Schema import parse_pokemon_cell, parse_gym, parse_pokestop
 from Interfaces.Geolocation import Geolocation
@@ -21,17 +25,29 @@ from Inventory import Item
 
 class AI(object):
     def __init__(self, scanner_thread):
+
         self.scanner_thread = scanner_thread
         self.api = scanner_thread.api
         self.config = scanner_thread.config
         self.scanner = scanner_thread.scanner
-        self.stepper = Stepper(self)
 
-        self.position = [0, 0, 0]
+        self.position = self.scanner.location.position
+
+        if self.scanner.mode.stepper == "normal":
+            self.stepper = Normal(self)
+        if self.scanner.mode.stepper == "spiral":
+            self.stepper = Spiral(self)
+#        if self.scanner.mode.stepper == "polyline":
+#            self.stepper = Polyline(self)
+
+        if self.stepper is None:
+            raise "Stepper select error, stepper {0} not found.".format(self.scanner.mode.stepper)
 
     def take_step(self):
        # worker = InitialTransfer(self)
        # worker.work()
+       # InventoryRecycle
+       #
         try:
             self.update_inventory()
         finally:
@@ -58,7 +74,7 @@ class AI(object):
             #    if self.catch_pokemon(pokemon) == PokemonCatch.NO_POKEBALLS:
             #        break
 
-        self.scanner_thread._statistic_apply(report)
+        self.scanner_thread._statistic_update(report)
 
 
         if include_fort_on_path:
@@ -74,28 +90,27 @@ class AI(object):
                 for gym in gyms:
                     report['gyms'] += parse_gym(gym, self.scanner_thread.session_mysql)
 
-                self.scanner_thread._statistic_apply(report)
+                self.scanner_thread._statistic_update(report)
                 # Sort all by distance from current pos- eventually this should
                 # build graph & A* it
                 pokestops.sort(key=lambda x: distance(position[0], position[1], x['latitude'], x['longitude']))
                 gyms.sort(key=lambda x: distance(position[0], position[1], x['latitude'], x['longitude']))
 
+                if self.scanner.mode.is_farm:
+                    for pokestop in pokestops:
 
+                        worker = MoveToPokestop(pokestop, self)
+                        worker.work()
 
-                #for pokestop in pokestops:
-                #    self.scanner_thread._statistic_apply({"pokemons": 0,"pokestops": 0, "gyms": 0})
-                #    worker = MoveToPokestop(pokestop, self)
-                #    worker.work()
+                        worker = SeenPokestop(pokestop, self)
+                        hack_chain = worker.work()
+                        if hack_chain > 10:
+                            sleep(10*self.scanner.mode.is_human_sleep)
 
+                        self.scanner_thread.profile.update_profile()
+                        self.scanner_thread.profile.update_inventory()
+                        self.scanner_thread._statistic_update()
 
-                    #worker = SeenPokestop(pokestop, self)
-                    #worker.work()
-                    #if hack_chain > 10:
-                    #    print('need a rest')
-                    #    break
-
-                    #self.scanner_thread.profile.update_profile()
-                    #self.scanner_thread.profile.update_inventory()
                 #for gym in gyms:
                 #    worker = MoveToGym(gym, self)
                 #    worker.work()

@@ -10,12 +10,13 @@ from Interfaces.AI.Stepper.Walker.Polyline import Polyline as PolylineWalker
 
 log = logging.getLogger(__name__)
 
+
 class Polyline(Normal):
 
     def _walk_to(self, speed, lat, lng, alt):
         origin = ','.join([str(self.api._position_lat), str(self.api._position_lng)])
         destination = ','.join([str(lat), str(lng)])
-        polyline_walker = PolylineWalker(origin, destination, self.speed)
+        polyline_walker = PolylineWalker(origin, destination, self.walk)
         proposed_origin = polyline_walker.points[0]
         proposed_destination = polyline_walker.points[-1]
         proposed_lat = proposed_origin[0]

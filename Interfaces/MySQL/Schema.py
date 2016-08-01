@@ -17,6 +17,20 @@ from datetime import datetime, timedelta
 log = logging.getLogger(__name__)
 Base = declarative_base()
 
+class Trainer(Base):
+    __tablename__ = 'trainer'
+    __table_args__ = {'mysql_engine': 'InnoDB', 'mysql_charset': 'utf8', 'mysql_collate': 'utf8_general_ci',
+                      'mysql_comment': ''}
+    id = Column(Integer(), primary_key=True, autoincrement=True, doc="")
+    cd_team = Column(Integer(), default=0, nullable=False)
+
+    username = Column(String(64), nullable=False, doc="")
+    level = Column(Integer(), default=1, nullable=False)
+
+    date_create = Column(DateTime(), nullable=False, default=func.now())
+    date_change = Column(DateTime(), nullable=False, default=func.now(), onupdate=func.now())
+
+
 
 class ScannerServer(Base):
     __tablename__ = 'scanner_server'
@@ -124,10 +138,6 @@ class ScannerLocation(Base):
     longitude = Column(Float(), default=0)
 
     steps = Column(Integer(), default=10)
-    walk = Column(Integer(), default=39)
-
-    use_ai = Column(Boolean(), default=False)
-    use_ai_stepper = Column(Boolean(), default=False)
 
     def fix(self, geolocation):
         if self.latitude == 0 or self.longitude == 0:
@@ -154,6 +164,7 @@ class Scanner(Base):
     cd_server = Column(Integer(), ForeignKey('scanner_server.id'), default=0, nullable=False, doc="")
     cd_account = Column(Integer(), ForeignKey('scanner_account.id'), default=0, nullable=False, doc="")
     cd_location = Column(Integer(), ForeignKey('scanner_location.id'), default=0, nullable=False, doc="")
+    cd_mode = Column(Integer(), ForeignKey('scanner_mode.id'), default=0, nullable=False, doc="")
 
     is_enable = Column(Boolean(), default=False)
     is_active = Column(Boolean(), default=False)
@@ -169,8 +180,35 @@ class Scanner(Base):
     server = relationship("ScannerServer", backref="Scanner")
     account = relationship("ScannerAccount", backref="Scanner")
     location = relationship("ScannerLocation", backref="Scanner")
+    mode = relationship("ScannerMode", backref="Scanner")
 
     statistic = relationship("ScannerStatistic", uselist=False)
+
+
+class ScannerMode(Base):
+    __tablename__ = 'scanner_mode'
+    __table_args__ = {'mysql_engine': 'InnoDB', 'mysql_charset': 'utf8', 'mysql_collate': 'utf8_general_ci',
+                      'mysql_comment': ''}
+
+    id = Column(Integer(), primary_key=True, autoincrement=True, doc="")
+
+    code = Column(String(16), nullable=False, default="None", doc="")
+    walk = Column(Integer(), default=25, nullable=False)
+    stepper = Column(String(16), default="Normal", nullable=False)
+
+    is_catch = Column(Boolean(), default=True, nullable=False)
+    is_farm = Column(Boolean(), default=True, nullable=False)
+    is_defender = Column(Boolean(), default=False, nullable=False)
+
+    date_create = Column(DateTime(), nullable=False, default=func.now())
+    date_change = Column(DateTime(), nullable=False, default=func.now(), onupdate=func.now())
+
+    @hybrid_property
+    def is_human_sleep(self):
+        if self.is_catch or self.is_farm or self.is_defender:
+            return 1
+        else:
+            return 0
 
 
 class ScannerStatistic(Base):
@@ -301,6 +339,17 @@ class Gym(Base):
     date_create = Column(DateTime(), nullable=False, default=func.now())
     date_change = Column(DateTime(), nullable=False, default=func.now(), onupdate=func.now())
 
+
+class GymMembership(Base):
+    __tablename__ = 'gym_membership'
+    __table_args__ = {'mysql_engine': 'InnoDB', 'mysql_charset': 'utf8', 'mysql_collate': 'utf8_general_ci',
+                      'mysql_comment': ''}
+
+    cd_gym = Column(String(64), primary_key=True, doc="")
+    cd_team = Column(Integer(), nullable=False, doc="")
+    cd_pokemon = Column(Integer(), default=0, nullable=False, doc="")
+
+    pokemon_cp = Column(Integer(), default=0, nullable=False, doc="")
 
 def parse_map(map_dict, session):
     count_pokemons = 0
