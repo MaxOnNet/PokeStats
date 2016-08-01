@@ -38,7 +38,7 @@ class Normal(object):
 
     def take_step(self):
         position = [self.origin_lat, self.origin_lon, 0]
-        coords = self.generate_coords(self.origin_lat, self.origin_lon, 0.0015, self.distance)
+        coords = self.generate_coords(self.origin_lat, self.origin_lon, 0.001, self.distance)
 
         self.get_google_path(coords)
         self.api.set_position(*position)
