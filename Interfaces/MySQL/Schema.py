@@ -378,6 +378,9 @@ class GymMembership(Base):
     pokemon_cp = Column(Integer(), default=0, nullable=False, doc="")
     pokemon_nickname = Column(String(256), default="", doc="")
 
+    date_create = Column(DateTime(), nullable=False, default=func.now())
+    date_change = Column(DateTime(), nullable=False, default=func.now(), onupdate=func.now())
+
 
 def parse_map_cell(map_cell, session):
     count_pokemons = 0

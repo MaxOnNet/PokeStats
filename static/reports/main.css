@@ -254,3 +254,28 @@ a {
     text-transform: none;
     text-decoration:none;
 }
+
+td.clsBodyRowTrainerName {
+    width: 80px;
+    text-align: left;
+    padding-left: 3px;
+    padding-right: 3px;
+    color: #ffffff;
+    background-color: #555555;
+}
+td.clsBodyRowTrainerLevel {
+    width: 40px;
+    text-align: center;
+    padding-left: 3px;
+    padding-right: 3px;
+    color: #ffffff;
+    background-color: #555555;
+}
+
+td.clsBodyRowGymList {
+    text-align: left;
+    padding-left: 3px;
+    padding-right: 3px;
+    color: #ffffff;
+    background-color: #777777;
+}
