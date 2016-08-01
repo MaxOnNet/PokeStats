@@ -58,7 +58,11 @@ session_mysql = session_maker()
 
 scanner_alive = True
 if __name__ == '__main__':
-    logging.basicConfig( filemode='w', level=logging.INFO, format='%(asctime)s [%(module)11s] [%(levelname)7s] %(message)s')
+    pid = str(os.getpid())
+    pidfile = "../.log/worker.pid"
+    file(pidfile, 'w').write(pid)
+
+    logging.basicConfig(filename='../.log/worker.log', filemode='w', level=logging.INFO, format='%(asctime)s [%(module)11s] [%(levelname)7s] %(message)s')
 
     logging.getLogger("peewee").setLevel(logging.WARNING)
     logging.getLogger("requests").setLevel(logging.WARNING)
