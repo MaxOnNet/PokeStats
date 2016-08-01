@@ -10,7 +10,7 @@
             <td class="clsTableParentBody">
                 <table cellpadding="0" cellspacing="1" class="clsTable">
                     <tr class="clsHeader">
-                        <td class="clsHeader" rowspan="1" colspan="5">Scanner</td>
+                        <td class="clsHeader" rowspan="1" colspan="6">Scanner</td>
                         <td class="clsHeader" rowspan="1" colspan="4">Location</td>
                         <td class="clsHeader" rowspan="1" colspan="4">Account</td>
                         <td class="clsHeader" rowspan="1" colspan="5">Session Statistic</td>
@@ -21,6 +21,7 @@
                         <td class="clsHeaderE">E</td>
                         <td class="clsHeaderE">A</td>
                         <td class="clsHeader">Status</td>
+                        <td class="clsHeader">Map</td>
 
                         <td class="clsHeader">ID</td>
                         <td class="clsHeaderE">F</td>
@@ -45,6 +46,7 @@
                             <td class="clsBodyRowEnabled clsBodyRowEnabled_{{ db_row['s_enable'] }}">{{ db_row["s_enable"] }}</td>
                             <td class="clsBodyRowEnabled clsBodyRowEnabled_{{ db_row['s_active'] }}">{{ db_row["s_active"] }}</td>
                             <td class="clsBodyRowStatusStr">{{ db_row["s_state"] }}</td>
+                            <td class="clsBodyRowMap"><a href="{{ db_row['s_google_path'] }}" class="link">map</a></td>
 
                             <td class="clsBodyRowId">{{ db_row["sl_id"] }}</td>
                             <td class="clsBodyRowEnabled clsBodyRowEnabled_{{ db_row['sl_fast']+1 }}">{{ db_row["sl_fast"] }}</td>

@@ -1,14 +1,15 @@
 # -*- coding: utf-8 -*-
 
 import datetime
+import time
 import json
 import logging
 import random
 import re
 import sys
 
-#from Interfaces.AI.Worker import PokemonCatch, EvolveAll, MoveToPokestop, , InitialTransfer
-from Interfaces.AI.Worker import MoveToPokestop, SeenPokestop, MoveToGym
+#from Interfaces.AI.Worker import , EvolveAll, MoveToPokestop, , InitialTransfer
+from Interfaces.AI.Worker import MoveToPokestop, SeenPokestop, MoveToGym, PokemonCatch
 from Interfaces.AI.Worker.Utils import distance
 from Interfaces.AI.Human import sleep
 
@@ -22,6 +23,7 @@ from Interfaces.Geolocation import Geolocation
 from Interfaces import Logger
 from Inventory import Item
 
+log = logging.getLogger(__name__)
 
 class AI(object):
     def __init__(self, scanner_thread):
@@ -32,6 +34,8 @@ class AI(object):
         self.scanner = scanner_thread.scanner
 
         self.position = self.scanner.location.position
+
+        self.seen_pokestop = {}
 
         if self.scanner.mode.stepper == "normal":
             self.stepper = Normal(self)
@@ -48,12 +52,14 @@ class AI(object):
        # worker.work()
        # InventoryRecycle
        #
-        try:
-            self.update_inventory()
-        finally:
-            self.stepper.take_step()
+        #try:
+        self.inventory_update()
+        self.inventory_recycle()
 
-    def work_on_cell(self, cell, position, include_fort_on_path):
+        #finally:
+        self.stepper.take_step()
+
+    def work_on_cell(self, cell, position):
         self.position = position
 
         report = {"pokemons": 0,"pokestops": 0, "gyms": 0}
@@ -61,55 +67,63 @@ class AI(object):
         if 'catchable_pokemons' in cell and len(cell['catchable_pokemons']) > 0:
             cell['catchable_pokemons'].sort(key=lambda x: distance(position[0], position[1], x['latitude'], x['longitude']))
 
-            #for pokemon in cell['catchable_pokemons']:
-            #    if self.catch_pokemon(pokemon) == PokemonCatch.NO_POKEBALLS:
-            #        break
+            if self.scanner.mode.is_catch:
+                for pokemon in cell['catchable_pokemons']:
+                    if self.catch_pokemon(pokemon) == PokemonCatch.NO_POKEBALLS:
+                        break
 
         if 'wild_pokemons' in cell and len(cell['wild_pokemons']) > 0:
             cell['wild_pokemons'].sort(key=lambda x: distance(position[0], position[1], x['latitude'], x['longitude']))
 
             report['pokemons'] += parse_pokemon_cell(cell, self.scanner_thread.session_mysql)
 
-            #for pokemon in cell['wild_pokemons']:
-            #    if self.catch_pokemon(pokemon) == PokemonCatch.NO_POKEBALLS:
-            #        break
+            if self.scanner.mode.is_catch:
+                for pokemon in cell['wild_pokemons']:
+                    if self.catch_pokemon(pokemon) == PokemonCatch.NO_POKEBALLS:
+                        break
 
         self.scanner_thread._statistic_update(report)
 
 
-        if include_fort_on_path:
-            if 'forts' in cell:
-                report = {"pokemons": 0,"pokestops": 0, "gyms": 0}
-                # Only include those with a lat/long
-                pokestops = [pokestop for pokestop in cell['forts'] if 'latitude' in pokestop and 'type' in pokestop]
-                gyms = [gym for gym in cell['forts'] if 'gym_points' in gym]
+        if 'forts' in cell:
+            report = {"pokemons": 0, "pokestops": 0, "gyms": 0}
+            # Only include those with a lat/long
+            pokestops = [pokestop for pokestop in cell['forts'] if 'latitude' in pokestop and 'type' in pokestop]
+            gyms = [gym for gym in cell['forts'] if 'gym_points' in gym]
 
+            for pokestop in pokestops:
+                report['pokestops'] += parse_pokestop(pokestop, self.scanner_thread.session_mysql)
+
+            for gym in gyms:
+                report['gyms'] += parse_gym(gym, self.scanner_thread.session_mysql)
+
+            self.scanner_thread._statistic_update(report)
+            # Sort all by distance from current pos- eventually this should
+            # build graph & A* it
+            pokestops.sort(key=lambda x: distance(position[0], position[1], x['latitude'], x['longitude']))
+            gyms.sort(key=lambda x: distance(position[0], position[1], x['latitude'], x['longitude']))
+
+            if self.scanner.mode.is_farm:
                 for pokestop in pokestops:
-                    report['pokestops'] += parse_pokestop(pokestop, self.scanner_thread.session_mysql)
+                    pokestop_id = str(pokestop['id'])
+                    if pokestop_id in self.seen_pokestop:
+                        if self.seen_pokestop[pokestop_id] + 600 > time.time():
+                            continue
 
-                for gym in gyms:
-                    report['gyms'] += parse_gym(gym, self.scanner_thread.session_mysql)
+                    worker = MoveToPokestop(pokestop, self)
+                    worker.work()
 
-                self.scanner_thread._statistic_update(report)
-                # Sort all by distance from current pos- eventually this should
-                # build graph & A* it
-                pokestops.sort(key=lambda x: distance(position[0], position[1], x['latitude'], x['longitude']))
-                gyms.sort(key=lambda x: distance(position[0], position[1], x['latitude'], x['longitude']))
+                    worker = SeenPokestop(pokestop, self)
+                    hack_chain = worker.work()
+                    if hack_chain > 10:
+                        sleep(10*self.scanner.mode.is_human_sleep)
 
-                if self.scanner.mode.is_farm:
-                    for pokestop in pokestops:
+                    self.seen_pokestop[pokestop_id] = time.time()
 
-                        worker = MoveToPokestop(pokestop, self)
-                        worker.work()
+                    self.inventory_update()
+                    self.inventory_recycle()
 
-                        worker = SeenPokestop(pokestop, self)
-                        hack_chain = worker.work()
-                        if hack_chain > 10:
-                            sleep(10*self.scanner.mode.is_human_sleep)
-
-                        self.scanner_thread.profile.update_profile()
-                        self.scanner_thread.profile.update_inventory()
-                        self.scanner_thread._statistic_update()
+                    self.scanner_thread._statistic_update({"pokemons": 0, "pokestops": 0, "gyms": 0})
 
                 #for gym in gyms:
                 #    worker = MoveToGym(gym, self)
@@ -124,15 +138,14 @@ class AI(object):
 
 
     def catch_pokemon(self, pokemon):
-        return ""
-        #worker = PokemonCatch(pokemon, self)
-        #return_value = worker.work()
+        worker = PokemonCatch(pokemon, self)
+        return_value = worker.work()
 
         #if return_value == PokemonCatch.BAG_FULL:
         #    worker = InitialTransfer(self)
         #    worker.work()
 
-        #return return_value
+        return return_value
 
     def drop_item(self, item_id, count):
         self.api.recycle_inventory_item(item_id=item_id, count=count)
@@ -142,10 +155,17 @@ class AI(object):
         #{'responses': {'RECYCLE_INVENTORY_ITEM': {'result': 1, 'new_count': 46}}, 'status_code': 1, 'auth_ticket': {'expire_timestamp_ms': 1469306228058L, 'start': '/HycFyfrT4t2yB2Ij+yoi+on778aymMgxY6RQgvrGAfQlNzRuIjpcnDd5dAxmfoTqDQrbz1m2dGqAIhJ+eFapg==', 'end': 'f5NOZ95a843tgzprJo4W7Q=='}, 'request_id': 8145806132888207460L}
         return inventory_req
 
-    def inventory_recucle(self):
-        pass
+    def inventory_recycle(self):
+        for item in self.inventory:
 
-    def update_inventory(self):
+            item_db = self.scanner.account.statistic.get_by_item_id(int(item["item_id"]))
+            if item['count'] > item_db[1]:
+                log.info("Item {0} is overdraft, drop {1} items".format(item["item_id"],(item['count']-item_db[1])))
+                self.drop_item(item["item_id"],(item['count']-item_db[1]))
+
+        self.inventory_update()
+
+    def inventory_update(self):
         self.api.get_inventory()
         response = self.api.call()
         self.inventory = list()
@@ -168,7 +188,6 @@ class AI(object):
                                 continue
                             self.inventory.append(item['inventory_item_data'][
                                 'item'])
-
 
 
     def heartbeat(self):

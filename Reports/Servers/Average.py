@@ -27,7 +27,8 @@ class Average(Report, View):
             ss.date_start as "ss_reload",
             ss.pokemons as "ss_pokemons",
             ss.gyms as "ss_gyms",
-            ss.pokestops as "ss_pokestops"
+            ss.pokestops as "ss_pokestops",
+            s.google_path as "s_google_path"
         FROM
             db_pokestats.scanner as s,
             db_pokestats.scanner_account as sa,
@@ -68,7 +69,8 @@ class Average(Report, View):
                 "ss_reload": row[15],
                 "ss_pokemons": row[16],
                 "ss_gyms": row[17],
-                "ss_pokestops": row[18]
+                "ss_pokestops": row[18],
+                "s_google_path": row[19]
             }
 
             self.data.append(row_dict)

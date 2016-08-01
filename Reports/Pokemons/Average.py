@@ -1,8 +1,10 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
-from Interfaces.Pokedex import Pokedex
-from Reports.Report import Report
 from flask.views import View
+
+from Interfaces.AI.Pokedex import Pokedex
+from Reports.Report import Report
+
 
 pokedex = Pokedex()
 

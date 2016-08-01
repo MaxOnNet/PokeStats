@@ -125,6 +125,28 @@ class ScannerAccountStatistic(Base):
     date_change = Column(DateTime(), nullable=False, default=func.now(), onupdate=func.now())
 
 
+    def get_by_item_id(self, item_id):
+        if item_id == 1: return (self.item_ball_poke, self.item_ball_poke_max)
+        if item_id == 2: return (self.item_ball_great, self.item_ball_great_max)
+        if item_id == 3: return (self.item_ball_ultra, self.item_ball_ultra_max)
+        if item_id == 4: return (self.item_ball_master, self.item_ball_master_max)
+
+        if item_id == 101: return (self.item_potion, self.item_potion_max)
+        if item_id == 102: return (self.item_potion_super, self.item_potion_super_max)
+        if item_id == 103: return (self.item_potion_hyper, self.item_potion_hyper_max)
+        if item_id == 104: return (self.item_potion_master, self.item_potion_master_max)
+
+        if item_id == 201: return (self.item_revive, self.item_revive_max)
+        if item_id == 202: return (self.item_revive_master, self.item_revive_master_max)
+
+        if item_id == 701: return (self.item_berry_razz, self.item_berry_razz_max)
+        if item_id == 702: return (self.item_berry_bluk, self.item_berry_bluk_max)
+        if item_id == 703: return (self.item_berry_nanab, self.item_berry_nanab_max)
+        if item_id == 704: return (self.item_berry_wepar, self.item_berry_wepar_max)
+        if item_id == 705: return (self.item_berry_pinap, self.item_berry_pinap_max)
+
+        return (0, 999)
+
 class ScannerLocation(Base):
     __tablename__ = 'scanner_location'
     __table_args__ = {'mysql_engine': 'InnoDB', 'mysql_charset': 'utf8', 'mysql_collate': 'utf8_general_ci',
@@ -137,7 +159,7 @@ class ScannerLocation(Base):
     latitude = Column(Float(), default=0)
     longitude = Column(Float(), default=0)
 
-    steps = Column(Integer(), default=10)
+    distance = Column(Integer(), default=10)
 
     def fix(self, geolocation):
         if self.latitude == 0 or self.longitude == 0:
@@ -173,7 +195,7 @@ class Scanner(Base):
 
     latitude = Column(Float(), default=0, nullable=False)
     longitude = Column(Float(), default=0, nullable=False)
-
+    google_path = Column(String(4096), default=0, nullable=False, doc="")
     date_create = Column(DateTime(), nullable=False, default=func.now())
     date_change = Column(DateTime(), nullable=False, default=func.now(), onupdate=func.now())
 

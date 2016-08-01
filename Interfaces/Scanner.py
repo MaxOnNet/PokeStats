@@ -96,10 +96,11 @@ class Scanner(threading.Thread):
         finally:
             pass
 
-    def _position_scanner_apply(self, position):
+    def _position_scanner_apply(self, position, google_path):
         try:
             self.scanner.latitude = position[0]
             self.scanner.longitude = position[1]
+            self.scanner.google_path = google_path
 
             self.session_mysql.commit()
             self.session_mysql.flush()
@@ -227,58 +228,8 @@ class Scanner(threading.Thread):
         finally:
             self.ai.heartbeat()
 
-
-        try:
-            self.ai.take_step()
-        finally:
-            self.ai.heartbeat()
-
-
-        if not self.scanner.location.use_ai:
-            step_size = 0.00111
-            step_max = self.scanner.location.steps
-            step_index = 1
-
-            for step_location in self.generate_spiral(self.scanner.location.position[0], self.scanner.location.position[1], step_size,step_max):
-                step_position = (step_location['lat'], step_location['lng'])
-
-                if not self._stopevent.isSet():
-                    self._status_scanner_apply(1, "Сканирование, шаг {0} из {1}.".format(step_index, step_max))
-
-                    response_count = 0
-                    response_count_max = 5
-
-                    response_dict = self.send_map_request(step_position)
-                    while not response_dict and not self._stopevent.isSet():
-                        if response_count < response_count_max:
-                            self._status_scanner_apply(1, "Загрузка карты не удалась ({0}), ожидаем.".format(response_count))
-
-                            self._stopevent.wait(self._sleepperiod)
-                            response_dict = self.send_map_request(step_location)
-
-                            response_count += 1
-                        else:
-                            self._status_scanner_apply(1, "Загрузка карты не удалась, завершаем.")
-                            return False
-
-                    try:
-                        self._statistic_update(parse_map(response_dict, self.session_mysql))
-                        self.fort_scanner(response_dict)
-                    except Exception as e:
-                        self._status_scanner_apply(1, "Scan step failed. Response dictionary key error, skip step")
-                        log.error(str(e))
-
-                    step_index += 1
-                else:
-                    self._status_scanner_apply(1, "Сигнал на выход, завершаем работу")
-                    return False
-        else:
-            log.info("USE AI")
-            if self.scanner.location.use_ai_stepper:
-                print "Take step"
-
-            else:
-                pass
+        self.ai.take_step()
+        self.ai.heartbeat()
 
         return True
 

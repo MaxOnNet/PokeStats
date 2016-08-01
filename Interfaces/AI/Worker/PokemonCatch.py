@@ -1,24 +1,46 @@
 # -*- coding: utf-8 -*-
 
 import time
-from sets import Set
-from utils import distance
-from pokemongo_bot.human_behaviour import sleep
-from pokemongo_bot import logger
+import logging
+from Interfaces.AI.Worker.Utils import distance
+from Interfaces.AI.Human import sleep
+from Interfaces.AI.Inventory import Item
+
+log = logging.getLogger(__name__)
+
 
 class PokemonCatch(object):
     BAG_FULL = 'bag_full'
     NO_POKEBALLS = 'no_pokeballs'
 
-    def __init__(self, pokemon, bot):
+    def __init__(self, pokemon, ai):
         self.pokemon = pokemon
-        self.api = bot.api
-        self.bot = bot
-        self.position = bot.position
-        self.config = bot.config
-        self.pokemon_list = bot.pokemon_list
-        self.item_list = bot.item_list
-        self.inventory = bot.inventory
+        self.api = ai.api
+        self.ai = ai
+        self.position = ai.position
+        self.inventory = ai.inventory
+
+
+    def inventory_pokeball(self):
+        self.ai.inventory_update()
+        balls_stock = {1: 0, 2: 0, 3: 0, 4: 0}
+
+        for item in self.ai.inventory:
+            # print(item['inventory_item_data']['item'])
+            item_id = item['item_id']
+            item_count = item['count']
+
+            if item_id == Item.ITEM_POKE_BALL:
+                # print('Poke Ball count: ' + str(item_count))
+                balls_stock[1] = item_count
+            if item_id == Item.ITEM_GREAT_BALL:
+                # print('Great Ball count: ' + str(item_count))
+                balls_stock[2] = item_count
+            if item_id == Item.ITEM_ULTRA_BALL:
+                # print('Ultra Ball count: ' + str(item_count))
+                balls_stock[3] = item_count
+
+        return balls_stock
 
     def work(self):
         encounter_id = self.pokemon['encounter_id']
@@ -33,8 +55,8 @@ class PokemonCatch(object):
             if 'ENCOUNTER' in response_dict['responses']:
                 if 'status' in response_dict['responses']['ENCOUNTER']:
                     if response_dict['responses']['ENCOUNTER']['status'] is 7:
-                        logger.log('[x] Pokemon Bag is full!', 'red')
-                        return PokemonCatchWorker.BAG_FULL
+                        log.warning('[x] Pokemon Bag is full!')
+                        return PokemonCatch.BAG_FULL
 
                     if response_dict['responses']['ENCOUNTER']['status'] is 1:
                         cp = 0
@@ -55,23 +77,21 @@ class PokemonCatch(object):
                                         continue
 
                                 pokemon_potential = round((total_IV / 45.0), 2)
-                                pokemon_num = int(pokemon['pokemon_data'][
-                                                  'pokemon_id']) - 1
-                                pokemon_name = self.pokemon_list[
-                                    int(pokemon_num)]['Name']
-                                logger.log('[#] A Wild {} appeared! [CP {}] [Potential {}]'.format(
-                                    pokemon_name, cp, pokemon_potential), 'yellow')
+                                pokemon_num = int(pokemon['pokemon_data']['pokemon_id']) - 1
 
-                                logger.log('[#] IV [Stamina/Attack/Defense] = [{}/{}/{}]'.format(
+                                log.info('[#] A Wild {} appeared! [CP {}] [Potential {}]'.format(pokemon_num, cp, pokemon_potential))
+
+                                log.info('[#] IV [Stamina/Attack/Defense] = [{}/{}/{}]'.format(
                                     pokemon['pokemon_data']['individual_stamina'],
                                     pokemon['pokemon_data']['individual_attack'],
                                     pokemon['pokemon_data']['individual_defense']
                                 ))
-                                pokemon['pokemon_data']['name'] = pokemon_name
+
                                 # Simulate app
                                 sleep(3)
 
-                        balls_stock = self.bot.pokeball_inventory()
+                        balls_stock = self.inventory_pokeball()
+
                         while(True):
 
                             pokeball = 1 # default:poke ball
@@ -94,16 +114,14 @@ class PokemonCatch(object):
                             # @TODO, use the best ball in stock to catch VIP (Very Important Pokemon: Configurable)
 
                             if pokeball is 0:
-                                logger.log(
-                                    '[x] Out of pokeballs, switching to farming mode...', 'red')
+                                log.warning('[x] Out of pokeballs, switching to farming mode...')
                                 # Begin searching for pokestops.
-                                self.config.mode = 'farm'
                                 return PokemonCatch.NO_POKEBALLS
 
                             balls_stock[pokeball] = balls_stock[pokeball] - 1
                             success_percentage = '{0:.2f}'.format(catch_rate[pokeball-1]*100)
-                            logger.log('[x] Using {} (chance: {}%)... ({} left!)'.format(
-                                self.item_list[str(pokeball)], 
+                            log.info('[x] Using {} (chance: {}%)... ({} left!)'.format(
+                                pokeball,
                                 success_percentage, 
                                 balls_stock[pokeball]
                             ))
@@ -125,50 +143,49 @@ class PokemonCatch(object):
                                 status = response_dict['responses'][
                                     'CATCH_POKEMON']['status']
                                 if status is 2:
-                                    logger.log(
-                                        '[-] Attempted to capture {}- failed.. trying again!'.format(pokemon_name), 'red')
+                                    log.warning(
+                                        '[-] Attempted to capture {}- failed.. trying again!'.format(pokemon_num))
                                     sleep(2)
                                     continue
                                 if status is 3:
-                                    logger.log(
-                                        '[x] Oh no! {} vanished! :('.format(pokemon_name), 'red')
+                                    log.warning(
+                                        '[x] Oh no! {} vanished! :('.format(pokemon_num))
                                 if status is 1:
-                                    logger.log(
+                                    log.info(
                                         '[x] Captured {}! [CP {}] [IV {}]'.format(
-                                            pokemon_name,
+                                            pokemon_num,
                                             cp,
                                             pokemon_potential
-                                        ), 'green'
-                                    )
+                                        ))
 
                                     id_list2 = self.count_pokemon_inventory()
 
-                                    if self.config.evolve_captured:
-                                        pokemon_to_transfer = list(Set(id_list2) - Set(id_list1))
-                                        self.api.evolve_pokemon(pokemon_id=pokemon_to_transfer[0])
-                                        response_dict = self.api.call()
-                                        status = response_dict['responses']['EVOLVE_POKEMON']['result']
-                                        if status == 1:
-                                            logger.log(
-                                                    '[#] {} has been evolved!'.format(pokemon_name), 'green')
-                                        else:
-                                            logger.log(
-                                            '[x] Failed to evolve {}!'.format(pokemon_name))
+                                    #if self.config.evolve_captured:
+                                    #    pokemon_to_transfer = list(Set(id_list2) - Set(id_list1))
+                                    #    self.api.evolve_pokemon(pokemon_id=pokemon_to_transfer[0])
+                                    #    response_dict = self.api.call()
+                                    #    status = response_dict['responses']['EVOLVE_POKEMON']['result']
+                                    #    if status == 1:
+                                    #        logger.log(
+                                    #                '[#] {} has been evolved!'.format(pokemon_name), 'green')
+                                    #    else:
+                                    #        logger.log(
+                                    #        '[x] Failed to evolve {}!'.format(pokemon_name))
 
-                                    if self.should_release_pokemon(pokemon_name, cp, pokemon_potential, response_dict):
-                                        # Transfering Pokemon
-                                        pokemon_to_transfer = list(
-                                            Set(id_list2) - Set(id_list1))
-                                        if len(pokemon_to_transfer) == 0:
-                                            raise RuntimeError(
-                                                'Trying to transfer 0 pokemons!')
-                                        self.transfer_pokemon(
-                                            pokemon_to_transfer[0])
-                                        logger.log(
-                                            '[#] {} has been exchanged for candy!'.format(pokemon_name), 'green')
-                                    else:
-                                        logger.log(
-                                        '[x] Captured {}! [CP {}]'.format(pokemon_name, cp), 'green')
+                                    #if self.should_release_pokemon(pokemon_name, cp, pokemon_potential, response_dict):
+                                    #    # Transfering Pokemon
+                                    #    pokemon_to_transfer = list(
+                                    #        Set(id_list2) - Set(id_list1))
+                                    #    if len(pokemon_to_transfer) == 0:
+                                    #        raise RuntimeError(
+                                    #            'Trying to transfer 0 pokemons!')
+                                    #    self.transfer_pokemon(
+                                    #        pokemon_to_transfer[0])
+                                    #    logger.log(
+                                    #        '[#] {} has been exchanged for candy!'.format(pokemon_name), 'green')
+                                    #else:
+                                    #    logger.log(
+                                    #    '[x] Captured {}! [CP {}]'.format(pokemon_name, cp), 'green')
                             break
         time.sleep(5)
 

@@ -36,7 +36,7 @@ class SeenPokestop(object):
         else:
             fort_name = 'Unknown'
         log.info('[#] Now at Pokestop: ' + fort_name + ' - Spinning...')
-        sleep(2)
+        sleep(4)
         self.api.fort_search(fort_id=self.pokestop['id'],
                              fort_latitude=lat,
                              fort_longitude=lng,
@@ -68,8 +68,6 @@ class SeenPokestop(object):
                         log.info("[+] Loot: {0} count {1}".format(item_id, item_count))
                 else:
                     log.info("[#] Nothing found.")
-
-                self.ai.inventory_recucle()
 
                 pokestop_cooldown = spin_details.get('cooldown_complete_timestamp_ms')
                 if pokestop_cooldown:
