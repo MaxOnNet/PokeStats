@@ -161,7 +161,7 @@ class ScannerLocation(Base):
     latitude = Column(Float(), default=0)
     longitude = Column(Float(), default=0)
 
-    distance = Column(Integer(), default=10)
+    distance = Column(Float(), default=10)
 
     def fix(self, geolocation):
         if self.latitude == 0 or self.longitude == 0:

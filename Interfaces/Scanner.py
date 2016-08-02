@@ -102,7 +102,7 @@ class Scanner(threading.Thread):
 
     def _position_scanner_apply(self, position, google_path):
         self.await = datetime.datetime.now()
-        
+
         try:
             self.scanner.latitude = position[0]
             self.scanner.longitude = position[1]
