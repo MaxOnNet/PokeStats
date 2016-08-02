@@ -39,8 +39,8 @@ class Starline(Normal):
         coords = [{'lat': latitude, 'lng': longitude}]
 
         for coord in Starline.generate_starline([latitude, longitude]):
-            lat = coord[0] + random.uniform(-step_size*0.8, step_size*0.8)
-            lng = coord[1] + random.uniform(-step_size*0.8, step_size*0.8)
+            lat = coord[0] + random.uniform(-step_size/3, step_size/3)
+            lng = coord[1] + random.uniform(-step_size/3, step_size/3)
 
             coords.append({'lat': lat, 'lng': lng})
 
