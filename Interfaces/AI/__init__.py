@@ -14,7 +14,7 @@ from Interfaces import analyticts_timer
 from Interfaces.AI.Worker import MoveToPokestop, SeenPokestop, MoveToGym, SeenGym, PokemonCatch
 from Interfaces.AI.Worker.Utils import distance
 from Interfaces.AI.Human import sleep
-
+from Interfaces.AI.Search import Search
 from Interfaces.AI.Stepper.Normal import Normal
 from Interfaces.AI.Stepper.Spiral import Spiral
 from Interfaces.AI.Stepper.Starline import Starline
@@ -24,7 +24,7 @@ from Interfaces.MySQL.Schema import parse_map_cell
 from Interfaces.Geolocation import Geolocation
 
 from Interfaces import Logger
-from Inventory import Item
+from Inventory import InventoryItem
 
 log = logging.getLogger(__name__)
 
@@ -35,9 +35,10 @@ class AI(object):
         self.api = scanner_thread.api
         self.config = scanner_thread.config
         self.scanner = scanner_thread.scanner
-
+        self.profile = scanner_thread.profile
+        self.inventory = scanner_thread.inventory
         self.position = self.scanner.location.position
-
+        self.search = Search(self.api, self.config)
         self.seen_pokestop = {}
         self.seen_gym = {}
 
@@ -59,8 +60,8 @@ class AI(object):
        # InventoryRecycle
        #
 
-        self.inventory_update()
-        self.inventory_recycle()
+        self.inventory.update()
+        self.inventory.recycle()
 
         self.stepper.take_step()
 
@@ -105,7 +106,7 @@ class AI(object):
                     for pokestop in pokestops:
                         pokestop_distance = round(distance(position[0], position[1], pokestop['latitude'], pokestop['longitude']))
                         if pokestop_distance > self.scanner.mode.step*150000:
-                            log.info("Покестоп находится на большом растоянии ({0}), вернемся к нему позже.".format(pokestop_distance))
+                            log.debug("Покестоп находится на большом растоянии ({0}), вернемся к нему позже.".format(pokestop_distance))
                             continue
 
                         pokestop_id = str(pokestop['id'])
@@ -125,8 +126,8 @@ class AI(object):
 
                         self.seen_pokestop[pokestop_id] = time.time()
 
-                        self.inventory_update()
-                        self.inventory_recycle()
+                        self.inventory.update()
+                        self.inventory.recycle()
 
                         self.scanner_thread._statistic_update({"pokemons": 0, "pokestops": 0, "gyms": 0})
 
@@ -139,7 +140,7 @@ class AI(object):
                 for gym in gyms:
                     gym_distance = round(distance(position[0], position[1], gym['latitude'], gym['longitude']))
                     if gym_distance > self.scanner.mode.step*150000:
-                        log.info("Покестоп находится на большом растоянии ({0}), вернемся к нему позже.".format(gym_distance))
+                        log.debug("Gym находится на большом растоянии ({0}), вернемся к нему позже.".format(gym_distance))
                         continue
 
                     gym_id = str(gym['id'])
@@ -172,46 +173,6 @@ class AI(object):
         #    worker.work()
 
         return return_value
-
-    def drop_item(self, item_id, count):
-        self.api.recycle_inventory_item(item_id=item_id, count=count)
-        inventory_req = self.api.call()
-
-        # Example of good request response
-        #{'responses': {'RECYCLE_INVENTORY_ITEM': {'result': 1, 'new_count': 46}}, 'status_code': 1, 'auth_ticket': {'expire_timestamp_ms': 1469306228058L, 'start': '/HycFyfrT4t2yB2Ij+yoi+on778aymMgxY6RQgvrGAfQlNzRuIjpcnDd5dAxmfoTqDQrbz1m2dGqAIhJ+eFapg==', 'end': 'f5NOZ95a843tgzprJo4W7Q=='}, 'request_id': 8145806132888207460L}
-        return inventory_req
-
-    def inventory_recycle(self):
-        for item in self.inventory:
-
-            item_db = self.scanner.account.statistic.get_by_item_id(int(item["item_id"]))
-            if item['count'] > item_db[1]:
-                log.info("Membership {0} is overdraft, drop {1} items".format(item["item_id"], (item['count']-item_db[1])))
-                self.drop_item(item["item_id"],(item['count']-item_db[1]))
-
-        self.inventory_update()
-
-    def inventory_update(self):
-        self.api.get_inventory().get_player()
-        response = self.api.call()
-        self.inventory = list()
-        if 'responses' in response:
-            if 'GET_INVENTORY' in response['responses']:
-                if 'inventory_delta' in response['responses']['GET_INVENTORY']:
-                    if 'inventory_items' in response['responses']['GET_INVENTORY']['inventory_delta']:
-                        for item in response['responses']['GET_INVENTORY']['inventory_delta']['inventory_items']:
-                            if not 'inventory_item_data' in item:
-                                continue
-                            if not 'item' in item['inventory_item_data']:
-                                continue
-                            if not 'item_id' in item['inventory_item_data'][
-                                    'item']:
-                                continue
-                            if not 'count' in item['inventory_item_data'][
-                                    'item']:
-                                continue
-                            self.inventory.append(item['inventory_item_data']['item'])
-
 
     def heartbeat(self):
         self.api.get_player()

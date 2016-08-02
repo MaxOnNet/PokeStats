@@ -18,6 +18,7 @@ from Interfaces.pgoapi import PGoApi
 
 from Interfaces.AI import AI
 from Interfaces.AI.Profile import Profile
+from Interfaces.AI.Inventory import Inventory
 
 log = logging.getLogger(__name__)
 
@@ -39,8 +40,10 @@ class Scanner(threading.Thread):
         self._sleeplogin = 20
 
         self.api = PGoApi()
-        self.ai = AI(self)
+
         self.profile = Profile(self)
+        self.inventory = Inventory(self)
+        self.ai = AI(self)
 
         self.daemon = True
 
@@ -69,7 +72,7 @@ class Scanner(threading.Thread):
 
 
     def _status_scanner_apply(self, active=0, state=""):
-        log.info('[{0}] - {1} - {2}.'.format(self.scanner.id, active, state))
+        log.info(state)
         self.await = datetime.datetime.now()
 
         self.scanner.is_active = active
@@ -85,7 +88,7 @@ class Scanner(threading.Thread):
 
 
     def _status_account_apply(self, active=0, state=""):
-        log.info('[{0}] - {1} - {2}.'.format(self.scanner.id, active, state))
+        log.info(state)
         self.await = datetime.datetime.now()
 
         self.scanner.account.is_active = active
@@ -188,10 +191,11 @@ class Scanner(threading.Thread):
             return False
 
         try:
-            self.profile.update_profile()
-            self.profile.update_inventory()
-        finally:
+            self.profile.update()
+            self.inventory.update()
             self.ai.heartbeat()
+        finally:
+            self.session_mysql.flush()
 
         self.ai.take_step()
         self.ai.heartbeat()
@@ -202,6 +206,7 @@ class Scanner(threading.Thread):
     def join(self, timeout=None):
         """ Stop the thread and wait for it to end. """
         self._stopevent.set()
+        self.ai.search.stop()
 
         threading.Thread.join(self, timeout)
 

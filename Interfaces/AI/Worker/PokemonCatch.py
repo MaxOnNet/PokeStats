@@ -4,7 +4,7 @@ import time
 import logging
 from Interfaces.AI.Worker.Utils import distance
 from Interfaces.AI.Human import sleep
-from Interfaces.AI.Inventory import Item
+from Interfaces.AI.Inventory import InventoryItem
 
 log = logging.getLogger(__name__)
 
@@ -17,31 +17,9 @@ class PokemonCatch(object):
         self.pokemon = pokemon
         self.api = ai.api
         self.ai = ai
+
         self.position = ai.position
 
-    def inventory_pokeball(self):
-        self.ai.inventory_update()
-        balls_stock = {1: 0, 2: 0, 3: 0, 4: 0}
-
-        for item in self.ai.inventory:
-            # print(item['inventory_item_data']['item'])
-            item_id = int(item['item_id'])
-            item_count = int(item['count'])
-
-            if item_id == 1:
-                # print('Poke Ball count: ' + str(item_count))
-                balls_stock[1] = item_count
-            if item_id == 2:
-                # print('Great Ball count: ' + str(item_count))
-                balls_stock[2] = item_count
-            if item_id == 3:
-                # print('Ultra Ball count: ' + str(item_count))
-                balls_stock[3] = item_count
-            if item_id == 4:
-                # print('Ultra Ball count: ' + str(item_count))
-                balls_stock[4] = item_count
-
-        return balls_stock
 
     def work(self):
         encounter_id = self.pokemon['encounter_id']
@@ -80,9 +58,9 @@ class PokemonCatch(object):
                                 pokemon_potential = round((total_IV / 45.0), 2)
                                 pokemon_num = int(pokemon['pokemon_data']['pokemon_id']) - 1
 
-                                log.info('[#] A Wild {} appeared! [CP {}] [Potential {}]'.format(pokemon_num, cp, pokemon_potential))
+                                log.info('A Wild {} appeared! [CP {}] [Potential {}]'.format(pokemon_num, cp, pokemon_potential))
 
-                                log.info('[#] IV [Stamina/Attack/Defense] = [{}/{}/{}]'.format(
+                                log.info('IV [Stamina/Attack/Defense] = [{}/{}/{}]'.format(
                                     pokemon['pokemon_data']['individual_stamina'],
                                     pokemon['pokemon_data']['individual_attack'],
                                     pokemon['pokemon_data']['individual_defense']
@@ -91,7 +69,7 @@ class PokemonCatch(object):
                                 # Simulate app
                                 sleep(3)
 
-                        balls_stock = self.inventory_pokeball()
+                        balls_stock = self.ai.inventory.pokeball()
 
                         while(True):
 
@@ -116,13 +94,13 @@ class PokemonCatch(object):
 
                             if pokeball is 0:
                                 log.warning(balls_stock)
-                                log.warning('[x] Out of pokeballs, switching to farming mode...')
+                                log.warning('Out of pokeballs, switching to farming mode...')
                                 # Begin searching for pokestops.
                                 return PokemonCatch.NO_POKEBALLS
 
                             balls_stock[pokeball] = balls_stock[pokeball] - 1
                             success_percentage = '{0:.2f}'.format(catch_rate[pokeball-1]*100)
-                            log.info('[x] Using {} (chance: {}%)... ({} left!)'.format(
+                            log.info('Using {} (chance: {}%)... ({} left!)'.format(
                                 pokeball,
                                 success_percentage, 
                                 balls_stock[pokeball]
@@ -144,14 +122,14 @@ class PokemonCatch(object):
                                     'status' in response_dict['responses']['CATCH_POKEMON']:
                                 status = response_dict['responses']['CATCH_POKEMON']['status']
                                 if status is 2:
-                                    log.warning('[-] Attempted to capture {}- failed.. trying again!'.format(pokemon_num))
+                                    log.warning('Attempted to capture {}- failed.. trying again!'.format(pokemon_num))
                                     sleep(2)
                                     continue
                                 if status is 3:
-                                    log.warning('[x] Oh no! {} vanished! :('.format(pokemon_num))
+                                    log.warning('Oh no! {} vanished! :('.format(pokemon_num))
                                 if status is 1:
                                     log.info(
-                                        '[x] Captured {}! [CP {}] [IV {}]'.format(pokemon_num, cp, pokemon_potential))
+                                        'Captured {}! [CP {}] [IV {}]'.format(pokemon_num, cp, pokemon_potential))
 
                                     id_list2 = self.count_pokemon_inventory()
 

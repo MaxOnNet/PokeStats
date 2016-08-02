@@ -223,6 +223,7 @@ class ScannerMode(Base):
 
     is_catch = Column(Boolean(), default=True, nullable=False)
     is_farm = Column(Boolean(), default=True, nullable=False)
+    is_lookup = Column(Boolean(), default=True, nullable=False)
     is_defender = Column(Boolean(), default=False, nullable=False)
 
     date_create = Column(DateTime(), nullable=False, default=func.now())

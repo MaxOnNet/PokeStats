@@ -24,10 +24,10 @@ class MoveToPokestop(object):
 
         dist = distance(self.position[0], self.position[1], lat, lng)
 
-        log.info('[#] Видим покестоп {} на удалении {}'.format(pokestop_id, format_dist(dist)))
+        log.info('Видим покестоп {} на удалении {}'.format(pokestop_id, format_dist(dist)))
 
         if dist > 10:
-            log.info('[#] Покестоп дальше 10 метров, бежим...')
+            log.info('Покестоп дальше 10 метров, бежим...')
             position = (lat, lng, 0.0)
 
             if self.scanner.mode.walk > 0:
@@ -38,7 +38,7 @@ class MoveToPokestop(object):
             self.api.player_update(latitude=lat, longitude=lng)
             self.ai.position = position
             response_dict = self.api.call()
-            log.info('[#] Прибыли к покестопу')
+            log.info('Прибыли к покестопу')
             sleep(2*self.scanner.mode.is_human_sleep)
             return response_dict
 

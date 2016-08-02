@@ -18,7 +18,7 @@ log = logging.getLogger(__name__)
 scanner_id = 11
 
 if __name__ == '__main__':
-    logging.basicConfig(level=logging.INFO, format='%(asctime)s [%(module)11s] [%(levelname)7s] %(message)s')
+    logging.basicConfig(level=logging.INFO, format='%(asctime)s [%(module)15s] [%(levelname)7s] [%(threadName)3s] %(message)s')
 
     logging.getLogger("peewee").setLevel(logging.WARNING)
     logging.getLogger("requests").setLevel(logging.WARNING)

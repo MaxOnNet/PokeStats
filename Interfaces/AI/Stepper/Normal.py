@@ -68,7 +68,7 @@ class Normal(object):
         intSteps = int(steps)
         residuum = steps - intSteps
 
-        log.info('[AI] Бежим из ' + str((i2f(self.api._position_lat), i2f(self.api._position_lng))) + " в " + str(str((lat, lng))) +
+        log.info('Бежим из ' + str((i2f(self.api._position_lat), i2f(self.api._position_lng))) + " в " + str(str((lat, lng))) +
                    " по прямой. " + str(format_time(ceil(steps))))
 
         if steps != 0:
@@ -86,8 +86,9 @@ class Normal(object):
             self.api.set_position(lat, lng, alt)
             self.ai.heartbeat()
 
-    @analyticts_timer
     def _work_at_position(self, lat, lng, alt, seen_pokemon=False, seen_pokestop=False, seen_gym=False):
+        self.ai.search.search(lat, lng)
+
         cellid = get_cell_ids(lat, lng)
         timestamp = [0, ] * len(cellid)
 
