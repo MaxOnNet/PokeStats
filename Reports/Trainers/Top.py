@@ -18,17 +18,15 @@ class Top(Report, View):
             tr.name		as "trainer_name",
             tr.level	as "trainer_level",
             count(gm.id)as "gym_count",
-            concat("[",group_concat(concat('["',gm.cd_gym, '", "', REPLACE(g.name,'"', '') ,'"]') separator ","),"]") as "gym_json"
+            COALESCE(concat("[",group_concat(concat('["',gm.cd_gym, '", "', REPLACE(g.name,'"', '') ,'"]') separator ","),"]"),"[]") as "gym_json"
         FROM
-            db_pokestats.trainer tr,
-            db_pokestats.team tm,
-            db_pokestats.gym_membership gm,
-            db_pokestats.gym g
-        WHERE
-                tm.id = tr.cd_team
-            and gm.cd_team = tr.cd_team
-            and gm.cd_trainer = tr.id
-            and gm.cd_gym = g.id
+			db_pokestats.team tm,
+
+            db_pokestats.trainer tr
+            LEFT JOIN (db_pokestats.gym_membership gm) on (tr.id = gm.cd_trainer)
+            LEFT JOIN (db_pokestats.gym g) on (g.id = gm.cd_gym)
+		WHERE
+			tm.id = tr.cd_team
         Group by tm.name, tr.name
         order by tr.level DESC, tr.name ASC, gm.id ASC
         LIMIT 0,100;
