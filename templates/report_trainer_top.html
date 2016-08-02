@@ -32,13 +32,13 @@
                             <td class="clsBodyRowId">{{ db_row["team_id"] }}</td>
                             <td class="clsBodyRowTeamName clsBodyRowTeam_{{ db_row["team_id"] }}">{{ db_row["team_name"] }}</td>
 
-                            <td class="clsBodyRowTrainerName"><a href="/report/trainer/{{ db_row['trainer_id'] }}" class="link">{{ db_row["trainer_name"] }}</a></td>
+                            <td class="clsBodyRowTrainerName"><a href="/report/trainer/account?trainer_id={{ db_row['trainer_id'] }}" class="link">{{ db_row["trainer_name"] }}</a></td>
                             <td class="clsBodyRowTrainerLevel">{{ db_row["trainer_level"] }}</td>
 
                             <td class="clsBodyRowId">{{ db_row["gym_count"] }}</td>
                             <td class="clsBodyRowGymList">
                                 {% for db_gym in db_row["gym_json"] %}
-                                <a href="/report/gym/{{ db_gym[0] }}" class="link">{{ db_gym[1] }}</a> {%- if not loop.last %},{% endif -%}
+                                <a href="/report/gym/membership?gym_id={{ db_gym[0] }}" class="link">{{ db_gym[1] }}</a> {%- if not loop.last %},{% endif -%}
                                 {% endfor %}
                             </td>
                         </tr>
