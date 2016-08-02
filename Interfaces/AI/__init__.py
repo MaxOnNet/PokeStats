@@ -9,6 +9,7 @@ import re
 import sys
 import math
 
+from Interfaces import analyticts_timer
 #from Interfaces.AI.Worker import , EvolveAll, MoveToPokestop, , InitialTransfer
 from Interfaces.AI.Worker import MoveToPokestop, SeenPokestop, MoveToGym, SeenGym, PokemonCatch
 from Interfaces.AI.Worker.Utils import distance
@@ -59,6 +60,7 @@ class AI(object):
         self.inventory_recycle()
 
         self.stepper.take_step()
+
 
     def work_on_cell(self, cell, position, seen_pokemon=False, seen_pokestop=False, seen_gym=False):
         self.position = position

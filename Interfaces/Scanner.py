@@ -8,7 +8,7 @@ import threading
 import time
 from random import randint
 
-
+from Interfaces import analyticts_timer
 from Interfaces.Config import Config
 from Interfaces.Geolocation import Geolocation
 from Interfaces.MySQL import init
@@ -46,6 +46,7 @@ class Scanner(threading.Thread):
 
         self.await = datetime.datetime.now()
 
+
     def _statistic_update(self, report=None):
         self.await = datetime.datetime.now()
 
@@ -66,8 +67,10 @@ class Scanner(threading.Thread):
         except:
             log.error('Error save stats.')
 
+
     def _status_scanner_apply(self, active=0, state=""):
         log.info('[{0}] - {1} - {2}.'.format(self.scanner.id, active, state))
+        self.await = datetime.datetime.now()
 
         self.scanner.is_active = active
 
@@ -79,8 +82,11 @@ class Scanner(threading.Thread):
             self.session_mysql.flush()
         finally:
             pass
+
+
     def _status_account_apply(self, active=0, state=""):
         log.info('[{0}] - {1} - {2}.'.format(self.scanner.id, active, state))
+        self.await = datetime.datetime.now()
 
         self.scanner.account.is_active = active
 
@@ -93,7 +99,10 @@ class Scanner(threading.Thread):
         finally:
             pass
 
+
     def _position_scanner_apply(self, position, google_path):
+        self.await = datetime.datetime.now()
+        
         try:
             self.scanner.latitude = position[0]
             self.scanner.longitude = position[1]
@@ -104,7 +113,7 @@ class Scanner(threading.Thread):
         except:
             log.error('Error save stats.')
 
-
+    @analyticts_timer
     def login(self):
         login_count = 0
         login_count_max = 5
@@ -129,6 +138,7 @@ class Scanner(threading.Thread):
 
         return True
 
+
     def run(self):
         self.alive = True
         self.scanner.location.fix(self.geolocation)
@@ -151,6 +161,7 @@ class Scanner(threading.Thread):
         finally:
             self.session_mysql.close()
             self.alive = False
+
 
     def run_scanner(self):
         self._statistic_update()

@@ -11,6 +11,7 @@ from math import ceil
 from s2sphere import CellId, LatLng
 from google.protobuf.internal import encoder
 
+from Interfaces import analyticts_timer
 from Interfaces.AI.Human import sleep, random_lat_long_delta
 from Interfaces.AI.Stepper import get_cell_ids
 from Interfaces.AI.Worker.Utils import distance, i2f, format_time, encode_coords
@@ -85,7 +86,7 @@ class Normal(object):
             self.api.set_position(lat, lng, alt)
             self.ai.heartbeat()
 
-
+    @analyticts_timer
     def _work_at_position(self, lat, lng, alt, seen_pokemon=False, seen_pokestop=False, seen_gym=False):
         cellid = get_cell_ids(lat, lng)
         timestamp = [0, ] * len(cellid)
