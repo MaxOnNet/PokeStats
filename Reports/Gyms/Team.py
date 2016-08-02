@@ -15,7 +15,7 @@ class Team(Report, View):
             tm.`id`         as "team_id",
             tm.`name`       as "team_name",
             g.count     as "gym_count",
-            t.count    as "trainer_count"
+            COALESCE(t.count, 0)    as "trainer_count"
         FROM
             db_pokestats.team      as tm
             LEFT JOIN
@@ -40,9 +40,6 @@ class Team(Report, View):
 				WHERE
 					t.cd_team = tm.id
 				GROUP BY tm.`id` ) t on (t.team_id = tm.id)
-        WHERE
-                tm.id = g.team_id
-            and tm.id = t.team_id
         GROUP BY tm.id
         ORDER BY g.count DESC;
     """
