@@ -25,6 +25,7 @@ from Reports.Pokemons.Average import Average as ReportPokemonAverage
 from Reports.Pokemons.Now import Now as ReportPokemonNow
 
 from Reports.Servers.Average import Average as ReportServerAverage
+from Reports.Servers.Account import Account as ReportServerAccount
 
 from . import config
 
@@ -66,7 +67,7 @@ class Map(Flask):
 
         # Servers
         self.add_url_rule("/report/server/average", view_func=ReportServerAverage.as_view("report/server/average", config=self.config_xml))
-
+        self.add_url_rule("/report/server/account", view_func=ReportServerAccount.as_view("report/server/account", config=self.config_xml))
     def _flask_json(self):
         self.route("/raw_data", methods=['GET'])(self.json_raw)
 

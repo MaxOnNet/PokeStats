@@ -111,6 +111,35 @@ td.clsBodyRowCount {
     color: #ffffff;
     background-color: #555555;
 }
+
+
+td.clsBodyRowCount4 {
+    width: 30px;
+    text-align: right;
+    padding-left: 3px;
+    padding-right: 3px;
+    color: #ffffff;
+    background-color: #555555;
+}
+
+td.clsBodyRowCount6 {
+    width: 40px;
+    text-align: right;
+    padding-left: 3px;
+    padding-right: 3px;
+    color: #ffffff;
+    background-color: #555555;
+}
+
+td.clsBodyRowCount8 {
+    width: 50px;
+    text-align: right;
+    padding-left: 3px;
+    padding-right: 3px;
+    color: #ffffff;
+    background-color: #555555;
+}
+
 td.clsBodyRowMap {
     width: 40px;
     text-align: center;
@@ -274,6 +303,14 @@ a {
     text-decoration:none;
 }
 
+td.clsBodyRowTrainerLogin {
+    width:160px;
+    text-align: left;
+    padding-left: 3px;
+    padding-right: 3px;
+    color: #ffffff;
+    background-color: #555555;
+}
 td.clsBodyRowTrainerName {
     width: 80px;
     text-align: left;
@@ -290,6 +327,15 @@ td.clsBodyRowTrainerLevel {
     color: #ffffff;
     background-color: #555555;
 }
+td.clsBodyRowTrainerExp {
+    width: 50px;
+    text-align: right;
+    padding-left: 3px;
+    padding-right: 6px;
+    color: #ffffff;
+    background-color: #555555;
+}
+
 
 td.clsBodyRowGymList {
     text-align: left;
