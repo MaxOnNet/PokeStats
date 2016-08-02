@@ -198,10 +198,8 @@ class AI(object):
         if 'responses' in response:
             if 'GET_INVENTORY' in response['responses']:
                 if 'inventory_delta' in response['responses']['GET_INVENTORY']:
-                    if 'inventory_items' in response['responses'][
-                            'GET_INVENTORY']['inventory_delta']:
-                        for item in response['responses']['GET_INVENTORY'][
-                                'inventory_delta']['inventory_items']:
+                    if 'inventory_items' in response['responses']['GET_INVENTORY']['inventory_delta']:
+                        for item in response['responses']['GET_INVENTORY']['inventory_delta']['inventory_items']:
                             if not 'inventory_item_data' in item:
                                 continue
                             if not 'item' in item['inventory_item_data']:

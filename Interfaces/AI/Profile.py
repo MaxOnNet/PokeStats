@@ -18,8 +18,7 @@ class Profile:
         self.api.get_player().get_inventory()
 
         inventory_req = self.api.call()
-        inventory_res = inventory_req['responses']['GET_INVENTORY'][
-            'inventory_delta']['inventory_items']
+        inventory_res = inventory_req['responses']['GET_INVENTORY']['inventory_delta']['inventory_items']
 
         pokecount = 0
         itemcount = 1

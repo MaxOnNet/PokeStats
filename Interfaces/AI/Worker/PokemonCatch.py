@@ -25,18 +25,21 @@ class PokemonCatch(object):
 
         for item in self.ai.inventory:
             # print(item['inventory_item_data']['item'])
-            item_id = item['item_id']
-            item_count = item['count']
+            item_id = int(item['item_id'])
+            item_count = int(item['count'])
 
-            if item_id == Item.ITEM_POKE_BALL:
+            if item_id == 1:
                 # print('Poke Ball count: ' + str(item_count))
                 balls_stock[1] = item_count
-            if item_id == Item.ITEM_GREAT_BALL:
+            if item_id == 2:
                 # print('Great Ball count: ' + str(item_count))
                 balls_stock[2] = item_count
-            if item_id == Item.ITEM_ULTRA_BALL:
+            if item_id == 3:
                 # print('Ultra Ball count: ' + str(item_count))
                 balls_stock[3] = item_count
+            if item_id == 4:
+                # print('Ultra Ball count: ' + str(item_count))
+                balls_stock[4] = item_count
 
         return balls_stock
 
