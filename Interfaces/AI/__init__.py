@@ -192,7 +192,7 @@ class AI(object):
         self.inventory_update()
 
     def inventory_update(self):
-        self.api.get_inventory()
+        self.api.get_inventory().get_player()
         response = self.api.call()
         self.inventory = list()
         if 'responses' in response:
@@ -212,8 +212,7 @@ class AI(object):
                             if not 'count' in item['inventory_item_data'][
                                     'item']:
                                 continue
-                            self.inventory.append(item['inventory_item_data'][
-                                'item'])
+                            self.inventory.append(item['inventory_item_data']['item'])
 
 
     def heartbeat(self):

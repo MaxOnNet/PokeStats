@@ -18,8 +18,6 @@ class PokemonCatch(object):
         self.api = ai.api
         self.ai = ai
         self.position = ai.position
-        self.inventory = ai.inventory
-
 
     def inventory_pokeball(self):
         self.ai.inventory_update()
