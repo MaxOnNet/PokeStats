@@ -19,7 +19,7 @@ class Starline(Normal):
         step = 1
         for coord in coords:
             # starting at 0 index
-            self.scanner_thread._status_scanner_apply(1, 'Бикубическое сканирование ({} / {})'.format(step, len(coords)))
+            self.scanner_thread._status_scanner_apply(1, 'Звездное сканирование ({} / {})'.format(step, len(coords)))
 
             position = (coord['lat'], coord['lng'], 0)
 
