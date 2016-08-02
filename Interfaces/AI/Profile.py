@@ -82,7 +82,7 @@ class Profile:
         self.scanner.account.statistic.bag_items = itemcount
 
         self.session_mysql.commit()
-        self.session_mysql.flush()
+        #self.session_mysql.flush()
 
     def update_profile(self):
 
@@ -102,4 +102,4 @@ class Profile:
             pass
 
         self.session_mysql.commit()
-        self.session_mysql.flush()
+        #self.session_mysql.flush()

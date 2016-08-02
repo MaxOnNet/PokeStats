@@ -157,6 +157,8 @@ class AI(object):
 
                     self.scanner_thread._statistic_update({"pokemons": 0, "pokestops": 0, "gyms": 0})
 
+        self.scanner_thread.session_mysql.flush()
+
 
     def catch_pokemon(self, pokemon):
         worker = PokemonCatch(pokemon, self)

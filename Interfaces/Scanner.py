@@ -63,7 +63,7 @@ class Scanner(threading.Thread):
         try:
 
             self.session_mysql.commit()
-            self.session_mysql.flush()
+            #self.session_mysql.flush()
         except:
             log.error('Error save stats.')
 
@@ -79,7 +79,7 @@ class Scanner(threading.Thread):
 
         try:
             self.session_mysql.commit()
-            self.session_mysql.flush()
+            #self.session_mysql.flush()
         finally:
             pass
 
@@ -95,7 +95,7 @@ class Scanner(threading.Thread):
 
         try:
             self.session_mysql.commit()
-            self.session_mysql.flush()
+            #self.session_mysql.flush()
         finally:
             pass
 
@@ -109,7 +109,7 @@ class Scanner(threading.Thread):
             self.scanner.google_path = google_path
 
             self.session_mysql.commit()
-            self.session_mysql.flush()
+            #self.session_mysql.flush()
         except:
             log.error('Error save stats.')
 

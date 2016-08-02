@@ -396,7 +396,7 @@ def parse_map_cell(map_cell, session):
         else:  # Currently, there are only stops and gyms
             count_gyms += parse_gym(f, session)
 
-
+    #session.flush()
     return {"gyms": count_gyms, "pokestops": count_pokestops, "pokemons": count_pokemons}
 
 
@@ -429,7 +429,7 @@ def parse_fort_details(fort_id, fort_type, fort_dict, session):
         gym.image_url = fort_image
 
     session.commit()
-    session.flush()
+    #session.flush()
 
 
 def parse_pokemon_cell(cell, session):
@@ -461,7 +461,8 @@ def parse_pokemon_cell(cell, session):
             session.merge(pokemon_spawnpoint)
             session.commit()
         finally:
-            session.flush()
+            pass
+            #session.flush()
 
     return count_pokemons
 
@@ -486,7 +487,8 @@ def parse_pokestop(f, session):
         session.merge(pokestop)
         session.commit()
     finally:
-        session.flush()
+        pass
+        #session.flush()
 
     return 1
 
@@ -514,7 +516,8 @@ def parse_gym(f, session):
         session.merge(gym)
         session.commit()
     finally:
-        session.flush()
+        pass
+        #session.flush()
 
     return 1
 
@@ -524,7 +527,7 @@ def clear_gym_membership(gym_id, session):
     membership.delete()
 
     session.commit()
-    session.flush()
+    #session.flush()
 
 
 def parse_gym_membership(membership, gym_id, team_id, session):
@@ -562,6 +565,6 @@ def parse_gym_membership(membership, gym_id, team_id, session):
 
     session.add(member)
     session.commit()
-    session.flush()
+    #session.flush()
 
 
