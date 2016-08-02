@@ -17,6 +17,7 @@ from Interfaces.AI.Human import sleep
 
 from Interfaces.AI.Stepper.Normal import Normal
 from Interfaces.AI.Stepper.Spiral import Spiral
+from Interfaces.AI.Stepper.Bicubik import Bicubik
 #from Interfaces.AI.Stepper.Polyline import Polyline
 
 from Interfaces.MySQL.Schema import parse_map_cell
@@ -44,6 +45,8 @@ class AI(object):
             self.stepper = Normal(self)
         if self.scanner.mode.stepper == "spiral":
             self.stepper = Spiral(self)
+        if self.scanner.mode.stepper == "bicubik":
+            self.stepper = Bicubik(self)
 #        if self.scanner.mode.stepper == "polyline":
 #            self.stepper = Polyline(self)
 

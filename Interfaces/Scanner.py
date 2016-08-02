@@ -113,7 +113,7 @@ class Scanner(threading.Thread):
         except:
             log.error('Error save stats.')
 
-    @analyticts_timer
+
     def login(self):
         login_count = 0
         login_count_max = 5
