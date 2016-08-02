@@ -30,7 +30,7 @@ class Account(Report, View):
             sac.item_ball_poke 		as "sa_ball_poke",
             sac.item_ball_great 	as "sa_ball_great",
             sac.item_ball_ultra 	as "sa_ball_ultra",
-            sac.item_ball_master 	as"sa_ball_master",
+            sac.item_ball_master 	as "sa_ball_master",
 
             sac.item_potion 		as "sa_potion_normal",
             sac.item_potion_super 	as "sa_potion_super",

@@ -142,23 +142,16 @@ class PokemonCatch(object):
                                 'responses' in response_dict and \
                                 'CATCH_POKEMON' in response_dict['responses'] and \
                                     'status' in response_dict['responses']['CATCH_POKEMON']:
-                                status = response_dict['responses'][
-                                    'CATCH_POKEMON']['status']
+                                status = response_dict['responses']['CATCH_POKEMON']['status']
                                 if status is 2:
-                                    log.warning(
-                                        '[-] Attempted to capture {}- failed.. trying again!'.format(pokemon_num))
+                                    log.warning('[-] Attempted to capture {}- failed.. trying again!'.format(pokemon_num))
                                     sleep(2)
                                     continue
                                 if status is 3:
-                                    log.warning(
-                                        '[x] Oh no! {} vanished! :('.format(pokemon_num))
+                                    log.warning('[x] Oh no! {} vanished! :('.format(pokemon_num))
                                 if status is 1:
                                     log.info(
-                                        '[x] Captured {}! [CP {}] [IV {}]'.format(
-                                            pokemon_num,
-                                            cp,
-                                            pokemon_potential
-                                        ))
+                                        '[x] Captured {}! [CP {}] [IV {}]'.format(pokemon_num, cp, pokemon_potential))
 
                                     id_list2 = self.count_pokemon_inventory()
 

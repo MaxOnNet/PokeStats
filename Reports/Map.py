@@ -21,6 +21,7 @@ from Reports.Trainers.Top import Top as ReportTrainerTop
 from Reports.Gyms.Membership import Membership as ReportGymMembership
 from Reports.Gyms.Top import Top as ReportGymTop
 from Reports.Gyms.Team import Team as ReportGymTeam
+from Reports.Gyms.Guard import Guard as ReportGymGuard
 from Reports.Pokemons.Average import Average as ReportPokemonAverage
 from Reports.Pokemons.Now import Now as ReportPokemonNow
 
@@ -60,6 +61,7 @@ class Map(Flask):
         self.add_url_rule("/report/gym/membership", view_func=ReportGymMembership.as_view("report/gym/membership", config=self.config_xml))
         self.add_url_rule("/report/gym/top", view_func=ReportGymTop.as_view("report/gym/top", config=self.config_xml))
         self.add_url_rule("/report/gym/team", view_func=ReportGymTeam.as_view("report/gym/team", config=self.config_xml))
+        self.add_url_rule("/report/gym/guard", view_func=ReportGymGuard.as_view("report/gym/guard", config=self.config_xml))
 
         # Pokemon
         self.add_url_rule("/report/pokemon/average", view_func=ReportPokemonAverage.as_view("report/pokemon/average", config=self.config_xml))

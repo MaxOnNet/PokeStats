@@ -1,0 +1,54 @@
+{% extends "report.html" %}
+{% block title %}Report: GYM Guards Top 100{% endblock %}
+{% block head %}
+    {{ super() }}
+{% endblock %}
+
+{% block content %}
+    <table cellpadding="0" cellspacing="1" border="0" class="clsTableParent" >
+        <tr>
+            <td class="clsTableParentBody">
+                <table cellpadding="0" cellspacing="1" class="clsTable">
+                    <tr class="clsHeader">
+                        <td class="clsHeader" rowspan="2">№</td>
+                        <td class="clsHeader" rowspan="1" colspan="2">Team</td>
+                        <td class="clsHeader" rowspan="1" colspan="2">Trainer</td>
+                        <td class="clsHeader" rowspan="1" colspan="4">Pokemon</td>
+                        <td class="clsHeader" rowspan="2" colspan="1">GYM's</td>
+                    </tr>
+                    <tr class="clsHeader">
+                        <td class="clsHeader">ID</td>
+                        <td class="clsHeader">Name</td>
+
+                        <td class="clsHeader">Name</td>
+                        <td class="clsHeader">Level</td>
+
+                        <td class="clsHeader">ID</td>
+                        <td class="clsHeader">Name</td>
+                        <td class="clsHeader">Nick</td>
+                        <td class="clsHeader">CP</td>
+
+                    </tr>
+                    {% for db_row in table %}
+                        <tr class="clsBodyRow">
+                            <td class="clsBodyRowId">{{ loop.index }}</td>
+
+                            <td class="clsBodyRowId">{{ db_row["team_id"] }}</td>
+                            <td class="clsBodyRowTeamName clsBodyRowTeam_{{ db_row['team_id'] }}">{{ db_row["team_name"] }}</td>
+
+                            <td class="clsBodyRowTrainerName"><a href="/report/trainer/account?trainer_id={{ db_row['trainer_id'] }}" class="link">{{ db_row["trainer_name"] }}</a></td>
+                            <td class="clsBodyRowTrainerLevel">{{ db_row["trainer_level"] }}</td>
+
+                            <td class="clsBodyRowId">{{ db_row["pokemon_id"] }}</td>
+                            <td class="clsBodyRowGuardName">{{ db_row["pokemon_name"] }}</td>
+                            <td class="clsBodyRowGuardNickName">{{ db_row["pokemon_nickname"] }}</td>
+                            <td class="clsBodyRowGuardCP">{{ db_row["pokemon_cp"] }}</td>
+
+                            <td class="clsBodyRowGymList"><a href="/report/gym/membership?gym_id={{ db_row['gym_id'] }}" class="link">{{ db_row["gym_name"] }}</a></td>
+                        </tr>
+                    {% endfor %}
+                </table>
+            </td>
+        </tr>
+    </table>
+{% endblock %}
