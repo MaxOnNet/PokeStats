@@ -2,7 +2,7 @@
 
 
 import logging
-from threading import Thread, Event
+from threading import Thread, Event, currentThread
 import queue
 import random
 from Interfaces.MySQL import init
@@ -40,7 +40,7 @@ class Search:
 
     def thread_create(self, count):
         for index in xrange(count):
-            thread = Thread(target=self.thread_search, name='search_thread-{}'.format(index), args=(self.queue, self.api, self.config, self.thread_event))
+            thread = Thread(target=self.thread_search, name='{1}-{0}'.format(currentThread().getName(), index), args=(self.queue, self.api, self.config, self.thread_event))
             thread.daemon = True
             thread.start()
 
