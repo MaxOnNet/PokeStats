@@ -51,7 +51,7 @@ def init_fast(config):
 
     return scoped_session(
         sessionmaker(
-                autoflush=True,
+                autoflush=False,
                 autocommit=False,
                 bind=db_engine
             )
