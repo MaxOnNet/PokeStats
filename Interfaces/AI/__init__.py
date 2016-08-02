@@ -38,7 +38,7 @@ class AI(object):
         self.profile = scanner_thread.profile
         self.inventory = scanner_thread.inventory
         self.position = self.scanner.location.position
-        self.search = Search(self.api, self.config)
+        self.search = Search(self)
         self.seen_pokestop = {}
         self.seen_gym = {}
 

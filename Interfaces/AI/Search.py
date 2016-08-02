@@ -18,9 +18,10 @@ from Interfaces.AI.Stepper.Starline import Starline
 log = logging.getLogger(__name__)
 
 class Search:
-    def __init__(self, api, config):
-        self.config = config
-        self.api = api
+    def __init__(self, ai):
+        self.ai = ai
+        self.config = ai.config
+        self.api = ai.api
         self.queue = queue.Queue()
         self.threads = list()
         self.thread_event = Event()
@@ -40,7 +41,7 @@ class Search:
 
     def thread_create(self, count):
         for index in xrange(count):
-            thread = Thread(target=self.thread_search, name='{1}-{0}'.format(currentThread().getName(), index), args=(self.queue, self.api, self.config, self.thread_event))
+            thread = Thread(target=self.thread_search, name='{1}-{0}'.format(self.ai.scanner.id, index), args=(self.queue, self.api, self.config, self.thread_event))
             thread.daemon = True
             thread.start()
 
