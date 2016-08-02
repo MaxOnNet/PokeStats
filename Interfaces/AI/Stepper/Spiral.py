@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 import logging
 import math
+import random
 
 from Interfaces.AI.Human import sleep, random_lat_long_delta
 from Interfaces.AI.Stepper.Normal import Normal
@@ -39,8 +40,8 @@ class Spiral(Normal):
         coords = [{'lat': latitude, 'lng': longitude}]
 
         for coord in Spiral.generate_spiral(step_size, step_size):
-            lat = latitude + coord[0] + random_lat_long_delta()
-            lng = longitude + coord[1] + random_lat_long_delta()
+            lat = latitude + coord[0] + random.uniform(-step_size*0.8, step_size*0.8)
+            lng = longitude + coord[1] + random.uniform(-step_size*0.8, step_size*0.8)
 
             coords.append({'lat': lat, 'lng': lng})
 

@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 import logging
 import math
+import random
 
 from Interfaces.AI.Human import sleep, random_lat_long_delta
 from Interfaces.AI.Stepper.Normal import Normal
@@ -38,8 +39,8 @@ class Starline(Normal):
         coords = [{'lat': latitude, 'lng': longitude}]
 
         for coord in Starline.generate_starline([latitude, longitude]):
-            lat = coord[0]
-            lng = coord[1]
+            lat = coord[0] + random.uniform(-step_size*0.8, step_size*0.8)
+            lng = coord[1] + random.uniform(-step_size*0.8, step_size*0.8)
 
             coords.append({'lat': lat, 'lng': lng})
 
