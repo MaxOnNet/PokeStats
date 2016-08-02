@@ -14,7 +14,7 @@ class Team(Report, View):
         SELECT
             tm.`id`         as "team_id",
             tm.`name`       as "team_name",
-            g.count     as "gym_count",
+             COALESCE(g.count, 0)     as "gym_count",
             COALESCE(t.count, 0)    as "trainer_count"
         FROM
             db_pokestats.team      as tm
