@@ -8,7 +8,7 @@ from Interfaces.AI.Worker.Utils import encode_coords, distance, format_dist
 log = logging.getLogger(__name__)
 
 
-class Bicubik(Normal):
+class Starline(Normal):
     def take_step(self):
         position = [self.origin_lat, self.origin_lon, 0]
         coords = self.generate_coords(self.origin_lat, self.origin_lon, self.step, self.distance)
@@ -37,7 +37,7 @@ class Bicubik(Normal):
     def generate_coords(latitude, longitude, step_size, distance_limit):
         coords = [{'lat': latitude, 'lng': longitude}]
 
-        for coord in Bicubik.generate_location_steps([latitude, longitude]):
+        for coord in Starline.generate_location_steps([latitude, longitude]):
             lat = coord[0]
             lng = coord[1]
 
@@ -85,25 +85,25 @@ class Bicubik(Normal):
         loc = initial_loc
         while True:
             #Set loc to start at top left
-            loc = Bicubik.get_new_coords(loc, ydist, NORTH)
-            loc = Bicubik.get_new_coords(loc, xdist/2, WEST)
+            loc = Starline.get_new_coords(loc, ydist, NORTH)
+            loc = Starline.get_new_coords(loc, xdist / 2, WEST)
             for direction in range(6):
                 for i in range(ring):
                     if direction == 0: # RIGHT
-                        loc = Bicubik.get_new_coords(loc, xdist, EAST)
+                        loc = Starline.get_new_coords(loc, xdist, EAST)
                     if direction == 1: # DOWN + RIGHT
-                        loc = Bicubik.get_new_coords(loc, ydist, SOUTH)
-                        loc = Bicubik.get_new_coords(loc, xdist/2, EAST)
+                        loc = Starline.get_new_coords(loc, ydist, SOUTH)
+                        loc = Starline.get_new_coords(loc, xdist / 2, EAST)
                     if direction == 2: # DOWN + LEFT
-                        loc = Bicubik.get_new_coords(loc, ydist, SOUTH)
-                        loc = Bicubik.get_new_coords(loc, xdist/2, WEST)
+                        loc = Starline.get_new_coords(loc, ydist, SOUTH)
+                        loc = Starline.get_new_coords(loc, xdist / 2, WEST)
                     if direction == 3: # LEFT
-                        loc = Bicubik.get_new_coords(loc, xdist, WEST)
+                        loc = Starline.get_new_coords(loc, xdist, WEST)
                     if direction == 4: # UP + LEFT
-                        loc = Bicubik.get_new_coords(loc, ydist, NORTH)
-                        loc = Bicubik.get_new_coords(loc, xdist/2, WEST)
+                        loc = Starline.get_new_coords(loc, ydist, NORTH)
+                        loc = Starline.get_new_coords(loc, xdist / 2, WEST)
                     if direction == 5: # UP + RIGHT
-                        loc = Bicubik.get_new_coords(loc, ydist, NORTH)
-                        loc = Bicubik.get_new_coords(loc, xdist/2, EAST)
+                        loc = Starline.get_new_coords(loc, ydist, NORTH)
+                        loc = Starline.get_new_coords(loc, xdist / 2, EAST)
                     yield (loc[0], loc[1], 0)
             ring += 1
