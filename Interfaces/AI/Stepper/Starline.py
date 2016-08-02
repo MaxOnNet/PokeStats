@@ -37,7 +37,7 @@ class Starline(Normal):
     def generate_coords(latitude, longitude, step_size, distance_limit):
         coords = [{'lat': latitude, 'lng': longitude}]
 
-        for coord in Starline.generate_location_steps([latitude, longitude]):
+        for coord in Starline.generate_starline([latitude, longitude]):
             lat = coord[0]
             lng = coord[1]
 
@@ -49,7 +49,7 @@ class Starline(Normal):
         return coords
 
     @staticmethod
-    def get_new_coords(init_loc, distance, bearing):
+    def generate_starline_point(init_loc, distance, bearing):
         """ Given an initial lat/lng, a distance(in kms), and a bearing (degrees),
         this will calculate the resulting lat/lng coordinates.
         """
@@ -68,7 +68,7 @@ class Starline(Normal):
 
 
     @staticmethod
-    def generate_location_steps(initial_loc):
+    def generate_starline(initial_loc):
         #Bearing (degrees)
         NORTH = 0
         EAST = 90
@@ -85,25 +85,25 @@ class Starline(Normal):
         loc = initial_loc
         while True:
             #Set loc to start at top left
-            loc = Starline.get_new_coords(loc, ydist, NORTH)
-            loc = Starline.get_new_coords(loc, xdist / 2, WEST)
+            loc = Starline.generate_starline_point(loc, ydist, NORTH)
+            loc = Starline.generate_starline_point(loc, xdist / 2, WEST)
             for direction in range(6):
                 for i in range(ring):
                     if direction == 0: # RIGHT
-                        loc = Starline.get_new_coords(loc, xdist, EAST)
+                        loc = Starline.generate_starline_point(loc, xdist, EAST)
                     if direction == 1: # DOWN + RIGHT
-                        loc = Starline.get_new_coords(loc, ydist, SOUTH)
-                        loc = Starline.get_new_coords(loc, xdist / 2, EAST)
+                        loc = Starline.generate_starline_point(loc, ydist, SOUTH)
+                        loc = Starline.generate_starline_point(loc, xdist / 2, EAST)
                     if direction == 2: # DOWN + LEFT
-                        loc = Starline.get_new_coords(loc, ydist, SOUTH)
-                        loc = Starline.get_new_coords(loc, xdist / 2, WEST)
+                        loc = Starline.generate_starline_point(loc, ydist, SOUTH)
+                        loc = Starline.generate_starline_point(loc, xdist / 2, WEST)
                     if direction == 3: # LEFT
-                        loc = Starline.get_new_coords(loc, xdist, WEST)
+                        loc = Starline.generate_starline_point(loc, xdist, WEST)
                     if direction == 4: # UP + LEFT
-                        loc = Starline.get_new_coords(loc, ydist, NORTH)
-                        loc = Starline.get_new_coords(loc, xdist / 2, WEST)
+                        loc = Starline.generate_starline_point(loc, ydist, NORTH)
+                        loc = Starline.generate_starline_point(loc, xdist / 2, WEST)
                     if direction == 5: # UP + RIGHT
-                        loc = Starline.get_new_coords(loc, ydist, NORTH)
-                        loc = Starline.get_new_coords(loc, xdist / 2, EAST)
+                        loc = Starline.generate_starline_point(loc, ydist, NORTH)
+                        loc = Starline.generate_starline_point(loc, xdist / 2, EAST)
                     yield (loc[0], loc[1], 0)
             ring += 1

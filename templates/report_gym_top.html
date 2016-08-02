@@ -35,7 +35,7 @@
                     </tr>
                     {% for db_row in table %}
                         <tr class="clsBodyRow">
-                            <td class="clsBodyRowId"><a href="/report/gym/{{ db_row['gym_id'] }}" class="link">{{ loop.index }}</a></td>
+                            <td class="clsBodyRowId"><a href="/report/gym/membership?gym_id={{ db_row['gym_id'] }}" class="link">{{ loop.index }}</a></td>
                             <td class="clsBodyRowAddress">{{ db_row["gym_name"] }}</td>
                             <td class="clsBodyRowAddress">{{ db_row["gym_address"] }}</td>
                             <td class="clsBodyRowGymPrestige">{{ db_row["gym_prestige"] }}</td>

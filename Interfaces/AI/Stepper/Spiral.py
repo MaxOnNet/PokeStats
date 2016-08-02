@@ -11,7 +11,7 @@ log = logging.getLogger(__name__)
 class Spiral(Normal):
     def take_step(self):
         position = [self.origin_lat, self.origin_lon, 0]
-        coords = self.generate_spiral_arhimed(self.origin_lat, self.origin_lon, self.step, self.distance)
+        coords = self.generate_coords(self.origin_lat, self.origin_lon, self.step, self.distance)
 
         self.get_google_path(coords)
         self.api.set_position(*position)
@@ -35,10 +35,10 @@ class Spiral(Normal):
 
 
     @staticmethod
-    def generate_spiral_arhimed(latitude, longitude, step_size, distance_limit):
+    def generate_coords(latitude, longitude, step_size, distance_limit):
         coords = [{'lat': latitude, 'lng': longitude}]
 
-        for coord in Spiral.spiral_points(step_size, step_size):
+        for coord in Spiral.generate_spiral(step_size, step_size):
             lat = latitude + coord[0] + random_lat_long_delta()
             lng = longitude + coord[1] + random_lat_long_delta()
 
@@ -51,7 +51,7 @@ class Spiral(Normal):
 
 
     @staticmethod
-    def spiral_points(arc=1, separation=1):
+    def generate_spiral(arc=1, separation=1):
         """generate points on an Archimedes' spiral
         with `arc` giving the length of arc between two points
         and `separation` giving the distance between consecutive

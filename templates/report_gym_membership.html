@@ -5,6 +5,7 @@
 {% endblock %}
 
 {% block content %}
+
     <table cellpadding="0" cellspacing="1" border="0" class="clsTableParent" >
         <tr>
             <td class="clsTableParentBody">
@@ -27,10 +28,14 @@
                     {% for db_row in table %}
                         <tr class="clsBodyRow">
                             <td class="clsBodyRowId">{{ loop.index }}</td>
-                            <td class="clsBodyRowId">{{ db_row["team_id"] }}</td>
                             <td class="clsBodyRowTeamName clsBodyRowTeam_{{ db_row['team_id'] }}">{{ db_row["team_name"] }}</td>
+                            <td class="clsBodyRowTrainerName">{{ db_row["trainer_name"] }}</td>
+                            <td class="clsBodyRowTrainerLevel">{{ db_row["trainer_level"] }}</td>
 
-                            <td class="clsBodyRowGymPrestige">{{ db_row["gym_count"] }}</td>
+                            <td class="clsBodyRowId">{{ db_row["pokemon_id"] }}</td>
+                            <td class="clsBodyRowGuardName">{{ db_row["pokemon_name"] }}</td>
+                            <td class="clsBodyRowGuardName">{{ db_row["pokemon_nickname"] }}</td>
+                            <td class="clsBodyRowGuardCP">{{ db_row["pokemon_cp"] }}</td>
                         </tr>
                     {% endfor %}
                 </table>

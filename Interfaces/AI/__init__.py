@@ -186,7 +186,7 @@ class AI(object):
 
             item_db = self.scanner.account.statistic.get_by_item_id(int(item["item_id"]))
             if item['count'] > item_db[1]:
-                log.info("Item {0} is overdraft, drop {1} items".format(item["item_id"], (item['count']-item_db[1])))
+                log.info("Membership {0} is overdraft, drop {1} items".format(item["item_id"], (item['count']-item_db[1])))
                 self.drop_item(item["item_id"],(item['count']-item_db[1]))
 
         self.inventory_update()
