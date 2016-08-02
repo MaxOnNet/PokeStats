@@ -52,7 +52,7 @@ class Account(Report, View):
         WHERE
                 s.cd_account = sa.id
             and s.cd_account = sac.cd_account
-        ORDER BY sac.level DESC;
+        ORDER BY sac.level DESC, sac.experience_to_level ASC;
     """
 
     def __init__(self, config):
