@@ -38,7 +38,7 @@
                             <td class="clsBodyRowId">{{ db_row["gym_count"] }}</td>
                             <td class="clsBodyRowGymList">
                                 {% for db_gym in db_row["gym_json"] %}
-                                <a href="/report/gym/{{ db_gym[0] }}" class="link">{{ db_gym[1] }}</a> ,
+                                <a href="/report/gym/{{ db_gym[0] }}" class="link">{{ db_gym[1] }}</a> {%- if not loop.last %},{% endif -%}
                                 {% endfor %}
                             </td>
                         </tr>
