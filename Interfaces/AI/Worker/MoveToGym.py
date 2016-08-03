@@ -38,7 +38,7 @@ class MoveToGym(object):
             self.position = position
             response_dict = self.api.call()
             log.info('[#] Прибыли к GYM\'у')
-            sleep(2*self.scanner.mode.is_human_sleep)
+            sleep(2)
             return response_dict
 
         return None

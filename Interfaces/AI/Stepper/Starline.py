@@ -32,7 +32,7 @@ class Starline(Normal):
             sleep(2)
             self._work_at_position(position[0], position[1], position[2], seen_pokemon=True, seen_pokestop=True, seen_gym=True)
 
-            sleep(10)
+            sleep(5)
             step += 1
 
     @staticmethod
@@ -40,8 +40,8 @@ class Starline(Normal):
         coords = [{'lat': latitude, 'lng': longitude}]
 
         for coord in Starline.generate_starline([latitude, longitude], step_size):
-            lat = coord[0] + random.uniform(-step_size/3, step_size/3)
-            lng = coord[1] + random.uniform(-step_size/3, step_size/3)
+            lat = coord[0] + random.uniform(-step_size/6, step_size/6)
+            lng = coord[1] + random.uniform(-step_size/6, step_size/6)
 
             coords.append({'lat': lat, 'lng': lng})
 

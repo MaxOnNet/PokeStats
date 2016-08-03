@@ -39,7 +39,7 @@ class MoveToPokestop(object):
             self.position = position
             response_dict = self.api.call()
             log.info('Прибыли к покестопу')
-            sleep(2*self.scanner.mode.is_human_sleep)
+            sleep(2)
             return response_dict
 
         return None

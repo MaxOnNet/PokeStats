@@ -15,6 +15,7 @@ from Interfaces.AI.Worker.Utils import distance, i2f, format_time, encode_coords
 from Interfaces.pgoapi.utilities import f2i, h2f
 from Interfaces.AI.Stepper.Starline import Starline
 from Interfaces.AI.Stepper.Spiral import Spiral
+from Interfaces.AI.Stepper.Normal import Normal
 
 log = logging.getLogger(__name__)
 
@@ -37,7 +38,7 @@ class Search:
 
         self.threads = list()
         self.thread_event = Event()
-        self.thread_create(4)
+        self.thread_create(10)
 
     def stop(self):
         self.thread_event.set()
@@ -46,7 +47,7 @@ class Search:
     def search(self, lat, lng):
         log.debug("Start Search at {} {}".format(lat, lng))
 
-        coords = Starline.generate_coords(lat, lng, self.step/4, self.distance/4)
+        coords = Starline.generate_coords(lat, lng, self.step/3, self.distance/10)
         log.debug(self.geolocation.get_google_polilyne(coords))
         for coord in coords:
             self.requests.put(coord)
@@ -70,37 +71,46 @@ class Search:
         while not event.isSet():
             position = requests.get()
             log.debug("Put work at {} {}".format(position['lat'], position['lng']))
-            sleep(0.5)
+            sleep(4)
             api = api_orig.copy()
             try:
-                cellid = get_cell_ids(position['lat'], position['lng'])
-                timestamp = [0, ] * len(cellid)
+                response_index = 0
 
-                api.set_position(position['lat'], position['lng'], 0)
-                api.get_map_objects(latitude=f2i(position['lat']), longitude=f2i(position['lng']),  since_timestamp_ms=timestamp, cell_id=cellid)
+                while response_index < 5:
+                    cellid = get_cell_ids(position['lat'], position['lng'])
+                    timestamp = [0, ] * len(cellid)
 
-                response_dict = api.call()
+                    api.set_position(position['lat'], position['lng'], 0)
+                    api.get_map_objects(latitude=f2i(position['lat']), longitude=f2i(position['lng']),  since_timestamp_ms=timestamp, cell_id=cellid)
 
-                if response_dict and 'status_code' in response_dict:
-                    if response_dict['status_code'] is 1:
-                        if 'responses' in response_dict:
-                            if 'GET_MAP_OBJECTS' in response_dict['responses']:
-                                if 'status' in response_dict['responses']['GET_MAP_OBJECTS']:
-                                    if response_dict['responses']['GET_MAP_OBJECTS']['status'] is 1:
-                                        map_cells = response_dict['responses']['GET_MAP_OBJECTS']['map_cells']
+                    response_dict = api.call()
 
-                                        log.debug("Получена информация о карте в размере {0} ячеек".format(len(map_cells)))
-                                        for map_cell in map_cells:
-                                            self.response.put(map_cell)
+                    if response_dict and 'status_code' in response_dict:
+                        if response_dict['status_code'] is 1:
+                            if 'responses' in response_dict:
+                                if 'GET_MAP_OBJECTS' in response_dict['responses']:
+                                    if 'status' in response_dict['responses']['GET_MAP_OBJECTS']:
+                                        if response_dict['responses']['GET_MAP_OBJECTS']['status'] is 1:
+                                            map_cells = response_dict['responses']['GET_MAP_OBJECTS']['map_cells']
 
-                                    else:
-                                        log.warning("Получен неверный статус: {0}".format(response_dict['responses']['GET_MAP_OBJECTS']['status']))
-                    else:
-                        log.warning("Получен неверный статус: {0}".format(response_dict['status_code']))
+                                            log.debug("Получена информация о карте в размере {0} ячеек".format(len(map_cells)))
+                                            for map_cell in map_cells:
+                                                self.response.put(map_cell)
+
+                                            response_index = 999
+                                        else:
+                                            log.warning("Получен неверный статус: {0}".format(response_dict['responses']['GET_MAP_OBJECTS']['status']))
+                        else:
+                            log.debug("Получен неверный статус: {0}".format(response_dict['status_code']))
+
+                            if response_dict['status_code'] == 52:
+                                response_index += 1
+                                sleep(5)
+
             except Exception as e:
                 log.error("Ошибка в обработке дочернего потока: {}".format(e))
 
             finally:
                 requests.task_done()
-                sleep(2)
+
         log.info("Поток завершил работу")

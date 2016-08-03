@@ -52,73 +52,90 @@ class Inventory:
 
         self.api.get_player().get_inventory()
 
-        inventory_req = self.api.call()
-        inventory_res = inventory_req['responses']['GET_INVENTORY']['inventory_delta']['inventory_items']
+        response_dict = self.api.call()
 
-        pokecount = 0
-        itemcount = 1
 
-        for item in inventory_res:
-            try:
-                if 'inventory_item_data' in item:
-                    if 'pokemon_data' in item['inventory_item_data']:
-                        pokecount = pokecount + 1
+        if response_dict and 'status_code' in response_dict:
+            if response_dict['status_code'] is 1:
+                if 'responses' in response_dict:
+                    if 'GET_PLAYER' in response_dict['responses']:
+                        if 'status' in response_dict['responses']['GET_INVENTORY']:
+                            if response_dict['responses']['GET_INVENTORY']['status'] is 1:
+                                if 'inventory_delta' in response_dict['responses']['GET_INVENTORY']:
+                                    inventory_res = response_dict['responses']['GET_INVENTORY']['inventory_delta']['inventory_items']
 
-                    if 'item' in item['inventory_item_data']:
-                        if 'count' in item['inventory_item_data']['item']:
-                            itemcount = itemcount + item['inventory_item_data']['item']['count']
-            except Exception as e:
-                log.debug("Ошибка:{0}".format(e))
-            try:
-                if 'inventory_item_data' in item:
-                    if 'player_stats' in item['inventory_item_data']:
-                        playerdata = item['inventory_item_data']['player_stats']
+                                    pokecount = 0
+                                    itemcount = 1
 
-                        if 'level' in playerdata: self.scanner.account.statistic.level = playerdata['level']
+                                    for item in inventory_res:
+                                        try:
+                                            if 'inventory_item_data' in item:
+                                                if 'pokemon_data' in item['inventory_item_data']:
+                                                    pokecount = pokecount + 1
 
-                        if 'experience' in playerdata: self.scanner.account.statistic.experience = playerdata['experience']
+                                                if 'item' in item['inventory_item_data']:
+                                                    if 'count' in item['inventory_item_data']['item']:
+                                                        itemcount = itemcount + item['inventory_item_data']['item']['count']
+                                        except Exception as e:
+                                            log.debug("Ошибка:{0}".format(e))
+                                        try:
+                                            if 'inventory_item_data' in item:
+                                                if 'player_stats' in item['inventory_item_data']:
+                                                    playerdata = item['inventory_item_data']['player_stats']
 
-                        if 'next_level_xp' in playerdata and 'experience' in playerdata: self.scanner.account.statistic.experience_to_level = (int(playerdata.get('next_level_xp', 0)) -int(playerdata.get('experience', 0)))
+                                                    if 'level' in playerdata: self.scanner.account.statistic.level = playerdata['level']
 
-                        if 'pokemons_captured' in playerdata: self.scanner.account.statistic.catched_pokemons = playerdata['pokemons_captured']
+                                                    if 'experience' in playerdata: self.scanner.account.statistic.experience = playerdata['experience']
 
-                        if 'poke_stop_visits' in playerdata: self.scanner.account.statistic.visited_pokestops = playerdata['poke_stop_visits']
+                                                    if 'next_level_xp' in playerdata and 'experience' in playerdata: self.scanner.account.statistic.experience_to_level = (int(playerdata.get('next_level_xp', 0)) -int(playerdata.get('experience', 0)))
 
-                        #if 'km_walked' in playerdata: self.scanner.account.statistic.walked = playerdata['km_walked']
-            except Exception as e:
-                log.debug("Ошибка:{0}".format(e))
+                                                    if 'pokemons_captured' in playerdata: self.scanner.account.statistic.catched_pokemons = playerdata['pokemons_captured']
 
-            try:
-                item_id = item['inventory_item_data']['item']['item_id']
-                item_count = item['inventory_item_data']['item']['count']
+                                                    if 'poke_stop_visits' in playerdata: self.scanner.account.statistic.visited_pokestops = playerdata['poke_stop_visits']
 
-                self.inventory.append(item['inventory_item_data']['item'])
+                                                    #if 'km_walked' in playerdata: self.scanner.account.statistic.walked = playerdata['km_walked']
+                                        except Exception as e:
+                                            log.debug("Ошибка:{0}".format(e))
 
-                if item_id == InventoryItem.ITEM_POKE_BALL: self.scanner.account.statistic.item_ball_poke = item_count
-                if item_id == InventoryItem.ITEM_GREAT_BALL: self.scanner.account.statistic.item_ball_great = item_count
-                if item_id == InventoryItem.ITEM_ULTRA_BALL: self.scanner.account.statistic.item_ball_ultra = item_count
-                if item_id == InventoryItem.ITEM_MASTER_BALL: self.scanner.account.statistic.item_ball_master = item_count
+                                        try:
+                                            item_id = item['inventory_item_data']['item']['item_id']
+                                            item_count = item['inventory_item_data']['item']['count']
 
-                if item_id == InventoryItem.ITEM_POTION: self.scanner.account.statistic.item_potion = item_count
-                if item_id == InventoryItem.ITEM_SUPER_POTION: self.scanner.account.statistic.item_potion_super = item_count
-                if item_id == InventoryItem.ITEM_HYPER_POTION: self.scanner.account.statistic.item_potion_hyper = item_count
-                if item_id == InventoryItem.ITEM_MAX_POTION: self.scanner.account.statistic.item_potion_master = item_count
+                                            self.inventory.append(item['inventory_item_data']['item'])
 
-                if item_id == InventoryItem.ITEM_REVIVE: self.scanner.account.statistic.item_revive = item_count
-                if item_id == InventoryItem.ITEM_MAX_REVIVE: self.scanner.account.statistic.item_revive_master = item_count
+                                            if item_id == InventoryItem.ITEM_POKE_BALL: self.scanner.account.statistic.item_ball_poke = item_count
+                                            if item_id == InventoryItem.ITEM_GREAT_BALL: self.scanner.account.statistic.item_ball_great = item_count
+                                            if item_id == InventoryItem.ITEM_ULTRA_BALL: self.scanner.account.statistic.item_ball_ultra = item_count
+                                            if item_id == InventoryItem.ITEM_MASTER_BALL: self.scanner.account.statistic.item_ball_master = item_count
 
-                if item_id == InventoryItem.ITEM_RAZZ_BERRY: self.scanner.account.statistic.item_berry_razz = item_count
-                if item_id == InventoryItem.ITEM_BLUK_BERRY: self.scanner.account.statistic.item_berry_bluk = item_count
-                if item_id == InventoryItem.ITEM_NANAB_BERRY: self.scanner.account.statistic.item_berry_nanab = item_count
-                if item_id == InventoryItem.ITEM_WEPAR_BERRY: self.scanner.account.statistic.item_berry_wepar = item_count
-                if item_id == InventoryItem.ITEM_PINAP_BERRY: self.scanner.account.statistic.item_berry_pinap = item_count
-            except Exception as e:
-                log.debug("Ошибка:{0}".format(e))
+                                            if item_id == InventoryItem.ITEM_POTION: self.scanner.account.statistic.item_potion = item_count
+                                            if item_id == InventoryItem.ITEM_SUPER_POTION: self.scanner.account.statistic.item_potion_super = item_count
+                                            if item_id == InventoryItem.ITEM_HYPER_POTION: self.scanner.account.statistic.item_potion_hyper = item_count
+                                            if item_id == InventoryItem.ITEM_MAX_POTION: self.scanner.account.statistic.item_potion_master = item_count
 
-        self.scanner.account.statistic.bag_pokemons = pokecount
-        self.scanner.account.statistic.bag_items = itemcount
+                                            if item_id == InventoryItem.ITEM_REVIVE: self.scanner.account.statistic.item_revive = item_count
+                                            if item_id == InventoryItem.ITEM_MAX_REVIVE: self.scanner.account.statistic.item_revive_master = item_count
 
-        self.session.commit()
+                                            if item_id == InventoryItem.ITEM_RAZZ_BERRY: self.scanner.account.statistic.item_berry_razz = item_count
+                                            if item_id == InventoryItem.ITEM_BLUK_BERRY: self.scanner.account.statistic.item_berry_bluk = item_count
+                                            if item_id == InventoryItem.ITEM_NANAB_BERRY: self.scanner.account.statistic.item_berry_nanab = item_count
+                                            if item_id == InventoryItem.ITEM_WEPAR_BERRY: self.scanner.account.statistic.item_berry_wepar = item_count
+                                            if item_id == InventoryItem.ITEM_PINAP_BERRY: self.scanner.account.statistic.item_berry_pinap = item_count
+                                        except Exception as e:
+                                            log.debug("Ошибка:{0}".format(e))
+
+                                    self.scanner.account.statistic.bag_pokemons = pokecount
+                                    self.scanner.account.statistic.bag_items = itemcount
+
+                                    self.session.commit()
+                            else:
+                                log.warning("Получен неверный статус: {0}".format(response_dict['responses']['GET_INVENTORY']['status']))
+            else:
+                log.warning("Получен неверный статус: {0}".format(response_dict['status_code']))
+
+
+
+
 
     def pokeball(self):
         self.update()
@@ -148,11 +165,21 @@ class Inventory:
 
     def drop_item(self, item_id, count):
         self.api.recycle_inventory_item(item_id=item_id, count=count)
-        inventory_req = self.api.call()
+        response_dict = self.api.call()
 
-        # Example of good request response
-        #{'responses': {'RECYCLE_INVENTORY_ITEM': {'result': 1, 'new_count': 46}}, 'status_code': 1, 'auth_ticket': {'expire_timestamp_ms': 1469306228058L, 'start': '/HycFyfrT4t2yB2Ij+yoi+on778aymMgxY6RQgvrGAfQlNzRuIjpcnDd5dAxmfoTqDQrbz1m2dGqAIhJ+eFapg==', 'end': 'f5NOZ95a843tgzprJo4W7Q=='}, 'request_id': 8145806132888207460L}
-        return inventory_req
+        if response_dict and 'status_code' in response_dict:
+            if response_dict['status_code'] is 1:
+                if 'responses' in response_dict:
+                    if 'GET_PLAYER' in response_dict['responses']:
+                        if 'status' in response_dict['responses']['GET_INVENTORY']:
+                            if response_dict['responses']['GET_INVENTORY']['status'] is 1:
+                                return True
+                            else:
+                                log.warning("Получен неверный статус: {0}".format(response_dict['responses']['RECYCLE_INVENTORY_ITEM']['status']))
+            else:
+                log.warning("Получен неверный статус: {0}".format(response_dict['status_code']))
+
+        return False
 
 
     def recycle(self):
@@ -163,6 +190,7 @@ class Inventory:
             if item['count'] > item_db[1]:
                 log.info("Membership {0} is overdraft, drop {1} items".format(item["item_id"], (item['count']-item_db[1])))
 
-                self.drop_item(item["item_id"],(item['count']-item_db[1]))
+                if not self.drop_item(item["item_id"], (item['count']-item_db[1])):
+                    log.warning("Неудалось удалить обьекты из инвентаря")
 
         self.update()

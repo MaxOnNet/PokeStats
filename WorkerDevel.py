@@ -18,7 +18,7 @@ log = logging.getLogger(__name__)
 scanner_id = 11
 
 if __name__ == '__main__':
-    logging.basicConfig(level=logging.INFO, format='%(asctime)s [%(module)15s] [%(levelname)7s] [%(threadName)5s] %(message)s')
+    logging.basicConfig(level=logging.INFO, format='%(asctime)s [%(module)15s] [%(funcName)15s] [%(lineno)4d] [%(levelname)7s] [%(threadName)5s] %(message)s')
 
     logging.getLogger("peewee").setLevel(logging.WARNING)
     logging.getLogger("requests").setLevel(logging.WARNING)
@@ -26,10 +26,11 @@ if __name__ == '__main__':
     logging.getLogger("Interfaces.pgoapi.rpc_api").setLevel(logging.WARNING)
 
     logging.getLogger("Interfaces.AI").setLevel(logging.INFO)
+    logging.getLogger("Interfaces.AI.Worker.PokemonTransfer").setLevel(logging.DEBUG)
     logging.getLogger("Interfaces.AI.Stepper.Normal").setLevel(logging.INFO)
     logging.getLogger("Interfaces.AI.Stepper.Starline").setLevel(logging.INFO)
     logging.getLogger("Interfaces.AI.Metrica").setLevel(logging.INFO)
-    logging.getLogger("Interfaces.AI.Search").setLevel(logging.INFO)
+    logging.getLogger("Interfaces.AI.Search").setLevel(logging.DEBUG)
     threads = []
 
     scanner = tScanner(scanner_id)

@@ -230,7 +230,7 @@ class ScannerMode(Base):
     date_change = Column(DateTime(), nullable=False, default=func.now(), onupdate=func.now())
 
     @hybrid_property
-    def is_human_sleep(self):
+    def is_human(self):
         if self.is_catch or self.is_farm or self.is_defender:
             return 1
         else:

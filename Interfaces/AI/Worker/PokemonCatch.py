@@ -2,6 +2,11 @@
 
 import time
 import logging
+import json
+import os
+
+from sets import Set
+
 from Interfaces.AI.Worker.Utils import distance
 from Interfaces.AI.Human import sleep
 from Interfaces.AI.Inventory import InventoryItem
@@ -16,15 +21,26 @@ class PokemonCatch(object):
     def __init__(self, pokemon, ai):
         self.ai = ai
         self.api = ai.api
+        self.config = ai.config
         self.session = ai.session
         self.position = ai.position
         self.stepper = ai.stepper
         self.inventory = ai.inventory
 
         self.pokemon = pokemon
+        self.pokemon_transfer = bool(self.config.get("AI",  self.__class__.__name__, "use_transfer", 1))
+        self.pokemon_evolve = bool(self.config.get("AI",  self.__class__.__name__, "use_evolve", 1))
 
-        self.position = ai.position
+        self.data_pokemon = {}
+        self.data_transfer = {}
 
+        if os.path.isfile(self.config.get("AI",  self.__class__.__name__, "data_pokemon")):
+            with open(self.config.get("AI",  self.__class__.__name__, "data_pokemon")) as data:
+                self.data_pokemon = json.load(data)
+
+        if os.path.isfile(self.config.get("AI",  self.__class__.__name__, "data_transfer")):
+            with open(self.config.get("AI",  self.__class__.__name__, "data_transfer")) as data:
+                self.data_transfer = json.load(data)
 
     def work(self):
         encounter_id = self.pokemon['encounter_id']
@@ -63,8 +79,9 @@ class PokemonCatch(object):
 
                                 pokemon_potential = round((total_IV / 45.0), 2)
                                 pokemon_num = int(pokemon['pokemon_data']['pokemon_id']) - 1
+                                pokemon_name = self.data_pokemon[int(pokemon_num)]['Name']
 
-                                log.info('A Wild {} appeared! [CP {}] [Potential {}]'.format(pokemon_num, cp, pokemon_potential))
+                                log.info('A Wild {} appeared! [CP {}] [Potential {}]'.format(pokemon_name, cp, pokemon_potential))
 
                                 log.info('IV [Stamina/Attack/Defense] = [{}/{}/{}]'.format(
                                     pokemon['pokemon_data']['individual_stamina'],
@@ -128,43 +145,42 @@ class PokemonCatch(object):
                                     'status' in response_dict['responses']['CATCH_POKEMON']:
                                 status = response_dict['responses']['CATCH_POKEMON']['status']
                                 if status is 2:
-                                    log.warning('Attempted to capture {}- failed.. trying again!'.format(pokemon_num))
+                                    log.warning('Attempted to capture {}- failed.. trying again!'.format(pokemon_name))
                                     sleep(2)
                                     continue
                                 if status is 3:
-                                    log.warning('Oh no! {} vanished! :('.format(pokemon_num))
+                                    log.warning('Oh no! {} vanished! :('.format(pokemon_name))
                                 if status is 1:
-                                    log.info(
-                                        'Captured {}! [CP {}] [IV {}]'.format(pokemon_num, cp, pokemon_potential))
+                                    log.info('Captured {}! [CP {}] [IV {}]'.format(pokemon_name, cp, pokemon_potential))
 
                                     id_list2 = self.count_pokemon_inventory()
 
-                                    #if self.config.evolve_captured:
-                                    #    pokemon_to_transfer = list(Set(id_list2) - Set(id_list1))
-                                    #    self.api.evolve_pokemon(pokemon_id=pokemon_to_transfer[0])
-                                    #    response_dict = self.api.call()
-                                    #    status = response_dict['responses']['EVOLVE_POKEMON']['result']
-                                    #    if status == 1:
-                                    #        logger.log(
-                                    #                '[#] {} has been evolved!'.format(pokemon_name), 'green')
-                                    #    else:
-                                    #        logger.log(
-                                    #        '[x] Failed to evolve {}!'.format(pokemon_name))
+                                    if self.pokemon_evolve:
+                                        try:
+                                            pokemon_to_transfer = list(Set(id_list2) - Set(id_list1))
+                                            self.api.evolve_pokemon(pokemon_id=pokemon_to_transfer[0])
+                                            response_dict = self.api.call()
+                                            status = response_dict['responses']['EVOLVE_POKEMON']['result']
+                                            if status == 1:
+                                                log.info('{} has been evolved!'.format(pokemon_name))
+                                            else:
+                                                log.warning('Failed to evolve {}!'.format(pokemon_name))
+                                        except Exception as e:
+                                            log.error('Failed while evolve {}!'.format(e))
 
-                                    #if self.should_release_pokemon(pokemon_name, cp, pokemon_potential, response_dict):
-                                    #    # Transfering Pokemon
-                                    #    pokemon_to_transfer = list(
-                                    #        Set(id_list2) - Set(id_list1))
-                                    #    if len(pokemon_to_transfer) == 0:
-                                    #        raise RuntimeError(
-                                    #            'Trying to transfer 0 pokemons!')
-                                    #    self.transfer_pokemon(
-                                    #        pokemon_to_transfer[0])
-                                    #    logger.log(
-                                    #        '[#] {} has been exchanged for candy!'.format(pokemon_name), 'green')
-                                    #else:
-                                    #    logger.log(
-                                    #    '[x] Captured {}! [CP {}]'.format(pokemon_name, cp), 'green')
+                                    if self.should_release_pokemon(pokemon_name, cp, pokemon_potential, response_dict):
+                                        # Transfering Pokemon
+                                        pokemon_to_transfer = list(
+                                           Set(id_list2) - Set(id_list1))
+
+                                        if len(pokemon_to_transfer) == 0:
+                                            raise RuntimeError(
+                                                'Trying to transfer 0 pokemons!')
+
+                                        self.transfer_pokemon(pokemon_to_transfer[0])
+                                        log.info('{} has been exchanged for candy!'.format(pokemon_name))
+                                    else:
+                                        log.info('Captured {}! [CP {}]'.format(pokemon_name, cp))
                             break
         time.sleep(5)
 
@@ -259,25 +275,25 @@ class PokemonCatch(object):
                 'and': lambda x, y: x and y
             }
 
-            #logger.log(
-            #    "[x] Release config for {}: CP {} {} IV {}".format(
-            #        pokemon_name,
-            #        min_cp,
-            #        cp_iv_logic,
-            #        min_iv
-            #    ), 'yellow'
-            #)
+            log.debug(
+                "Release config for {}: CP {} {} IV {}".format(
+                    pokemon_name,
+                    release_config['release_under_cp'],
+                    cp_iv_logic,
+                    release_config['release_under_iv']
+                )
+            )
 
             return logic_to_function[cp_iv_logic](*release_results.values())
 
     def _get_release_config_for(self, pokemon):
-        release_config = self.config.release_config.get(pokemon)
+        release_config = self.data_transfer.get(pokemon)
         if not release_config:
-            release_config = self.config.release_config['any']
+            release_config = self.data_transfer['any']
         return release_config
 
     def _get_exceptions(self):
-        exceptions = self.config.release_config.get('exceptions')
+        exceptions = self.data_transfer.get('exceptions')
         if not exceptions:
             return None
         return exceptions

@@ -68,7 +68,7 @@ class Normal(object):
             sleep(1)
             self._work_at_position(position[0], position[1], position[2], seen_pokemon=True, seen_pokestop=True, seen_gym=True)
 
-            sleep(10)
+            sleep(10*self.scanner.mode.is_human)
             step += 1
 
     def _walk_to(self, speed, lat, lng, alt):
@@ -91,7 +91,7 @@ class Normal(object):
                 self.ai.heartbeat()
 
                 self._work_at_position(i2f(self.api._position_lat), i2f(self.api._position_lng), alt, seen_pokemon=True, seen_pokestop=False, seen_gym=False)
-                sleep(2)
+                sleep(2*self.scanner.mode.is_human)
             self.api.set_position(lat, lng, alt)
             self.ai.heartbeat()
 
@@ -129,13 +129,21 @@ class Normal(object):
                                 log.warning("Получен неверный статус: {0}".format(response_dict['responses']['GET_MAP_OBJECTS']['status']))
             else:
                 log.warning("Получен неверный статус: {0}".format(response_dict['status_code']))
+
+        log.info("Ожидаем конца сканирования, и по ходу парсим данные")
+        while not self.search.requests.empty():
+            if not self.search.response.empty():
+                cell = self.search.response.get()
+                self.metrica.take_search(parse_map_cell(cell, self.session))
+                self.search.response.task_done()
+
         while not self.search.response.empty():
             cell = self.search.response.get()
             self.metrica.take_search(parse_map_cell(cell, self.session))
             self.search.response.task_done()
 
         self.api.set_position(lat, lng, alt)
-        sleep(2)
+
         for cell in map_cells:
             self.ai.work_on_cell(cell, position,  seen_pokemon=seen_pokemon,  seen_pokestop=seen_pokestop, seen_gym=seen_gym)
 

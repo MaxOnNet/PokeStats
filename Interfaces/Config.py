@@ -14,7 +14,7 @@ class Config:
     def __init__(self):
         self.xml_file = "{0}/config.xml".format(os.path.abspath(os.path.join(os.path.dirname(
             os.path.realpath(__file__)), '..')))
-        print self.xml_file
+
         self.xml = xml.dom.minidom.parse(self.xml_file)
         self.configuration = self.xml.getElementsByTagName("configuration")[0]
 

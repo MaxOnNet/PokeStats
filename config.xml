@@ -9,7 +9,7 @@
         <google key="AIzaSyA3OUM5s1t1mX3mqtSMNSToPD_uaTAdP3M" />
     </map>
     <AI>
-        <account service="ptc" username="mapdefender" password="28rLgWeq9AJMoz" />
-        <location longitude="55.0467" latitude="55.0467" />
+        <PokemonCatch use_evolve="1" use_transfer="1" data_transfer="$path/Data/pokemon_transfer.json" data_pokemon="$path/Data/pokemon.json" />
+        <PokemonTransfer use_evolve="1" use_transfer="1" data_transfer="$path/Data/pokemon_transfer.json" data_pokemon="$path/Data/pokemon.json" />
     </AI>
 </configuration>

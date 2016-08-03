@@ -10,8 +10,8 @@ import sys
 import math
 
 from Interfaces import analyticts_timer
-#from Interfaces.AI.Worker import , EvolveAll, MoveToPokestop, , InitialTransfer
-from Interfaces.AI.Worker import MoveToPokestop, SeenPokestop, MoveToGym, SeenGym, PokemonCatch
+#from Interfaces.AI.Worker import , EvolveAll, MoveToPokestop, ,
+from Interfaces.AI.Worker import MoveToPokestop, SeenPokestop, MoveToGym, SeenGym, PokemonCatch, PokemonTransfer
 from Interfaces.AI.Worker.Utils import distance
 from Interfaces.AI.Human import sleep
 from Interfaces.AI.Search import Search
@@ -61,8 +61,8 @@ class AI(object):
             raise "Stepper select error, stepper {0} not found.".format(self.scanner.mode.stepper)
 
     def take_step(self):
-       # worker = InitialTransfer(self)
-       # worker.work()
+        #worker = PokemonTransfer(self)
+        #worker.work()
        # InventoryRecycle
        #
 
@@ -70,7 +70,7 @@ class AI(object):
         self.inventory.recycle()
 
         self.metrica.take_step()
-        self.stepper.take_step()
+        #self.stepper.take_step()
 
 
     def work_on_cell(self, cell, position, seen_pokemon=False, seen_pokestop=False, seen_gym=False):
