@@ -70,7 +70,7 @@ class AI(object):
         self.inventory.recycle()
 
         self.metrica.take_step()
-        #self.stepper.take_step()
+        self.stepper.take_step()
 
 
     def work_on_cell(self, cell, position, seen_pokemon=False, seen_pokestop=False, seen_gym=False):
