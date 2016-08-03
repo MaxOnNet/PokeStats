@@ -44,7 +44,7 @@ def _thread_check(thread):
 
 
 # Проверка на только включенные при рабочем сервере
-    if thread.await + datetime.timedelta(minutes=15) < datetime.datetime.now():
+    if thread.metrica.time_await + datetime.timedelta(minutes=15) < datetime.datetime.now():
         log.info("[{0} - Найден битый сканнер".format(scanner.id))
 
         thread.join()

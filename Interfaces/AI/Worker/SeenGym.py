@@ -14,13 +14,16 @@ log = logging.getLogger(__name__)
 
 class SeenGym(object):
     def __init__(self, gym, ai):
-        self.gym = gym
-        self.api = ai.api
         self.ai = ai
+        self.api = ai.api
+        self.session = ai.session
         self.position = ai.position
+        self.stepper = ai.stepper
+
+        self.gym = gym
 
         self.rest_time = 50
-        self.stepper = ai.stepper
+
 
     def work(self):
         lat = self.gym['latitude']
@@ -36,7 +39,7 @@ class SeenGym(object):
                 fort_details = response_dict['responses']['FORT_DETAILS']
                 fort_name = fort_details['name'].encode('utf8', 'replace')
 
-                parse_fort_details(self.gym['id'], 0, fort_details, self.ai.scanner_thread.session_mysql)
+                parse_fort_details(self.gym['id'], 0, fort_details, self.session)
             else:
                 fort_name = 'Unknown'
             log.info('[#] Now at GYM: ' + fort_name)
@@ -53,10 +56,10 @@ class SeenGym(object):
                     and 'gym_state' in response_dict['responses']['GET_GYM_DETAILS']\
                     and 'memberships' in response_dict['responses']['GET_GYM_DETAILS']['gym_state']:
 
-                    clear_gym_membership(self.gym['id'], self.ai.scanner_thread.session_mysql)
+                    clear_gym_membership(self.gym['id'], self.session)
 
                     for membership in response_dict['responses']['GET_GYM_DETAILS']['gym_state']['memberships']:
-                        parse_gym_membership(membership, self.gym['id'], self.gym['owned_by_team'], self.ai.scanner_thread.session_mysql)
+                        parse_gym_membership(membership, self.gym['id'], self.gym['owned_by_team'], self.session)
         else:
-            parse_gym_membership(None, self.gym['id'], 0, self.ai.scanner_thread.session_mysql)
+            parse_gym_membership(None, self.gym['id'], 0, self.session)
             log.info("GYM Unused, skipped")

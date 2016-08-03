@@ -36,7 +36,7 @@ class MoveToPokestop(object):
                 self.api.set_position(*position)
 
             self.api.player_update(latitude=lat, longitude=lng)
-            self.ai.position = position
+            self.position = position
             response_dict = self.api.call()
             log.info('Прибыли к покестопу')
             sleep(2*self.scanner.mode.is_human_sleep)

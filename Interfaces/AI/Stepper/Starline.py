@@ -14,13 +14,14 @@ class Starline(Normal):
         position = [self.origin_lat, self.origin_lon, 0]
         coords = self.generate_coords(self.origin_lat, self.origin_lon, self.step, self.distance)
 
-        self.get_google_path(coords)
+        self.metrica.take_position(position, self.geolocation.get_google_polilyne(coords))
         self.api.set_position(*position)
 
         step = 1
         for coord in coords:
             # starting at 0 index
-            self.scanner_thread._status_scanner_apply(1, 'Звездное сканирование ({} / {})'.format(step, len(coords)))
+            self.metrica.take_status(scanner_msg='Звездное сканирование ({} / {})'.format(step, len(coords)))
+            log.info('Звездное сканирование ({} / {})'.format(step, len(coords)))
 
             position = (coord['lat'], coord['lng'], 0)
 
@@ -28,17 +29,17 @@ class Starline(Normal):
                 self._walk_to(self.walk, *position)
             else:
                 self.api.set_position(*position)
-            sleep(1)
+            sleep(2)
             self._work_at_position(position[0], position[1], position[2], seen_pokemon=True, seen_pokestop=True, seen_gym=True)
 
-            sleep(10*self.scanner.mode.is_human_sleep)
+            sleep(10)
             step += 1
 
     @staticmethod
     def generate_coords(latitude, longitude, step_size, distance_limit):
         coords = [{'lat': latitude, 'lng': longitude}]
 
-        for coord in Starline.generate_starline([latitude, longitude]):
+        for coord in Starline.generate_starline([latitude, longitude], step_size):
             lat = coord[0] + random.uniform(-step_size/3, step_size/3)
             lng = coord[1] + random.uniform(-step_size/3, step_size/3)
 
@@ -69,14 +70,14 @@ class Starline(Normal):
 
 
     @staticmethod
-    def generate_starline(initial_loc):
+    def generate_starline(initial_loc, step_size=0.1):
         #Bearing (degrees)
         NORTH = 0
         EAST = 90
         SOUTH = 180
         WEST = 270
 
-        pulse_radius = 0.1                  # km - radius of players heartbeat is 100m
+        pulse_radius = step_size * 100               # km - radius of players heartbeat is 100m
         xdist = math.sqrt(3)*pulse_radius   # dist between column centers
         ydist = 3*(pulse_radius/2)          # dist between row centers
 

@@ -14,13 +14,15 @@ log = logging.getLogger(__name__)
 
 class SeenPokestop(object):
     def __init__(self, pokestop, ai):
-        self.pokestop = pokestop
-        self.api = ai.api
         self.ai = ai
+        self.api = ai.api
+        self.session = ai.session
         self.position = ai.position
-
-        self.rest_time = 50
         self.stepper = ai.stepper
+
+        self.pokestop = pokestop
+        self.rest_time = 50
+
 
     def work(self):
         lat = self.pokestop['latitude']
@@ -34,7 +36,7 @@ class SeenPokestop(object):
             fort_details = response_dict['responses']['FORT_DETAILS']
             fort_name = fort_details['name'].encode('utf8', 'replace')
 
-            parse_fort_details(self.pokestop['id'], 1, fort_details, self.ai.scanner_thread.session_mysql)
+            parse_fort_details(self.pokestop['id'], 1, fort_details, self.session)
         else:
             fort_name = 'Unknown'
         log.info('[#] Now at Pokestop: ' + fort_name + ' - Spinning...')

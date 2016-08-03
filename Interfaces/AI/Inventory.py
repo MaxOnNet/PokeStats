@@ -39,11 +39,11 @@ class InventoryItem(Enum):
 
 
 class Inventory:
-    def __init__(self, scanner_thread):
-        self.scanner = scanner_thread.scanner
-        self.session_mysql = scanner_thread.session_mysql
+    def __init__(self, thread):
+        self.scanner = thread.scanner
+        self.session = thread.session
 
-        self.api = scanner_thread.api
+        self.api = thread.api
         self.inventory = list()
 
 
@@ -118,7 +118,7 @@ class Inventory:
         self.scanner.account.statistic.bag_pokemons = pokecount
         self.scanner.account.statistic.bag_items = itemcount
 
-        self.session_mysql.commit()
+        self.session.commit()
 
     def pokeball(self):
         self.update()

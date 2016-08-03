@@ -19,6 +19,7 @@ from Interfaces.pgoapi import PGoApi
 from Interfaces.AI import AI
 from Interfaces.AI.Profile import Profile
 from Interfaces.AI.Inventory import Inventory
+from Interfaces.AI.Metrica import Metrica
 
 log = logging.getLogger(__name__)
 
@@ -28,11 +29,11 @@ class Scanner(threading.Thread):
         threading.Thread.__init__(self, name=scanner_id)
 
         self.config = Config()
-        self.geolocation = Geolocation(self.config)
+        self.geolocation = Geolocation(self)
         self.session_maker = init(self.config)
-        self.session_mysql = self.session_maker()
+        self.session = self.session_maker()
 
-        self.scanner = self.session_mysql.query(dbScanner).get(scanner_id)
+        self.scanner = self.session.query(dbScanner).get(scanner_id)
 
         self._stopevent = threading.Event()
 
@@ -43,101 +44,39 @@ class Scanner(threading.Thread):
 
         self.profile = Profile(self)
         self.inventory = Inventory(self)
+        self.metrica = Metrica(self)
+
         self.ai = AI(self)
 
         self.daemon = True
 
-        self.await = datetime.datetime.now()
-
-
-    def _statistic_update(self, report=None):
-        self.await = datetime.datetime.now()
-
-        self.scanner.statistic.date_start = datetime.datetime.now()
-
-        if report is None:
-            self.scanner.statistic.pokemons = 0
-            self.scanner.statistic.pokestops = 0
-            self.scanner.statistic.gyms = 0
-        else:
-            self.scanner.statistic.pokemons += report['pokemons']
-            self.scanner.statistic.pokestops += report['pokestops']
-            self.scanner.statistic.gyms += report['gyms']
-        try:
-
-            self.session_mysql.commit()
-            #self.session_mysql.flush()
-        except:
-            log.error('Error save stats.')
-
-
-    def _status_scanner_apply(self, active=0, state=""):
-        log.info(state)
-        self.await = datetime.datetime.now()
-
-        self.scanner.is_active = active
-
-        if state != "":
-            self.scanner.state = state
-
-        try:
-            self.session_mysql.commit()
-            #self.session_mysql.flush()
-        finally:
-            pass
-
-
-    def _status_account_apply(self, active=0, state=""):
-        log.info(state)
-        self.await = datetime.datetime.now()
-
-        self.scanner.account.is_active = active
-
-        if state != "":
-            self.scanner.account.state = state
-
-        try:
-            self.session_mysql.commit()
-            #self.session_mysql.flush()
-        finally:
-            pass
-
-
-    def _position_scanner_apply(self, position, google_path):
-        self.await = datetime.datetime.now()
-
-        try:
-            self.scanner.latitude = position[0]
-            self.scanner.longitude = position[1]
-            self.scanner.google_path = google_path
-
-            self.session_mysql.commit()
-            #self.session_mysql.flush()
-        except:
-            log.error('Error save stats.')
 
 
     def login(self):
         login_count = 0
         login_count_max = 5
 
-        self._status_account_apply(1, "Попытка авторизации ({0})".format(login_count))
+        self.metrica.take_status(account_state=1, account_msg="Попытка авторизации ({0})".format(login_count))
+        log.debug("Попытка авторизации ({0})".format(login_count))
 
         self.api.set_position(*self.scanner.location.position)
 
         while not self.api.login(self.scanner.account.service, self.scanner.account.username, self.scanner.account.password):
             if login_count < login_count_max:
-                self._status_account_apply(1, "Ошибка авторизации ({0}), ожидаем".format(login_count))
+                self.metrica.take_status(account_state=1, account_msg="Ошибка авторизации ({0}), ожидаем".format(login_count))
+                log.warning("Ошибка авторизации ({0}), ожидаем".format(login_count))
 
                 self._stopevent.wait(randint(self._sleeplogin, self._sleeplogin*3))
 
                 login_count += 1
             else:
-                self._status_account_apply(0, "Ошибка авторизации, выходим")
+                self.metrica.take_status(account_state=0, account_msg="Успешная авторизация")
+                log.warning("Ошибка авторизации, выходим")
 
                 return False
 
-        self._status_account_apply(1, "Успешная авторизация")
+        self.metrica.take_status(account_state=1, account_msg="Успешная авторизация")
+        log.info("Успешная авторизация")
 
         return True
 
@@ -146,57 +85,63 @@ class Scanner(threading.Thread):
         self.alive = True
         self.scanner.location.fix(self.geolocation)
 
-        self._status_account_apply(1, "Запускаем сканнер")
-        self._status_scanner_apply(1, "Запускаем сканнер")
+        self.metrica.take_status(scanner_state=1, scanner_msg="Запускаем сканнер", account_state=1)
+        log.info("Запускаем сканнер")
 
         while not self._stopevent.isSet():
             if not self.run_scanner():
                 self._stopevent.set()
                 break
             else:
-                self._status_scanner_apply(1, "Ожидаем следующего цикла")
+                self.metrica.take_status(scanner_state=1, scanner_msg="Ожидаем следующего цикла")
+
+                log.info("Ожидаем следующего цикла")
+
                 self._stopevent.wait(randint(self._sleepperiod, self._sleepperiod*2))
         try:
-            self._status_scanner_apply(0, "Сканнер отключен")
+            self.metrica.take_status(scanner_state=0, scanner_msg="Сканнер отключен")
 
-            self.session_mysql.commit()
-            self.session_mysql.flush()
+            self.session.commit()
+            self.session.flush()
         finally:
-            self.session_mysql.close()
+            self.session.close()
             self.alive = False
 
 
     def run_scanner(self):
-        self._statistic_update()
-
         try:
             if self.api._auth_provider and self.api._auth_provider._ticket_expire:
                 remaining_time = self.api._auth_provider._ticket_expire/1000 - time.time()
 
                 if remaining_time > 60:
-                    self._status_scanner_apply(1, "Уже залогинены, прускаем")
+                    self.metrica.take_status(scanner_state=1, scanner_msg="Уже залогинены, прускаем")
+                    log.debug("Уже залогинены, прускаем")
                 else:
                     if not self.login():
-                        self._status_scanner_apply(1, "Ошибка авторизации, выходим")
-
+                        self.metrica.take_status(scanner_state=1, scanner_msg="Ошибка авторизации, выходим")
+                        log.warning("Ошибка авторизации, выходим")
                         return False
             else:
                 if not self.login():
-                    self._status_scanner_apply(1, "Ошибка авторизации, выходим")
-
+                    self.metrica.take_status(scanner_state=1, scanner_msg="Ошибка авторизации, выходим")
+                    log.warning("Ошибка авторизации, выходим")
                     return False
         except Exception as e:
-            self._status_scanner_apply(1, "Ошибка авторизации, выходим")
+            self.metrica.take_status(scanner_state=1, scanner_msg="Ошибка авторизации, выходим")
+            log.error("Ошибка авторизации, выходим")
             log.error(str(e))
+
             return False
 
         try:
+            log.info("Обновляем данные о профиле и сумке")
             self.profile.update()
             self.inventory.update()
             self.ai.heartbeat()
         finally:
-            self.session_mysql.flush()
+            self.session.flush()
 
+        log.info("Начинаем обработку")
         self.ai.take_step()
         self.ai.heartbeat()
 
@@ -204,16 +149,18 @@ class Scanner(threading.Thread):
 
 
     def join(self, timeout=None):
-        """ Stop the thread and wait for it to end. """
+        log.info("Был получен сигнал заверщения работы")
+        self.metrica.take_status(scanner_state=1, scanner_msg="Был получен сигнал заверщения работы")
+
         self._stopevent.set()
         self.ai.search.stop()
 
         threading.Thread.join(self, timeout)
 
         try:
-            self._status_scanner_apply(1, "Был получен сигнал на выход")
-            self.session_mysql.commit()
-            self.session_mysql.flush()
+            self.metrica.take_status(scanner_state=0, scanner_msg="Сканнер отключен")
+            self.session.commit()
+            self.session.flush()
         finally:
-            self.session_mysql.close()
-
+            self.session.close()
+            log.info("Поток завершил работу")

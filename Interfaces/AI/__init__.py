@@ -15,28 +15,33 @@ from Interfaces.AI.Worker import MoveToPokestop, SeenPokestop, MoveToGym, SeenGy
 from Interfaces.AI.Worker.Utils import distance
 from Interfaces.AI.Human import sleep
 from Interfaces.AI.Search import Search
+from Interfaces.AI.Metrica import Metrica
 from Interfaces.AI.Stepper.Normal import Normal
 from Interfaces.AI.Stepper.Spiral import Spiral
 from Interfaces.AI.Stepper.Starline import Starline
 #from Interfaces.AI.Stepper.Polyline import Polyline
 
 from Interfaces.MySQL.Schema import parse_map_cell
-from Interfaces.Geolocation import Geolocation
 
-from Interfaces import Logger
+
 from Inventory import InventoryItem
 
 log = logging.getLogger(__name__)
 
 class AI(object):
-    def __init__(self, scanner_thread):
+    def __init__(self, thread):
 
-        self.scanner_thread = scanner_thread
-        self.api = scanner_thread.api
-        self.config = scanner_thread.config
-        self.scanner = scanner_thread.scanner
-        self.profile = scanner_thread.profile
-        self.inventory = scanner_thread.inventory
+        self.thread = thread
+        self.api = thread.api
+        self.geolocation = thread.geolocation
+        self.config = thread.config
+        self.session = thread.session
+        self.scanner = thread.scanner
+        self.profile = thread.profile
+        self.inventory = thread.inventory
+        self.metrica = thread.metrica
+
+
         self.position = self.scanner.location.position
         self.search = Search(self)
         self.seen_pokestop = {}
@@ -52,6 +57,7 @@ class AI(object):
 #            self.stepper = Polyline(self)
 
         if self.stepper is None:
+            log.error("Stepper select error, stepper {0} not found.".format(self.scanner.mode.stepper))
             raise "Stepper select error, stepper {0} not found.".format(self.scanner.mode.stepper)
 
     def take_step(self):
@@ -63,16 +69,12 @@ class AI(object):
         self.inventory.update()
         self.inventory.recycle()
 
+        self.metrica.take_step()
         self.stepper.take_step()
 
 
     def work_on_cell(self, cell, position, seen_pokemon=False, seen_pokestop=False, seen_gym=False):
         self.position = position
-
-        #
-        #  Парсим данные, плевать на задвоения, логика БД вывезет
-        #  парсим целым скопом, для минимизации нагрузки на БД
-        self.scanner_thread._statistic_update(parse_map_cell(cell, self.scanner_thread.session_mysql))
 
         #
         # Искать ли покемонов на пути следования
@@ -129,8 +131,7 @@ class AI(object):
                         self.inventory.update()
                         self.inventory.recycle()
 
-                        self.scanner_thread._statistic_update({"pokemons": 0, "pokestops": 0, "gyms": 0})
-
+                        self.metrica.take_ping()
 
         if seen_gym:
             if 'forts' in cell:
@@ -159,10 +160,8 @@ class AI(object):
 
                     self.seen_gym[gym_id] = time.time()
 
-                    self.scanner_thread._statistic_update({"pokemons": 0, "pokestops": 0, "gyms": 0})
-
-        self.scanner_thread.session_mysql.flush()
-
+                    self.metrica.take_ping()
+        self.metrica.take_ping()
 
     def catch_pokemon(self, pokemon):
         worker = PokemonCatch(pokemon, self)
@@ -173,6 +172,7 @@ class AI(object):
         #    worker.work()
 
         return return_value
+
 
     def heartbeat(self):
         self.api.get_player()

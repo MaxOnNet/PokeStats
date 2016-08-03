@@ -26,7 +26,10 @@ if __name__ == '__main__':
     logging.getLogger("Interfaces.pgoapi.rpc_api").setLevel(logging.WARNING)
 
     logging.getLogger("Interfaces.AI").setLevel(logging.INFO)
-
+    logging.getLogger("Interfaces.AI.Stepper.Normal").setLevel(logging.INFO)
+    logging.getLogger("Interfaces.AI.Stepper.Starline").setLevel(logging.INFO)
+    logging.getLogger("Interfaces.AI.Metrica").setLevel(logging.INFO)
+    logging.getLogger("Interfaces.AI.Search").setLevel(logging.INFO)
     threads = []
 
     scanner = tScanner(scanner_id)

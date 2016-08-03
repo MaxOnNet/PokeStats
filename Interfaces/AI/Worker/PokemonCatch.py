@@ -14,9 +14,14 @@ class PokemonCatch(object):
     NO_POKEBALLS = 'no_pokeballs'
 
     def __init__(self, pokemon, ai):
-        self.pokemon = pokemon
-        self.api = ai.api
         self.ai = ai
+        self.api = ai.api
+        self.session = ai.session
+        self.position = ai.position
+        self.stepper = ai.stepper
+        self.inventory = ai.inventory
+
+        self.pokemon = pokemon
 
         self.position = ai.position
 
@@ -26,6 +31,7 @@ class PokemonCatch(object):
         spawnpoint_id = self.pokemon['spawnpoint_id']
         player_latitude = self.pokemon['latitude']
         player_longitude = self.pokemon['longitude']
+
         self.api.encounter(encounter_id=encounter_id, spawnpoint_id=spawnpoint_id,
                            player_latitude=player_latitude, player_longitude=player_longitude)
         response_dict = self.api.call()
@@ -69,7 +75,7 @@ class PokemonCatch(object):
                                 # Simulate app
                                 sleep(3)
 
-                        balls_stock = self.ai.inventory.pokeball()
+                        balls_stock = self.inventory.pokeball()
 
                         while(True):
 
