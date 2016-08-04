@@ -41,27 +41,29 @@ class PokemonTransfer(object):
     def work(self):
         pokemon_groups = self._release_pokemon_get_groups()
 
-        for pokemon_id in pokemon_groups:
+        for pokemon_id in pokemon_groups.keys():
             group = pokemon_groups[pokemon_id]
-            all_pokemons = pokemon_groups[pokemon_id]
 
             if len(group) > 0:
                 pokemon_name = self.data_pokemon[int(pokemon_id) - 1]['Name']
                 keep_best, keep_best_cp, keep_best_iv = self._validate_keep_best_config(pokemon_name)
 
                 if keep_best:
-                    best_pokemon_ids = set()
+                    best_pokemon_ids = []
                     order_criteria = 'none'
                     if keep_best_cp >= 1:
-                        cp_limit = keep_best_cp
-                        best_cp_pokemons = sorted(group, key=lambda x: (x['cp'], x['iv']), reverse=True)[:cp_limit]
-                        best_pokemon_ids = set(pokemon['pokemon_data']['id'] for pokemon in best_cp_pokemons)
+                        for pok in sorted(group, key=lambda x: (x['cp']), reverse=True):
+                            if pok['cp'] >= int(keep_best_cp):
+                                best_pokemon_ids.append(pok['pokemon_data']['id'])
+
                         order_criteria = 'cp'
 
                     if keep_best_iv >= 1:
-                        iv_limit = keep_best_iv
-                        best_iv_pokemons = sorted(group, key=lambda x: (x['iv'], x['cp']), reverse=True)[:iv_limit]
-                        best_pokemon_ids |= set(pokemon['pokemon_data']['id'] for pokemon in best_iv_pokemons)
+                        for pok in sorted(group, key=lambda x: (x['iv']), reverse=True):
+                            if pok['iv'] >= int(keep_best_iv):
+                                if not pok['pokemon_data']['id'] in best_pokemon_ids:
+                                    best_pokemon_ids.append(pok['pokemon_data']['id'])
+
                         if order_criteria == 'cp':
                             order_criteria = 'cp and iv'
                         else:
@@ -70,20 +72,22 @@ class PokemonTransfer(object):
                     # remove best pokemons from all pokemons array
 
                     best_pokemons = []
+                    all_pokemons = []
 
                     for best_pokemon_id in best_pokemon_ids:
-                        for pokemon in all_pokemons:
+                        for pokemon in group:
                             if best_pokemon_id == pokemon['pokemon_data']['id']:
-                                #all_pokemons.remove(pokemon)
                                 best_pokemons.append(pokemon)
-
+                            else:
+                                all_pokemons.append(pokemon)
+                    else:
+                        all_pokemons = group
 
                     transfer_pokemons = [pokemon for pokemon in all_pokemons
                                          if self.should_release_pokemon(pokemon_name,
                                                                         pokemon['cp'],
                                                                         pokemon['iv'],
-                                                                        True) and pokemon['pokemon_data']['id'] not in best_pokemon_ids]
-                    print transfer_pokemons
+                                                                        True)]
                     if transfer_pokemons:
                         log.info("Keep {} best {}, based on {}".format(len(best_pokemons),
                                                                          pokemon_name,
@@ -159,7 +163,7 @@ class PokemonTransfer(object):
                 total_iv += pokemon_data[individual_stat]
             except Exception:
                 continue
-        return round((total_iv / 45.0), 2)
+        return int(round((total_iv / 45.0)*100, 0))
 
     def should_release_pokemon(self, pokemon_name, cp, iv, keep_best_mode = False):
         release_config = self._get_release_config_for(pokemon_name)
@@ -217,7 +221,8 @@ class PokemonTransfer(object):
         log.info('Exchanging {} [CP {}] [Potential {}] for candy!'.format(pokemon_name,
                                                                             cp,
                                                                             iv))
-        response_dict = self.api.release_pokemon(pokemon_id=pokemon_id)
+        response_dict = self.api.release_pokemon(pokemon_id=pokemon_id).call()
+        #print response_dict
         sleep(4)
 
     def _get_release_config_for(self, pokemon):
@@ -244,7 +249,7 @@ class PokemonTransfer(object):
                 keep_best_cp = 0
 
             try:
-                keep_best_iv = int(keep_best_iv)
+                keep_best_iv = int(keep_best_iv*100)
             except ValueError:
                 keep_best_iv = 0
 

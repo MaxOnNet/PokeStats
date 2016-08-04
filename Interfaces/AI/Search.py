@@ -38,7 +38,7 @@ class Search:
 
         self.threads = list()
         self.thread_event = Event()
-        self.thread_create(10)
+        self.thread_create(5)
 
     def stop(self):
         self.thread_event.set()
@@ -78,7 +78,7 @@ class Search:
 
                 while response_index < 5:
                     cellid = get_cell_ids(position['lat'], position['lng'])
-                    timestamp = [0, ] * len(cellid)
+                    timestamp = [1, ] * len(cellid)
 
                     api.set_position(position['lat'], position['lng'], 0)
                     api.get_map_objects(latitude=f2i(position['lat']), longitude=f2i(position['lng']),  since_timestamp_ms=timestamp, cell_id=cellid)

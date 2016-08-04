@@ -61,8 +61,8 @@ class AI(object):
             raise "Stepper select error, stepper {0} not found.".format(self.scanner.mode.stepper)
 
     def take_step(self):
-        #worker = PokemonTransfer(self)
-        #worker.work()
+        worker = PokemonTransfer(self)
+        worker.work()
        # InventoryRecycle
        #
 
@@ -70,7 +70,7 @@ class AI(object):
         self.inventory.recycle()
 
         self.metrica.take_step()
-        self.stepper.take_step()
+        #self.stepper.take_step()
 
 
     def work_on_cell(self, cell, position, seen_pokemon=False, seen_pokestop=False, seen_gym=False):
