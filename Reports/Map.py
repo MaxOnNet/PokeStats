@@ -37,7 +37,6 @@ class Map(Flask):
         self.config_xml = Config()
         self.json_encoder = CustomJSONEncoder
         self.route("/", methods=['GET'])(self.index)
-        self.route("/next_loc", methods=['POST'])(self.next_loc)
 
         self._flask_json()
         self._flask_report()
@@ -45,13 +44,6 @@ class Map(Flask):
         self.conf_latitude = self.config_xml.get("map", "", "latitude", "55.0467")
         self.conf_longitude = self.config_xml.get("map", "", "longitude", "73.3111")
         self.pos_gmapkey = self.config_xml.get("map", "google", "key", "")
-
-        # init dicts
-        self.dict_pokemons = []
-        self.dict_pokestats = []
-        self.dict_gyms = []
-        self.dict_scanners = []
-        self.dict_timestamp = 0
 
     def _flask_report(self):
         # trainers
@@ -71,65 +63,134 @@ class Map(Flask):
         self.add_url_rule("/report/server/average", view_func=ReportServerAverage.as_view("report/server/average", config=self.config_xml))
         self.add_url_rule("/report/server/account", view_func=ReportServerAccount.as_view("report/server/account", config=self.config_xml))
     def _flask_json(self):
-        self.route("/raw_data", methods=['GET'])(self.json_raw)
+        self.route("/put_user_geo", methods=['GET'])(self.json_put_user_geo)
+        self.route("/get_data", methods=['GET'])(self.json_get_data)
+        self.route("/put_data_geo", methods=['GET'])(self.json_put_data_geo)
 
-    def _database_fetch(self):
-        # Cache 10 sec
-        if self.dict_timestamp + 10 < time.time():
 
-            session_maker = init(self.config_xml)
-            session_mysql = session_maker()
+    def _database_init(self):
+        session_maker = init(self.config_xml)
+        session = session_maker()
 
-            self.dict_pokemons = []
-            self.dict_pokestats = []
-            self.dict_gyms = []
-            self.dict_scanners = []
-            try:
-                for pokemon_spawnpoint in PokemonSpawnpoint.get_active(session_mysql).all():
-                    pokemon_dict = pokemon_spawnpoint.__dict__
-                    try:
-                        pokemon_db = session_mysql.query(Pokemon).filter(Pokemon.id == pokemon_spawnpoint.cd_pokemon).one()
-                        if pokemon_db:
-                            pokemon_dict['pokemon_name'] = pokemon_db.name
-                            pokemon_dict['pokemon_group'] = pokemon_db.group
-                            pokemon_dict['pokemon_color'] = pokemon_db.color
-                            pokemon_dict['pokemon_zoom'] = pokemon_db.zoom
-                        else:
-                            pokemon_dict['pokemon_name'] = 'NoName'
-                            pokemon_dict['pokemon_group'] = 'NoGroup'
-                            pokemon_dict['pokemon_color'] = '#000000'
-                            pokemon_dict['pokemon_zoom'] = 1
+        return session
 
-                    except:
-                        pokemon_dict['pokemon_name'] = 'NoName'
-                        pokemon_dict['pokemon_group'] = 'NoGroup'
-                        pokemon_dict['pokemon_color'] = '#000000'
-                        pokemon_dict['pokemon_zoom'] = 1
 
-                    self.dict_pokemons.append(pokemon_dict)
+    def _database_close(self, session):
+        session.flush()
+        session.expunge_all()
+        session.close()
 
-                for scanner in session_mysql.query(Scanner).filter(Scanner.is_enable).all():
-                    scanner_dict = scanner.__dict__
 
-                    scanner_dict['latitude'] = scanner.location.latitude
-                    scanner_dict['longitude'] = scanner.location.longitude
+    def _database_fetch_pokemons(self, session=None, ne_latitude=0, ne_longitude=0, sw_latitude=0, sw_longitude=0):
+        pokemons = []
 
-                    scanner_dict['count_pokemons'] = scanner.statistic.pokemons
-                    scanner_dict['count_pokestops'] = scanner.statistic.pokestops
-                    scanner_dict['count_gyms'] = scanner.statistic.gyms
-                    scanner_dict['date_start'] = scanner.statistic.date_start
-                    scanner_dict['date_change'] = scanner.statistic.date_change
+        sql = """
+            SELECT
+                p.id 	as "id",
+                p.name 	as "name",
 
-                    self.dict_scanners.append(scanner_dict)
+                ps.latitude	as "latitude",
+                ps.longitude as "longitude",
+                ps.date_disappear as "date_disappear"
+            FROM
+                db_pokestats.pokemon as p,
+                db_pokestats.pokemon_spawnpoint ps
+            WHERE
+                    ps.latitude > {0}
+                and ps.latitude < {1}
+                and ps.longitude > {2}
+                and ps.longitude < {3}
+                and ps.date_disappear > now()
+                and ps.cd_pokemon = p.id
+        """.format(ne_latitude, sw_latitude, ne_longitude, sw_longitude)
 
-                self.dict_pokestops = [u.__dict__ for u in session_mysql.query(Pokestop).all()]
-                self.dict_gyms = [u.__dict__ for u in session_mysql.query(Gym).all()]
+        for row in session.execute(sqlalchemy.text(sql)):
+            pokemons.append({
+                "pokemon_id": row[0],
+                "pokemon_name": row[1],
+                "latitude": row[2],
+                "longitude": row[3],
+                "date_disappear": row[4]
+            })
 
-                self.dict_timestamp = time.time()
-            finally:
-                session_mysql.flush()
-                session_mysql.expunge_all()
-                session_mysql.close()
+        return pokemons
+
+
+    def _database_fetch_pokestops(self, session=None, ne_latitude=0, ne_longitude=0, sw_latitude=0, sw_longitude=0):
+        pokestops = []
+
+        sql = """
+            SELECT
+                p.name                  as "name",
+                p.latitude	            as "latitude",
+                p.longitude             as "longitude",
+                p.date_lure_expiration  as "date_lure_expiration",
+                p.date_change           as "date_change"
+            FROM
+                db_pokestats.pokestop as p
+            WHERE
+                    p.latitude > {0}
+                and p.latitude < {1}
+                and p.longitude > {2}
+                and p.longitude < {3}
+        """.format(ne_latitude, sw_latitude, ne_longitude, sw_longitude)
+
+        for row in session.execute(sqlalchemy.text(sql)):
+            pokestops.append({
+                "name": row[0],
+
+                "latitude": row[1],
+                "longitude": row[2],
+
+                "date_lure_expiration": row[3],
+                "date_change": row[4]
+            })
+
+        return pokestops
+
+    def _database_fetch_gyms(self, session=None, ne_latitude=0, ne_longitude=0, sw_latitude=0, sw_longitude=0):
+        gyms = []
+
+        sql = """
+            SELECT
+                t.id as "team_id",
+                t.name as "team_name",
+                g.id as "gym_id",
+                g.name as "gym_name",
+                g.prestige as "gym_prestige",
+                g.latitude as "latitude",
+                g.longitude as "longitude",
+                g.date_change as "date_change"
+
+            FROM
+                db_pokestats.team as t,
+                db_pokestats.gym as g
+            WHERE
+                    t.id = g.cd_team
+                and g.latitude > {0}
+                and g.latitude < {1}
+                and g.longitude > {2}
+                and g.longitude < {3}
+        """.format(ne_latitude, sw_latitude, ne_longitude, sw_longitude)
+
+        for row in session.execute(sqlalchemy.text(sql)):
+            gyms .append({
+                "team_id": row[0],
+                "team_name": row[1],
+                "gym_id": row[2],
+                "gym_name": row[3],
+                "gym_prestige": row[4],
+                "latitude": row[5],
+                "longitude": row[6],
+                "date_change": row[7]
+            })
+
+        return gyms
+
+
+    def _database_fetch_scanners(self, session=None, ne_latitude=0, ne_longitude=0, sw_latitude=0, sw_longitude=0):
+        return []
+
 
     def index(self):
         if request.args.get('latitude') and request.args.get('longitude'):
@@ -145,9 +206,14 @@ class Map(Flask):
                                gmaps_key=self.pos_gmapkey)
 
 
-    def json_raw(self):
-        self._database_fetch()
+    def json_put_user_geo(self):
+        json_dict = {
+            "saved": "true",
+        }
 
+        return jsonify(json_dict)
+
+    def json_get_data(self):
         json_dict = {
             "scanned": [],
             "gyms": [],
@@ -155,36 +221,40 @@ class Map(Flask):
             "pokemons": []
         }
 
-        # use geo filter
-        if request.args.get('latitude') and request.args.get('longitude'):
-            pass
+        session = self._database_init()
 
-        if request.args.get('pokemon') == "true":
-            json_dict['pokemons'] = self.dict_pokemons
+        try:
+            if request.args.get('ne_latitude') and request.args.get('ne_longitude')\
+                and request.args.get('sw_latitude') and request.args.get('sw_longitude'):
+                    if request.args.get('pokemon') == "true":
+                        json_dict['pokemons'] = self._database_fetch_pokemons(session=session, ne_latitude=request.args.get('ne_latitude'), ne_longitude=request.args.get('ne_longitude'), sw_latitude=request.args.get('sw_latitude'), sw_longitude=request.args.get('sw_longitude'))
 
-        if request.args.get('pokestops') == "true":
-            json_dict['pokestops'] = self.dict_pokestops
+                    if request.args.get('pokestops') == "true":
+                        json_dict['pokestops'] = self._database_fetch_pokestops(session=session, ne_latitude=request.args.get('ne_latitude'), ne_longitude=request.args.get('ne_longitude'), sw_latitude=request.args.get('sw_latitude'), sw_longitude=request.args.get('sw_longitude'))
 
-        if request.args.get('gyms') == "true":
-            json_dict['gyms'] = self.dict_gyms
+                    if request.args.get('gyms') == "true":
+                        json_dict['gyms'] = self._database_fetch_gyms(session=session, ne_latitude=request.args.get('ne_latitude'), ne_longitude=request.args.get('ne_longitude'), sw_latitude=request.args.get('sw_latitude'), sw_longitude=request.args.get('sw_longitude'))
 
-        if request.args.get('scanned') == "true":
-            json_dict['scanned'] = self.dict_scanners
+                    if request.args.get('scanned') == "true":
+                        json_dict['scanned'] = self._database_fetch_scanners(session=session, ne_latitude=request.args.get('ne_latitude'), ne_longitude=request.args.get('ne_longitude'), sw_latitude=request.args.get('sw_latitude'), sw_longitude=request.args.get('sw_longitude'))
+        finally:
+            self._database_close(session)
 
         return jsonify(json_dict)
 
+    def json_put_data_geo(self):
+        json_dict = {
+            "saved": False,
+            "latitude": self.conf_latitude,
+            "longitude": self.conf_longitude
+        }
 
+        if request.args.get('latitude') and request.args.get('longitude'):
+            json_dict['saved'] = True
+            json_dict['latitude'] = request.args.get('latitude')
+            json_dict['longitude'] = request.args.get('longitude')
 
-    def next_loc(self):
-        lat = request.args.get('lat', type=float)
-        lon = request.args.get('lon', type=float)
-        if not (lat and lon):
-            print('[-] Invalid next location: %s,%s' % (lat, lon))
-            return 'bad parameters', 400
-        else:
-            config['NEXT_LOCATION'] = {'lat': lat, 'lon': lon}
-            return 'ok'
-
+        return jsonify(json_dict)
 
 class CustomJSONEncoder(JSONEncoder):
     def default(self, obj):

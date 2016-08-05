@@ -192,11 +192,24 @@ function initSidebar() {
         }
 
         var loc = places[0].geometry.location;
-        $.post("next_loc?lat=" + loc.lat() + "&lon=" + loc.lng(), {}).done(function (data) {
+        $.ajax({
+            url: "put_data_geo",
+            type: 'GET',
+            data: {
+                'latitude': loc.lat(),
+                'longtude': loc.lng()
+            },
+            dataType: "json"
+        }).done(function(result) {
             $("#next-location").val("");
+            var pos = {
+                lat: result.latitude,
+                lng: result.longitude
+            };
+
             map.setCenter(loc);
             marker.setPosition(loc);
-        });
+        })
     });
 }
 
@@ -305,18 +318,18 @@ function setupPokemonMarker(item) {
             lng: item.longitude
         },
         map: map,
-        icon: 'static/icons/' + item.cd_pokemon + '.png'
+        icon: 'static/icons/' + item.pokemon_id + '.png'
     });
 
     marker.infoWindow = new google.maps.InfoWindow({
-        content: pokemonLabel(item.pokemon_name, (item.date_disappear-6*60*60*1000), item.cd_pokemon, item.latitude, item.longitude)
+        content: pokemonLabel(item.pokemon_name, (item.date_disappear-6*60*60*1000), item.pokemon_id, item.latitude, item.longitude)
     });
 
-    if (notifiedPokemon.indexOf(item.cd_pokemon) > -1) {
+    if (notifiedPokemon.indexOf(item.pokemon_id) > -1) {
         if(localStorage.playSound === 'true'){
           audio.play();
         }
-        sendNotification('Обноаружен покемон ' + item.pokemon_name + '!', 'Жми на карту', 'static/icons/' + item.cd_pokemon + '.png')
+        sendNotification('Обноаружен покемон ' + item.pokemon_name + '!', 'Жми на карту', 'static/icons/' + item.pokemon_id + '.png')
     }
 
     addListeners(marker);
@@ -330,11 +343,11 @@ function setupGymMarker(item) {
             lng: item.longitude
         },
         map: map,
-        icon: 'static/forts/' + gym_types[item.cd_team] + '.png'
+        icon: 'static/forts/' + gym_types[item.team_id] + '.png'
     });
 
     marker.infoWindow = new google.maps.InfoWindow({
-        content: gymLabel(gym_types[item.cd_team], item.cd_team, item.prestige,(item.date_change-6*60*60*1000))
+        content: gymLabel(gym_types[item.team_id], item.team_name, item.prestige,(item.date_change-6*60*60*1000))
     });
 
     addListeners(marker);
