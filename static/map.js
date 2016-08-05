@@ -158,8 +158,8 @@ function initMap() {
                 url: "put_user_geo",
                 type: 'GET',
                 data: {
-                    'latitude': position.coords.latitude(),
-                    'longtude': position.coords.longitude()
+                    'latitude': position.coords.latitude,
+                    'longtude': position.coords.longitude
                 },
                 dataType: "json"
             })
