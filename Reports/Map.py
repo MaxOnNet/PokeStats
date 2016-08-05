@@ -231,18 +231,21 @@ class Map(Flask):
 
 
     def index(self):
+
         if request.args.get('latitude') and request.args.get('longitude'):
             pos_latitude = request.args.get('latitude')
             pos_longitude = request.args.get('longitude')
+            pos_gps=0
         else:
             pos_latitude = self.conf_latitude
             pos_longitude = self.conf_longitude
-
+            pos_gps=1
 
 
         return render_template('map.html',
                                lat=pos_latitude,
                                lng=pos_longitude,
+                               gps=pos_gps,
                                gmaps_key=self.conf_gmapkey)
 
 

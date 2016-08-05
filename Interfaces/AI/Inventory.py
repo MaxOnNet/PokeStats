@@ -187,13 +187,14 @@ class Inventory:
 
     def recycle(self):
         for item in self.inventory:
+            if "item_id" in item:
+                item_db = self.scanner.account.statistic.get_by_item_id(int(item["item_id"]))
 
-            item_db = self.scanner.account.statistic.get_by_item_id(int(item["item_id"]))
+                if 'count' in item:
+                    if item['count'] > item_db[1]:
+                        log.info("Membership {0} is overdraft, drop {1} items".format(item["item_id"], (item['count']-item_db[1])))
 
-            if item['count'] > item_db[1]:
-                log.info("Membership {0} is overdraft, drop {1} items".format(item["item_id"], (item['count']-item_db[1])))
-
-                if not self.drop_item(item["item_id"], (item['count']-item_db[1])):
-                    log.warning("Неудалось удалить обьекты из инвентаря")
+                        if not self.drop_item(item["item_id"], (item['count']-item_db[1])):
+                            log.warning("Неудалось удалить обьекты из инвентаря")
 
         self.update()
