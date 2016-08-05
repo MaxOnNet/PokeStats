@@ -96,10 +96,10 @@ class Map(Flask):
                 db_pokestats.pokemon as p,
                 db_pokestats.pokemon_spawnpoint ps
             WHERE
-                    ps.latitude > {0}
-                and ps.latitude < {1}
-                and ps.longitude > {2}
-                and ps.longitude < {3}
+                    ps.latitude < {0}
+                and ps.latitude > {1}
+                and ps.longitude < {2}
+                and ps.longitude > {3}
                 and ps.date_disappear > now()
                 and ps.cd_pokemon = p.id
         """.format(ne_latitude, sw_latitude, ne_longitude, sw_longitude)
@@ -129,10 +129,10 @@ class Map(Flask):
             FROM
                 db_pokestats.pokestop as p
             WHERE
-                    p.latitude > {0}
-                and p.latitude < {1}
-                and p.longitude > {2}
-                and p.longitude < {3}
+                    p.latitude < {0}
+                and p.latitude > {1}
+                and p.longitude < {2}
+                and p.longitude > {3}
         """.format(ne_latitude, sw_latitude, ne_longitude, sw_longitude)
 
         for row in session.execute(sqlalchemy.text(sql)):
@@ -167,10 +167,10 @@ class Map(Flask):
                 db_pokestats.gym as g
             WHERE
                     t.id = g.cd_team
-                and g.latitude > {0}
-                and g.latitude < {1}
-                and g.longitude > {2}
-                and g.longitude < {3}
+                and g.latitude < {0}
+                and g.latitude > {1}
+                and g.longitude < {2}
+                and g.longitude > {3}
         """.format(ne_latitude, sw_latitude, ne_longitude, sw_longitude)
 
         for row in session.execute(sqlalchemy.text(sql)):
