@@ -104,7 +104,7 @@ class Gymmer(Normal):
                 latitude as "gym_latitude",
                 longitude as "gym_longitude",
                 (
-                3959 * acos (
+                6371 * acos (
                   cos ( radians({0}) )
                   * cos( radians( latitude ) )
                   * cos( radians( longitude ) - radians({1}) )

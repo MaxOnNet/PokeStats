@@ -102,7 +102,7 @@ class Pokestopper(Normal):
                 latitude as "pokestop_latitude",
                 longitude as "pokestop_longitude",
                 (
-                3959 * acos (
+                6371 * acos (
                   cos ( radians({0}) )
                   * cos( radians( latitude ) )
                   * cos( radians( longitude ) - radians({1}) )
