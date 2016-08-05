@@ -43,7 +43,8 @@ class Map(Flask):
 
         self.conf_latitude = self.config_xml.get("map", "", "latitude", "55.0467")
         self.conf_longitude = self.config_xml.get("map", "", "longitude", "73.3111")
-        self.pos_gmapkey = self.config_xml.get("map", "google", "key", "")
+        self.conf_gmapkey = self.config_xml.get("map", "google", "key", "")
+
 
     def _flask_report(self):
         # trainers
@@ -62,8 +63,10 @@ class Map(Flask):
         # Servers
         self.add_url_rule("/report/server/average", view_func=ReportServerAverage.as_view("report/server/average", config=self.config_xml))
         self.add_url_rule("/report/server/account", view_func=ReportServerAccount.as_view("report/server/account", config=self.config_xml))
+
     def _flask_json(self):
         self.route("/put_user_geo", methods=['GET'])(self.json_put_user_geo)
+
         self.route("/get_data", methods=['GET'])(self.json_get_data)
         self.route("/put_data_geo", methods=['GET'])(self.json_put_data_geo)
 
@@ -74,12 +77,10 @@ class Map(Flask):
 
         return session
 
-
     def _database_close(self, session):
         session.flush()
         session.expunge_all()
         session.close()
-
 
     def _database_fetch_pokemons(self, session=None, ne_latitude=0, ne_longitude=0, sw_latitude=0, sw_longitude=0):
         pokemons = []
@@ -115,7 +116,6 @@ class Map(Flask):
             })
 
         return pokemons
-
 
     def _database_fetch_pokestops(self, session=None, ne_latitude=0, ne_longitude=0, sw_latitude=0, sw_longitude=0):
         pokestops = []
@@ -157,15 +157,15 @@ class Map(Flask):
 
         sql = """
             SELECT
-                t.id as "team_id",
-                t.name as "team_name",
-                g.id as "gym_id",
-                g.name as "gym_name",
-                g.image_url  as "gym_image",
-                g.prestige as "gym_prestige",
-                g.latitude as "latitude",
-                g.longitude as "longitude",
-                g.date_change as "date_change"
+                t.id                as "team_id",
+                t.name              as "team_name",
+                g.id                as "gym_id",
+                g.name              as "gym_name",
+                g.image_url         as "gym_image",
+                g.prestige          as "gym_prestige",
+                g.latitude          as "latitude",
+                g.longitude         as "longitude",
+                g.date_change       as "date_change"
 
             FROM
                 db_pokestats.team as t,
@@ -179,7 +179,7 @@ class Map(Flask):
         """.format(ne_latitude, sw_latitude, ne_longitude, sw_longitude)
 
         for row in session.execute(sqlalchemy.text(sql)):
-            gyms .append({
+            gyms.append({
                 "team_id": row[0],
                 "team_name": row[1],
                 "gym_id": row[2],
@@ -195,7 +195,39 @@ class Map(Flask):
 
 
     def _database_fetch_scanners(self, session=None, ne_latitude=0, ne_longitude=0, sw_latitude=0, sw_longitude=0):
-        return []
+        scanners = []
+
+        sql = """
+            SELECT
+                s.id 	                as "id",
+                sl.latitude             as "latitude",
+                sl.longitude            as "longitude",
+                round(sl.distance*1000) as "distance",
+                s.date_change           as "date_change"
+            FROM
+                db_pokestats.scanner as s,
+                db_pokestats.scanner_location as sl,
+                db_pokestats.scanner_account_statistic as sas
+            WHERE
+                    s.cd_location = sl.id
+                and sas.cd_account = s.cd_account
+                and sl.latitude < {0}
+                and sl.latitude > {1}
+                and sl.longitude < {2}
+                and sl.longitude > {3}
+
+        """.format(ne_latitude, sw_latitude, ne_longitude, sw_longitude)
+
+        for row in session.execute(sqlalchemy.text(sql)):
+            scanners.append({
+                "id": row[0],
+                "latitude": row[1],
+                "longitude": row[2],
+                "distance": row[3],
+                "date_change": row[4]
+            })
+
+        return scanners
 
 
     def index(self):
@@ -206,10 +238,12 @@ class Map(Flask):
             pos_latitude = self.conf_latitude
             pos_longitude = self.conf_longitude
 
+
+
         return render_template('map.html',
                                lat=pos_latitude,
                                lng=pos_longitude,
-                               gmaps_key=self.pos_gmapkey)
+                               gmaps_key=self.conf_gmapkey)
 
 
     def json_put_user_geo(self):
@@ -229,7 +263,6 @@ class Map(Flask):
 
         session = self._database_init()
 
-        #try:
         if request.args.get('pokemon') == "true":
             json_dict['pokemons'] = self._database_fetch_pokemons(session=session, ne_latitude=request.args.get('ne_latitude'), ne_longitude=request.args.get('ne_longitude'), sw_latitude=request.args.get('sw_latitude'), sw_longitude=request.args.get('sw_longitude'))
 
@@ -241,7 +274,7 @@ class Map(Flask):
 
         if request.args.get('scanned') == "true":
             json_dict['scanned'] = self._database_fetch_scanners(session=session, ne_latitude=request.args.get('ne_latitude'), ne_longitude=request.args.get('ne_longitude'), sw_latitude=request.args.get('sw_latitude'), sw_longitude=request.args.get('sw_longitude'))
-        #finally:
+
         self._database_close(session)
 
         return jsonify(json_dict)
@@ -259,6 +292,7 @@ class Map(Flask):
             json_dict['longitude'] = request.args.get('longitude')
 
         return jsonify(json_dict)
+
 
 class CustomJSONEncoder(JSONEncoder):
     def default(self, obj):

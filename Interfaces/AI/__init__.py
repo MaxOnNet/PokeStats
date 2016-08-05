@@ -25,10 +25,10 @@ from Interfaces.AI.Stepper.Pokestopper import Pokestopper
 
 from Interfaces.MySQL.Schema import parse_map_cell
 
-
 from Inventory import InventoryItem
 
 log = logging.getLogger(__name__)
+
 
 class AI(object):
     def __init__(self, thread):

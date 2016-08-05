@@ -82,8 +82,9 @@ var pGoStyle=[{"featureType":"landscape.man_made","elementType":"geometry.fill",
 var selectedStyle = 'light';
 
 
-function handleLocationError(browserHasGeolocation, infoWindow, pos) {
-    infoWindow.setPosition(pos);
+function handleLocationError(browserHasGeolocation) {
+    infoWindow = new google.maps.InfoWindow({map: map});
+    infoWindow.setPosition(map.getCenter());
     infoWindow.setContent(browserHasGeolocation ?
                             'Error: The Geolocation service failed.' :
                             'Error: Your browser doesn\'t support geolocation.');
@@ -150,7 +151,7 @@ function initMap() {
 
     map.setMapTypeId(localStorage['map_style']);
 
-    var infoWindow = new google.maps.InfoWindow({map: map});
+
 
     // Try HTML5 geolocation.
     if (navigator.geolocation) {
@@ -175,11 +176,11 @@ function initMap() {
                 dataType: "json"
             })
         }, function() {
-            handleLocationError(true, infoWindow, map.getCenter());
+            handleLocationError(true);
         });
     } else {
         // Browser doesn't support Geolocation
-        handleLocationError(false, infoWindow, map.getCenter());
+        handleLocationError(false);
     }
 
 
@@ -257,8 +258,8 @@ function gymLabel(team_id, team_name, gym_id, gym_name, gym_prestige, gym_image,
         str = `<div><center>
             <div style='padding-bottom: 2px'>${gym_name}</div>
             <div>
-                <b style='color:rgba(${gym_color[team_id]})'>${gym_name}</b><br>
-                <b style='color:rgba(${gym_color[team_id]})'>${team_name}</b><br>
+                <b style='color:rgba(${gym_color[team_id]})'>${gym_name}</b><br/>
+                <b style='color:rgba(${gym_color[team_id]})'>${team_name}</b><br/>
             </div>
             <div>Данные обновлены: ${pad(date_change.getHours())}:${pad(date_change.getMinutes())}:${pad(date_change.getSeconds())}</div>
 
@@ -269,7 +270,8 @@ function gymLabel(team_id, team_name, gym_id, gym_name, gym_prestige, gym_image,
     <center>
         <div style='padding-bottom: 2px'>${gym_name}</div>
         <div>
-            <b style='color:rgba(${gym_color[team_id]})'>Команда ${team_name}</b><br>
+            <b style='color:rgba(${gym_color[team_id]})'>Команда ${team_name}</b>
+            <br/>
             <img height='70px' style='padding: 5px;' src='static/forts/${gym_logo}_large.png'>
         </div>
         <div>Престиж: ${gym_prestige}</div>
@@ -422,13 +424,13 @@ function setupScannedMarker(item) {
     var marker = new google.maps.Circle({
         map: map,
         center: circleCenter,
-        radius: 1000,    // 10 miles in metres
+        radius: item.distance,    // 10 miles in metres
         fillColor: getColorByDate((item.date_change-6*60*60*1000)),
         strokeWeight: 1
     });
 
     marker.infoWindow = new google.maps.InfoWindow({
-         content: scannedLabel(item.id,(item.date_change-6*60*60*1000)),
+         content: scannedLabel(item.id, (item.date_change-6*60*60*1000)),
          position: circleCenter
      });
 
@@ -464,7 +466,7 @@ function clearStaleMarkers() {
     $.each(map_pokemons, function(key, value) {
 
         if ((map_pokemons[key]['date_disappear']-6*60*60*1000) < new Date().getTime() ||
-                excludedPokemon.indexOf(map_pokemons[key]['cd_pokemon']) >= 0 || (includedPokemon.length > 0 && includedPokemon.indexOf(map_pokemons[key]['cd_pokemon']) == -1) ) {
+                excludedPokemon.indexOf(map_pokemons[key]['pokemon_id']) >= 0 || (includedPokemon.length > 0 && includedPokemon.indexOf(map_pokemons[key]['pokemon_id']) == -1) ) {
             map_pokemons[key].marker.setMap(null);
             delete map_pokemons[key];
         }
@@ -540,7 +542,7 @@ function updateMap() {
                         map_gyms[item.gym_id].marker = setupGymMarker(item);
                     } else { // if it hasn't changed generate new label only (in case prestige has changed)
                         map_gyms[item.gym_id].marker.infoWindow = new google.maps.InfoWindow({
-                                    content: gymLabel(item.team_id, item.team_name, item.gym_id, item.gym_name, item.gym_prestige, item.gym_image,  (item.date_change-6*60*60*1000))
+                            content: gymLabel(item.team_id, item.team_name, item.gym_id, item.gym_name, item.gym_prestige, item.gym_image,  (item.date_change-6*60*60*1000))
                         });
                     }
                 }
