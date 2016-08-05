@@ -2,7 +2,7 @@
 
 import logging
 
-from Interfaces.AI.Human import sleep
+from Interfaces.AI.Human import sleep, random_lat_long_delta
 from Interfaces.AI.Worker.Utils import distance, format_dist
 
 log = logging.getLogger(__name__)

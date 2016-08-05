@@ -37,6 +37,8 @@ class Normal(object):
         self.search = ai.search
         self.geolocation = ai.geolocation
 
+        self.inicialise()
+
         self.walk = self.scanner.mode.walk
         self.step = self.scanner.mode.step
         self.distance = self.scanner.location.distance * 1000
@@ -45,6 +47,11 @@ class Normal(object):
         self.origin_lon = ai.position[1]
 
         self.google_path = ""
+
+
+
+    def inicialise(self):
+        pass
 
     def take_step(self):
         position = [self.origin_lat, self.origin_lon, 0]
@@ -96,7 +103,7 @@ class Normal(object):
             self.ai.heartbeat()
 
 
-    def _work_at_position(self, lat, lng, alt, seen_pokemon=False, seen_pokestop=False, seen_gym=False):
+    def _work_at_position(self, lat, lng, alt, seen_pokemon=False, seen_pokestop=False, seen_gym=False, data=None):
         position = (lat, lng, alt)
         cellid = get_cell_ids(lat, lng)
         timestamp = [0, ] * len(cellid)

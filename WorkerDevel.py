@@ -25,9 +25,11 @@ if __name__ == '__main__':
     logging.getLogger("Interfaces.pgoapi.pgoapi").setLevel(logging.WARNING)
     logging.getLogger("Interfaces.pgoapi.rpc_api").setLevel(logging.WARNING)
 
-    logging.getLogger("Interfaces.AI").setLevel(logging.INFO)
+    logging.getLogger("Interfaces.AI").setLevel(logging.DEBUG)
     logging.getLogger("Interfaces.AI.Worker.PokemonTransfer").setLevel(logging.DEBUG)
-    logging.getLogger("Interfaces.AI.Stepper.Normal").setLevel(logging.INFO)
+    logging.getLogger("Interfaces.AI.Stepper.Normal").setLevel(logging.DEBUG)
+    logging.getLogger("Interfaces.AI.Stepper.Gymmer").setLevel(logging.DEBUG)
+    logging.getLogger("Interfaces.AI.Stepper.Pokestopper").setLevel(logging.DEBUG)
     logging.getLogger("Interfaces.AI.Stepper.Starline").setLevel(logging.INFO)
     logging.getLogger("Interfaces.AI.Metrica").setLevel(logging.INFO)
     logging.getLogger("Interfaces.AI.Search").setLevel(logging.DEBUG)

@@ -30,6 +30,7 @@ class SeenPokestop(object):
 
         self.api.fort_details(fort_id=self.pokestop['id'], latitude=lat, longitude=lng)
         response_dict = self.api.call()
+        print response_dict
         if 'responses' in response_dict \
                 and'FORT_DETAILS' in response_dict['responses'] \
                 and 'name' in response_dict['responses']['FORT_DETAILS']:

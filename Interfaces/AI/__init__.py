@@ -20,6 +20,8 @@ from Interfaces.AI.Stepper.Normal import Normal
 from Interfaces.AI.Stepper.Spiral import Spiral
 from Interfaces.AI.Stepper.Starline import Starline
 #from Interfaces.AI.Stepper.Polyline import Polyline
+from Interfaces.AI.Stepper.Gymmer import Gymmer
+from Interfaces.AI.Stepper.Pokestopper import Pokestopper
 
 from Interfaces.MySQL.Schema import parse_map_cell
 
@@ -55,22 +57,25 @@ class AI(object):
             self.stepper = Starline(self)
 #        if self.scanner.mode.stepper == "polyline":
 #            self.stepper = Polyline(self)
+        if self.scanner.mode.stepper == "gymmer":
+            self.stepper = Gymmer(self)
+        if self.scanner.mode.stepper == "pokestopper":
+            self.stepper = Pokestopper(self)
 
         if self.stepper is None:
             log.error("Stepper select error, stepper {0} not found.".format(self.scanner.mode.stepper))
             raise "Stepper select error, stepper {0} not found.".format(self.scanner.mode.stepper)
 
     def take_step(self):
+
         worker = PokemonTransfer(self)
         worker.work()
-       # InventoryRecycle
-       #
 
         self.inventory.update()
         self.inventory.recycle()
 
         self.metrica.take_step()
-        #self.stepper.take_step()
+        self.stepper.take_step()
 
 
     def work_on_cell(self, cell, position, seen_pokemon=False, seen_pokestop=False, seen_gym=False):
@@ -124,7 +129,7 @@ class AI(object):
                         hack_chain = worker.work()
 
                         if hack_chain > 10:
-                            sleep(10*self.scanner.mode.is_human_sleep)
+                            sleep(10)
 
                         self.seen_pokestop[pokestop_id] = time.time()
 
@@ -138,38 +143,41 @@ class AI(object):
                 gyms = [gym for gym in cell['forts'] if 'gym_points' in gym]
                 gyms.sort(key=lambda x: distance(position[0], position[1], x['latitude'], x['longitude']))
 
-                for gym in gyms:
-                    gym_distance = round(distance(position[0], position[1], gym['latitude'], gym['longitude']))
-                    if gym_distance > self.scanner.mode.step*150000:
-                        log.debug("Gym находится на большом растоянии ({0}), вернемся к нему позже.".format(gym_distance))
-                        continue
-
-                    gym_id = str(gym['id'])
-                    if gym_id in self.seen_gym:
-                        if self.seen_gym[gym_id] + 350 > time.time():
+                if self.scanner.mode.is_lookup or self.scanner.mode.is_defender:
+                    for gym in gyms:
+                        gym_distance = round(distance(position[0], position[1], gym['latitude'], gym['longitude']))
+                        if gym_distance > self.scanner.mode.step*150000:
+                            log.debug("Gym находится на большом растоянии ({0}), вернемся к нему позже.".format(gym_distance))
                             continue
 
-                    worker = MoveToGym(gym, self)
-                    worker.work()
+                        gym_id = str(gym['id'])
 
-                    worker = SeenGym(gym, self)
-                    hack_chain = worker.work()
+                        if self.scanner.mode.is_defender or self.scanner.mode.is_farm or self.scanner.mode.is_catch:
+                            if gym_id in self.seen_gym:
+                                if self.seen_gym[gym_id] + 350 > time.time():
+                                    continue
 
-                    if hack_chain > 10:
-                        sleep(10*self.scanner.mode.is_human_sleep)
+                        worker = MoveToGym(gym, self)
+                        worker.work()
 
-                    self.seen_gym[gym_id] = time.time()
+                        worker = SeenGym(gym, self)
+                        hack_chain = worker.work()
 
-                    self.metrica.take_ping()
+                        if hack_chain > 10:
+                            sleep(10)
+
+                        self.seen_gym[gym_id] = time.time()
+
+                        self.metrica.take_ping()
         self.metrica.take_ping()
 
     def catch_pokemon(self, pokemon):
         worker = PokemonCatch(pokemon, self)
         return_value = worker.work()
 
-        #if return_value == PokemonCatch.BAG_FULL:
-        #    worker = InitialTransfer(self)
-        #    worker.work()
+        if return_value == PokemonCatch.BAG_FULL:
+            worker = PokemonTransfer(self)
+            worker.work()
 
         return return_value
 
