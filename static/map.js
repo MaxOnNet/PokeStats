@@ -72,6 +72,8 @@ $selectNotify.on("change", function (e) {
 
 var map;
 var marker;
+var mapPosition;
+var mapBounds;
 
 var light2Style=[{"elementType":"geometry","stylers":[{"hue":"#ff4400"},{"saturation":-68},{"lightness":-4},{"gamma":0.72}]},{"featureType":"road","elementType":"labels.icon"},{"featureType":"landscape.man_made","elementType":"geometry","stylers":[{"hue":"#0077ff"},{"gamma":3.1}]},{"featureType":"water","stylers":[{"hue":"#00ccff"},{"gamma":0.44},{"saturation":-33}]},{"featureType":"poi.park","stylers":[{"hue":"#44ff00"},{"saturation":-23}]},{"featureType":"water","elementType":"labels.text.fill","stylers":[{"hue":"#007fff"},{"gamma":0.77},{"saturation":65},{"lightness":99}]},{"featureType":"water","elementType":"labels.text.stroke","stylers":[{"gamma":0.11},{"weight":5.6},{"saturation":99},{"hue":"#0091ff"},{"lightness":-86}]},{"featureType":"transit.line","elementType":"geometry","stylers":[{"lightness":-48},{"hue":"#ff5e00"},{"gamma":1.2},{"saturation":-23}]},{"featureType":"transit","elementType":"labels.text.stroke","stylers":[{"saturation":-64},{"hue":"#ff9100"},{"lightness":16},{"gamma":0.47},{"weight":2.7}]}];
 var darkStyle=[{"featureType":"all","elementType":"labels.text.fill","stylers":[{"saturation":36},{"color":"#b39964"},{"lightness":40}]},{"featureType":"all","elementType":"labels.text.stroke","stylers":[{"visibility":"on"},{"color":"#000000"},{"lightness":16}]},{"featureType":"all","elementType":"labels.icon","stylers":[{"visibility":"off"}]},{"featureType":"administrative","elementType":"geometry.fill","stylers":[{"color":"#000000"},{"lightness":20}]},{"featureType":"administrative","elementType":"geometry.stroke","stylers":[{"color":"#000000"},{"lightness":17},{"weight":1.2}]},{"featureType":"landscape","elementType":"geometry","stylers":[{"color":"#000000"},{"lightness":20}]},{"featureType":"poi","elementType":"geometry","stylers":[{"color":"#000000"},{"lightness":21}]},{"featureType":"road.highway","elementType":"geometry.fill","stylers":[{"color":"#000000"},{"lightness":17}]},{"featureType":"road.highway","elementType":"geometry.stroke","stylers":[{"color":"#000000"},{"lightness":29},{"weight":0.2}]},{"featureType":"road.arterial","elementType":"geometry","stylers":[{"color":"#000000"},{"lightness":18}]},{"featureType":"road.local","elementType":"geometry","stylers":[{"color":"#181818"},{"lightness":16}]},{"featureType":"transit","elementType":"geometry","stylers":[{"color":"#000000"},{"lightness":19}]},{"featureType":"water","elementType":"geometry","stylers":[{"lightness":17},{"color":"#525252"}]}];
@@ -87,6 +89,10 @@ function handleLocationError(browserHasGeolocation, infoWindow, pos) {
                             'Error: Your browser doesn\'t support geolocation.');
 }
 
+function handleBoundsUpdate() {
+    mapPosition = map.getCenter()
+    mapBounds   = map.getBounds()
+}
 
 function initMap() {
 
@@ -110,6 +116,11 @@ function initMap() {
               'style_pgo']
         },
     });
+
+    google.maps.event.addListener(map, "bounds_changed", handleBoundsUpdate);
+
+
+
 
     marker = new google.maps.Marker({
         position: {
@@ -149,8 +160,8 @@ function initMap() {
                 lng: position.coords.longitude
             };
 
-            infoWindow.setPosition(pos);
-            infoWindow.setContent('Location found.');
+            //infoWindow.setPosition(pos);
+            //infoWindow.setContent('Location found.');
             map.setCenter(pos);
             marker.setPosition(pos);
 
@@ -470,98 +481,95 @@ function clearStaleMarkers() {
 
 function updateMap() {
     if (map) {
-    localStorage.showPokemon = localStorage.showPokemon || true;
-    localStorage.showGyms = localStorage.showGyms || true;
-    localStorage.showPokestops = localStorage.showPokestops || false;
-    localStorage.showScanned = localStorage.showScanned || false;
+        localStorage.showPokemon = localStorage.showPokemon || true;
+        localStorage.showGyms = localStorage.showGyms || true;
+        localStorage.showPokestops = localStorage.showPokestops || false;
+        localStorage.showScanned = localStorage.showScanned || false;
 
-    localPosition = map.getCenter()
-    localBounds   = map.getBounds()
+        $.ajax({
+            url: "get_data",
+            type: 'GET',
+            data: {
+                'pokemon': localStorage.showPokemon,
+                'pokestops': localStorage.showPokestops,
+                'gyms': localStorage.showGyms,
+                'scanned': localStorage.showScanned,
+                'latitude': mapPosition.lat(),
+                'longitude': mapPosition.lng(),
+                'ne_latitude': mapBounds.getNorthEast().lat(),
+                'ne_longitude': mapBounds.getNorthEast().lng(),
+                'sw_latitude': mapBounds.getSouthWest().lat(),
+                'sw_longitude': mapBounds.getSouthWest().lng(),
+            },
+            dataType: "json"
+        }).done(function(result) {
+          $.each(result.pokemons, function(i, item){
+              if (!localStorage.showPokemon) {
+                  return false; // in case the checkbox was unchecked in the meantime.
+              }
+              if (!(item.encounter_id in map_pokemons) &&
+                        excludedPokemon.indexOf(item.pokemon_id) < 0) {
+                  // add marker to map and item to dict
+                  if (item.marker) item.marker.setMap(null);
+                  item.marker = setupPokemonMarker(item);
+                  map_pokemons[item.encounter_id] = item;
+              }
+            });
 
-    $.ajax({
-        url: "get_data",
-        type: 'GET',
-        data: {
-            'pokemon': localStorage.showPokemon,
-            'pokestops': localStorage.showPokestops,
-            'gyms': localStorage.showGyms,
-            'scanned': localStorage.showScanned,
-            'latitude': localPosition.lat(),
-            'longitude': localPosition.lng(),
-            'ne_latitude': localBounds.getNorthEast().lat(),
-            'ne_longitude': localBounds.getNorthEast().lng(),
-            'sw_latitude': localBounds.getSouthWest().lat(),
-            'sw_longitude': localBounds.getSouthWest().lng(),
-        },
-        dataType: "json"
-    }).done(function(result) {
-      $.each(result.pokemons, function(i, item){
-          if (!localStorage.showPokemon) {
-              return false; // in case the checkbox was unchecked in the meantime.
-          }
-          if (!(item.encounter_id in map_pokemons) &&
-                    excludedPokemon.indexOf(item.pokemon_id) < 0) {
-              // add marker to map and item to dict
-              if (item.marker) item.marker.setMap(null);
-              item.marker = setupPokemonMarker(item);
-              map_pokemons[item.encounter_id] = item;
-          }
-        });
-
-        $.each(result.pokestops, function(i, item) {
-            if (!localStorage.showPokestops) {
-                return false;
-            } else if (!(item.id in map_pokestops)) { // add marker to map and item to dict
-                // add marker to map and item to dict
-                if (item.marker) item.marker.setMap(null);
-                item.marker = setupPokestopMarker(item);
-                map_pokestops[item.id] = item;
-            }
-
-        });
-
-        $.each(result.gyms, function(i, item){
-            if (!localStorage.showGyms) {
-                return false; // in case the checkbox was unchecked in the meantime.
-            }
-
-            if (item.gym_id in map_gyms) {
-                // if team has changed, create new marker (new icon)
-                if (map_gyms[item.gym_id].team_id != item.team_id) {
-                    map_gyms[item.gym_id].marker.setMap(null);
-                    map_gyms[item.gym_id].marker = setupGymMarker(item);
-                } else { // if it hasn't changed generate new label only (in case prestige has changed)
-                    map_gyms[item.gym_id].marker.infoWindow = new google.maps.InfoWindow({
-                                content: gymLabel(item.team_id, item.team_name, item.gym_id, item.gym_name, item.gym_prestige, item.gym_image,  (item.date_change-6*60*60*1000))
-                    });
+            $.each(result.pokestops, function(i, item) {
+                if (!localStorage.showPokestops) {
+                    return false;
+                } else if (!(item.id in map_pokestops)) { // add marker to map and item to dict
+                    // add marker to map and item to dict
+                    if (item.marker) item.marker.setMap(null);
+                    item.marker = setupPokestopMarker(item);
+                    map_pokestops[item.id] = item;
                 }
-            }
-            else { // add marker to map and item to dict
-                if (item.marker) item.marker.setMap(null);
-                item.marker = setupGymMarker(item);
-                map_gyms[item.gym_id] = item;
-            }
 
+            });
+
+            $.each(result.gyms, function(i, item){
+                if (!localStorage.showGyms) {
+                    return false; // in case the checkbox was unchecked in the meantime.
+                }
+
+                if (item.gym_id in map_gyms) {
+                    // if team has changed, create new marker (new icon)
+                    if (map_gyms[item.gym_id].team_id != item.team_id) {
+                        map_gyms[item.gym_id].marker.setMap(null);
+                        map_gyms[item.gym_id].marker = setupGymMarker(item);
+                    } else { // if it hasn't changed generate new label only (in case prestige has changed)
+                        map_gyms[item.gym_id].marker.infoWindow = new google.maps.InfoWindow({
+                                    content: gymLabel(item.team_id, item.team_name, item.gym_id, item.gym_name, item.gym_prestige, item.gym_image,  (item.date_change-6*60*60*1000))
+                        });
+                    }
+                }
+                else { // add marker to map and item to dict
+                    if (item.marker) item.marker.setMap(null);
+                    item.marker = setupGymMarker(item);
+                    map_gyms[item.gym_id] = item;
+                }
+
+            });
+
+            $.each(result.scanned, function(i, item) {
+                if (!localStorage.showScanned) {
+                    return false;
+                }
+
+                if (item.id in map_scanned) {
+                    map_scanned[item.id].marker.setOptions({fillColor: getColorByDate(item.date_change-6*60*60*1000)});
+                }
+                else { // add marker to map and item to dict
+                    if (item.marker) item.marker.setMap(null);
+                    item.marker = setupScannedMarker(item);
+                    map_scanned[item.id] = item;
+                }
+
+            });
+
+            clearStaleMarkers();
         });
-
-        $.each(result.scanned, function(i, item) {
-            if (!localStorage.showScanned) {
-                return false;
-            }
-
-            if (item.id in map_scanned) {
-                map_scanned[item.id].marker.setOptions({fillColor: getColorByDate(item.date_change-6*60*60*1000)});
-            }
-            else { // add marker to map and item to dict
-                if (item.marker) item.marker.setMap(null);
-                item.marker = setupScannedMarker(item);
-                map_scanned[item.id] = item;
-            }
-
-        });
-
-        clearStaleMarkers();
-    });
     };
 };
 
