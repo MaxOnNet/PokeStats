@@ -122,6 +122,7 @@ class Map(Flask):
         sql = """
             SELECT
                 p.name                  as "name",
+                p.image_url             as "image",
                 p.latitude	            as "latitude",
                 p.longitude             as "longitude",
                 p.date_lure_expiration  as "date_lure_expiration",
@@ -138,12 +139,12 @@ class Map(Flask):
         for row in session.execute(sqlalchemy.text(sql)):
             pokestops.append({
                 "name": row[0],
+                "image": row[1],
+                "latitude": row[2],
+                "longitude": row[3],
 
-                "latitude": row[1],
-                "longitude": row[2],
-
-                "date_lure_expiration": row[3],
-                "date_change": row[4]
+                "date_lure_expiration": row[4],
+                "date_change": row[5]
             })
 
         return pokestops
@@ -157,6 +158,7 @@ class Map(Flask):
                 t.name as "team_name",
                 g.id as "gym_id",
                 g.name as "gym_name",
+                g.image_url  as "gym_image",
                 g.prestige as "gym_prestige",
                 g.latitude as "latitude",
                 g.longitude as "longitude",
@@ -179,10 +181,11 @@ class Map(Flask):
                 "team_name": row[1],
                 "gym_id": row[2],
                 "gym_name": row[3],
-                "gym_prestige": row[4],
-                "latitude": row[5],
-                "longitude": row[6],
-                "date_change": row[7]
+                "gym_image": row[4],
+                "gym_prestige": row[5],
+                "latitude": row[6],
+                "longitude": row[7],
+                "date_change": row[8]
             })
 
         return gyms
@@ -223,22 +226,20 @@ class Map(Flask):
 
         session = self._database_init()
 
-        try:
-            if request.args.get('ne_latitude') and request.args.get('ne_longitude')\
-                and request.args.get('sw_latitude') and request.args.get('sw_longitude'):
-                    if request.args.get('pokemon') == "true":
-                        json_dict['pokemons'] = self._database_fetch_pokemons(session=session, ne_latitude=request.args.get('ne_latitude'), ne_longitude=request.args.get('ne_longitude'), sw_latitude=request.args.get('sw_latitude'), sw_longitude=request.args.get('sw_longitude'))
+        #try:
+        if request.args.get('pokemon') == "true":
+            json_dict['pokemons'] = self._database_fetch_pokemons(session=session, ne_latitude=request.args.get('ne_latitude'), ne_longitude=request.args.get('ne_longitude'), sw_latitude=request.args.get('sw_latitude'), sw_longitude=request.args.get('sw_longitude'))
 
-                    if request.args.get('pokestops') == "true":
-                        json_dict['pokestops'] = self._database_fetch_pokestops(session=session, ne_latitude=request.args.get('ne_latitude'), ne_longitude=request.args.get('ne_longitude'), sw_latitude=request.args.get('sw_latitude'), sw_longitude=request.args.get('sw_longitude'))
+        if request.args.get('pokestops') == "true":
+            json_dict['pokestops'] = self._database_fetch_pokestops(session=session, ne_latitude=request.args.get('ne_latitude'), ne_longitude=request.args.get('ne_longitude'), sw_latitude=request.args.get('sw_latitude'), sw_longitude=request.args.get('sw_longitude'))
 
-                    if request.args.get('gyms') == "true":
-                        json_dict['gyms'] = self._database_fetch_gyms(session=session, ne_latitude=request.args.get('ne_latitude'), ne_longitude=request.args.get('ne_longitude'), sw_latitude=request.args.get('sw_latitude'), sw_longitude=request.args.get('sw_longitude'))
+        if request.args.get('gyms') == "true":
+            json_dict['gyms'] = self._database_fetch_gyms(session=session, ne_latitude=request.args.get('ne_latitude'), ne_longitude=request.args.get('ne_longitude'), sw_latitude=request.args.get('sw_latitude'), sw_longitude=request.args.get('sw_longitude'))
 
-                    if request.args.get('scanned') == "true":
-                        json_dict['scanned'] = self._database_fetch_scanners(session=session, ne_latitude=request.args.get('ne_latitude'), ne_longitude=request.args.get('ne_longitude'), sw_latitude=request.args.get('sw_latitude'), sw_longitude=request.args.get('sw_longitude'))
-        finally:
-            self._database_close(session)
+        if request.args.get('scanned') == "true":
+            json_dict['scanned'] = self._database_fetch_scanners(session=session, ne_latitude=request.args.get('ne_latitude'), ne_longitude=request.args.get('ne_longitude'), sw_latitude=request.args.get('sw_latitude'), sw_longitude=request.args.get('sw_longitude'))
+        #finally:
+        self._database_close(session)
 
         return jsonify(json_dict)
 

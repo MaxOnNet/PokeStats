@@ -236,14 +236,17 @@ function pokemonLabel(name, disappear_time, cd_pokemon, latitude, longitude) {
     return contentstring;
 };
 
-function gymLabel(team_name, team_id, gym_points, date_change) {
+function gymLabel(team_id, team_name, gym_id, gym_name, gym_prestige, gym_image, date_change) {
     date_change = new Date(date_change)
 
     var gym_color = ["0, 0, 0, .4", "74, 138, 202, .6", "240, 68, 58, .6", "254, 217, 40, .6"];
+    var gym_logo = gym_types[team_id]
     var str;
-    if (team_name == 0) {
+    if (team_id == 0) {
         str = `<div><center>
+            <div style='padding-bottom: 2px'>${gym_name}</div>
             <div>
+                <b style='color:rgba(${gym_color[team_id]})'>${gym_name}</b><br>
                 <b style='color:rgba(${gym_color[team_id]})'>${team_name}</b><br>
             </div>
             <div>Данные обновлены: ${pad(date_change.getHours())}:${pad(date_change.getMinutes())}:${pad(date_change.getSeconds())}</div>
@@ -251,15 +254,18 @@ function gymLabel(team_name, team_id, gym_points, date_change) {
             </center></div>`;
     } else {
         str = `
-            <div><center>
-            <div style='padding-bottom: 2px'>Gym занят:</div>
-            <div>
-                <b style='color:rgba(${gym_color[team_id]})'>Команда ${team_name}</b><br>
-                <img height='70px' style='padding: 5px;' src='static/forts/${team_name}_large.png'>
-            </div>
-            <div>Престиж: ${gym_points}</div>
-            <div>Данные обновлены: ${pad(date_change.getHours())}:${pad(date_change.getMinutes())}:${pad(date_change.getSeconds())}</div>
-            </center></div>`;
+<div>
+    <center>
+        <div style='padding-bottom: 2px'>${gym_name}</div>
+        <div>
+            <b style='color:rgba(${gym_color[team_id]})'>Команда ${team_name}</b><br>
+            <img height='70px' style='padding: 5px;' src='static/forts/${gym_logo}_large.png'>
+        </div>
+        <div>Престиж: ${gym_prestige}</div>
+        <div>Данные обновлены: ${pad(date_change.getHours())}:${pad(date_change.getMinutes())}:${pad(date_change.getSeconds())}</div>
+    </center>
+</div>
+        `;
     }
 
     return str;
@@ -312,6 +318,10 @@ var audio = new Audio('https://github.com/AHAAAAAAA/PokemonGo-Map/raw/develop/st
 
 
 function setupPokemonMarker(item) {
+    //  item.pokemon_name
+    //  item.pokemin_id
+
+
     var marker = new google.maps.Marker({
         position: {
             lat: item.latitude,
@@ -337,6 +347,12 @@ function setupPokemonMarker(item) {
 };
 
 function setupGymMarker(item) {
+    //  item.team_id
+    //  item.team_name
+    //  item.gym_id
+    //  item.gym_name
+    //  item.gym_prestige
+
     var marker = new google.maps.Marker({
         position: {
             lat: item.latitude,
@@ -347,7 +363,8 @@ function setupGymMarker(item) {
     });
 
     marker.infoWindow = new google.maps.InfoWindow({
-        content: gymLabel(gym_types[item.team_id], item.team_name, item.prestige,(item.date_change-6*60*60*1000))
+
+        content: gymLabel(item.team_id, item.team_name, item.gym_id, item.gym_name, item.gym_prestige, item.gym_image,  (item.date_change-6*60*60*1000))
     });
 
     addListeners(marker);
@@ -450,7 +467,7 @@ function clearStaleMarkers() {
 };
 
 function updateMap() {
-    
+    if (map) {
     localStorage.showPokemon = localStorage.showPokemon || true;
     localStorage.showGyms = localStorage.showGyms || true;
     localStorage.showPokestops = localStorage.showPokestops || false;
@@ -468,11 +485,11 @@ function updateMap() {
             'gyms': localStorage.showGyms,
             'scanned': localStorage.showScanned,
             'latitude': localPosition.lat(),
-            'longtude': localPosition.lng(),
+            'longitude': localPosition.lng(),
             'ne_latitude': localBounds.getNorthEast().lat(),
-            'ne_longtude': localBounds.getNorthEast().lng(),
+            'ne_longitude': localBounds.getNorthEast().lng(),
             'sw_latitude': localBounds.getSouthWest().lat(),
-            'sw_longtude': localBounds.getSouthWest().lng(),
+            'sw_longitude': localBounds.getSouthWest().lng(),
         },
         dataType: "json"
     }).done(function(result) {
@@ -543,6 +560,7 @@ function updateMap() {
 
         clearStaleMarkers();
     });
+    };
 };
 
 window.setInterval(updateMap, 5000);
