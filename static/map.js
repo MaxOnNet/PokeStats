@@ -434,7 +434,7 @@ function updateMap() {
     localStorage.showScanned = localStorage.showScanned || false;
 
     localPosition = map.getCenter()
-    localBounds.getBounds()
+    localBounds   = map.getBounds()
 
     $.ajax({
         url: "raw_data",
