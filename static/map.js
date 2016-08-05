@@ -460,7 +460,7 @@ function updateMap() {
     localBounds   = map.getBounds()
 
     $.ajax({
-        url: "raw_data",
+        url: "get_data",
         type: 'GET',
         data: {
             'pokemon': localStorage.showPokemon,
