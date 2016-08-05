@@ -271,21 +271,23 @@ function gymLabel(team_id, team_name, gym_id, gym_name, gym_prestige, gym_image,
     return str;
 }
 
-function pokestopLabel(date_lure_expiration, date_change) {
+function pokestopLabel(name, image, date_lure_expiration_in, date_change) {
     date_change = new Date(date_change)
-    date_lure_expiration = new Date(date_lure_expiration)
+    date_lure_expiration = new Date(date_lure_expiration_in)
 
     var str;
 
-    if (date_lure_expiration) {
+    if (date_lure_expiration_in) {
         str = `
             <div><center>
+            <div style='padding-bottom: 2px'>${name}</div>
             <div>Люр истекает: ${pad(date_lure_expiration.getHours())}:${pad(date_lure_expiration.getMinutes())}:${pad(date_lure_expiration.getSeconds())}</div>
             <div>Данные обновлены: ${pad(date_change.getHours())}:${pad(date_change.getMinutes())}:${pad(date_change.getSeconds())}</div>
             </center></div>`;
     } else {
         str = `
             <div><center>
+            <div style='padding-bottom: 2px'>${name}</div>
             <div>Данные обновлены: ${pad(date_change.getHours())}:${pad(date_change.getMinutes())}:${pad(date_change.getSeconds())}</div>
             </center></div>`;
     }
@@ -383,7 +385,7 @@ function setupPokestopMarker(item) {
     });
 
     marker.infoWindow = new google.maps.InfoWindow({
-        content: pokestopLabel((item.date_lure_expiration-6*60*60*1000), (item.date_change-6*60*60*1000))
+        content: pokestopLabel(item.name, item.image, (item.date_lure_expiration-6*60*60*1000), (item.date_change-6*60*60*1000))
     });
 
     addListeners(marker);
@@ -497,12 +499,12 @@ function updateMap() {
           if (!localStorage.showPokemon) {
               return false; // in case the checkbox was unchecked in the meantime.
           }
-          if (!(item.cd_encounter in map_pokemons) &&
-                    excludedPokemon.indexOf(item.cd_pokemon) < 0) {
+          if (!(item.encounter_id in map_pokemons) &&
+                    excludedPokemon.indexOf(item.pokemon_id) < 0) {
               // add marker to map and item to dict
               if (item.marker) item.marker.setMap(null);
               item.marker = setupPokemonMarker(item);
-              map_pokemons[item.cd_encounter] = item;
+              map_pokemons[item.encounter_id] = item;
           }
         });
 
@@ -523,21 +525,21 @@ function updateMap() {
                 return false; // in case the checkbox was unchecked in the meantime.
             }
 
-            if (item.id in map_gyms) {
+            if (item.gym_id in map_gyms) {
                 // if team has changed, create new marker (new icon)
-                if (map_gyms[item.id].cd_team != item.cd_team) {
-                    map_gyms[item.id].marker.setMap(null);
-                    map_gyms[item.id].marker = setupGymMarker(item);
+                if (map_gyms[item.gym_id].team_id != item.team_id) {
+                    map_gyms[item.gym_id].marker.setMap(null);
+                    map_gyms[item.gym_id].marker = setupGymMarker(item);
                 } else { // if it hasn't changed generate new label only (in case prestige has changed)
-                    map_gyms[item.id].marker.infoWindow = new google.maps.InfoWindow({
-                        content: gymLabel(gym_types[item.cd_team], item.cd_team, item.prestige, (item.date_change-6*60*60*1000))
+                    map_gyms[item.gym_id].marker.infoWindow = new google.maps.InfoWindow({
+                                content: gymLabel(item.team_id, item.team_name, item.gym_id, item.gym_name, item.gym_prestige, item.gym_image,  (item.date_change-6*60*60*1000))
                     });
                 }
             }
             else { // add marker to map and item to dict
                 if (item.marker) item.marker.setMap(null);
                 item.marker = setupGymMarker(item);
-                map_gyms[item.id] = item;
+                map_gyms[item.gym_id] = item;
             }
 
         });

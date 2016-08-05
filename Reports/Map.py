@@ -88,7 +88,7 @@ class Map(Flask):
             SELECT
                 p.id 	as "id",
                 p.name 	as "name",
-
+                ps.cd_encounter as "encounter_id",
                 ps.latitude	as "latitude",
                 ps.longitude as "longitude",
                 ps.date_disappear as "date_disappear"
@@ -108,9 +108,10 @@ class Map(Flask):
             pokemons.append({
                 "pokemon_id": row[0],
                 "pokemon_name": row[1],
-                "latitude": row[2],
-                "longitude": row[3],
-                "date_disappear": row[4]
+                "encounter_id": row[2],
+                "latitude": row[3],
+                "longitude": row[4],
+                "date_disappear": row[5]
             })
 
         return pokemons
@@ -121,6 +122,7 @@ class Map(Flask):
 
         sql = """
             SELECT
+                p.id                    as "id",
                 p.name                  as "name",
                 p.image_url             as "image",
                 p.latitude	            as "latitude",
@@ -138,13 +140,14 @@ class Map(Flask):
 
         for row in session.execute(sqlalchemy.text(sql)):
             pokestops.append({
-                "name": row[0],
-                "image": row[1],
-                "latitude": row[2],
-                "longitude": row[3],
+                "id": row[0],
+                "name": row[1],
+                "image": row[2],
+                "latitude": row[3],
+                "longitude": row[4],
 
-                "date_lure_expiration": row[4],
-                "date_change": row[5]
+                "date_lure_expiration": row[5],
+                "date_change": row[6]
             })
 
         return pokestops
