@@ -13,6 +13,8 @@
 			var center_lat = {{ lat }};
 			var center_lng = {{ lng }};
 			var user_gps = {{ gps }};
+			var pokemon_time = "{{ pokemon_time }}";
+			var pokemon_ids = "{{ pokemon_ids }}"
 		 </script>
 
 		<!-- Fav- & Apple-Touch-Icons -->
@@ -190,14 +192,6 @@
 	<script type="text/javascript" src="static/dist/js/app.min.js"></script>
 	<script type="text/javascript" src="static/js/vendor/classie.js"></script>
 	<!-- <script type="text/javascript" src="static/js/vendor/svg-overlay.js"></script> -->
-
-
-  <script type="text/javascript">
-    var center_lat = {{lat}};
-    var center_lng = {{lng}};
-    var user_gps = gps;
-  </script>
-
 
 	<script type="text/javascript" src="static/map.js"></script>
 	<script async defer src="https://maps.googleapis.com/maps/api/js?key={{ gmaps_key }}&callback=initMap&libraries=places"></script>

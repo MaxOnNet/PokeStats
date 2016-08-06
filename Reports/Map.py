@@ -82,17 +82,28 @@ class Map(Flask):
         session.expunge_all()
         session.close()
 
-    def _database_fetch_pokemons(self, session=None, ne_latitude=0, ne_longitude=0, sw_latitude=0, sw_longitude=0):
+    def _database_fetch_pokemons(self, session=None, ne_latitude=0, ne_longitude=0, sw_latitude=0, sw_longitude=0, pokemon_time="now()", pokemon_ids=""):
         pokemons = []
+
+        try:
+            if int(pokemon_time) != -1:
+                pokemon_time = "FROM_UNIXTIME({0})".format(str(pokemon_time))
+            else:
+                pokemon_time = "now()"
+        except:
+            pokemon_time = "now()"
+
+        if pokemon_ids != -1:
+            pokemon_ids = "and p.id in ({0})".format(pokemon_ids)
 
         sql = """
             SELECT
-                p.id 	as "id",
-                p.name 	as "name",
-                ps.cd_encounter as "encounter_id",
-                ps.latitude	as "latitude",
-                ps.longitude as "longitude",
-                ps.date_disappear as "date_disappear"
+                p.id 	                as "id",
+                p.name  	            as "name",
+                ps.cd_encounter         as "encounter_id",
+                ps.latitude	            as "latitude",
+                ps.longitude            as "longitude",
+                ps.date_disappear       as "date_disappear"
             FROM
                 db_pokestats.pokemon as p,
                 db_pokestats.pokemon_spawnpoint ps
@@ -101,9 +112,11 @@ class Map(Flask):
                 and ps.latitude > {1}
                 and ps.longitude < {2}
                 and ps.longitude > {3}
-                and ps.date_disappear > now()
+                and ps.date_disappear > {4}
                 and ps.cd_pokemon = p.id
-        """.format(ne_latitude, sw_latitude, ne_longitude, sw_longitude)
+                {5}
+
+        """.format(ne_latitude, sw_latitude, ne_longitude, sw_longitude, pokemon_time, pokemon_ids)
 
         for row in session.execute(sqlalchemy.text(sql)):
             pokemons.append({
@@ -235,17 +248,28 @@ class Map(Flask):
         if request.args.get('latitude') and request.args.get('longitude'):
             pos_latitude = request.args.get('latitude')
             pos_longitude = request.args.get('longitude')
-            pos_gps=0
+            pos_gps = 0
         else:
             pos_latitude = self.conf_latitude
             pos_longitude = self.conf_longitude
-            pos_gps=1
+            pos_gps = 1
 
+        if request.args.get('pokemon_ids'):
+            pokemon_ids = request.args.get('pokemon_ids')
+        else:
+            pokemon_ids = -1
+
+        if request.args.get('pokemon_time'):
+            pokemon_time = request.args.get('pokemon_time')
+        else:
+            pokemon_time = -1
 
         return render_template('map.html',
                                lat=pos_latitude,
                                lng=pos_longitude,
                                gps=pos_gps,
+                               pokemon_ids=pokemon_ids,
+                               pokemon_time=pokemon_time,
                                gmaps_key=self.conf_gmapkey)
 
 
@@ -267,7 +291,7 @@ class Map(Flask):
         session = self._database_init()
 
         if request.args.get('pokemon') == "true":
-            json_dict['pokemons'] = self._database_fetch_pokemons(session=session, ne_latitude=request.args.get('ne_latitude'), ne_longitude=request.args.get('ne_longitude'), sw_latitude=request.args.get('sw_latitude'), sw_longitude=request.args.get('sw_longitude'))
+            json_dict['pokemons'] = self._database_fetch_pokemons(session=session, ne_latitude=request.args.get('ne_latitude'), ne_longitude=request.args.get('ne_longitude'), sw_latitude=request.args.get('sw_latitude'), sw_longitude=request.args.get('sw_longitude'), pokemon_time=request.args.get('pokemon_time'), pokemon_ids=request.args.get('pokemon_ids'))
 
         if request.args.get('pokestops') == "true":
             json_dict['pokestops'] = self._database_fetch_pokestops(session=session, ne_latitude=request.args.get('ne_latitude'), ne_longitude=request.args.get('ne_longitude'), sw_latitude=request.args.get('sw_latitude'), sw_longitude=request.args.get('sw_longitude'))

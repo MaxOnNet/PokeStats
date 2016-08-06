@@ -504,6 +504,8 @@ function updateMap() {
                 'ne_longitude': mapBounds.getNorthEast().lng(),
                 'sw_latitude': mapBounds.getSouthWest().lat(),
                 'sw_longitude': mapBounds.getSouthWest().lng(),
+                'pokemon_time': pokemon_time,
+                'pokemon_ids': pokemon_ids
             },
             dataType: "json"
         }).done(function(result) {
@@ -572,7 +574,9 @@ function updateMap() {
 
             });
 
-            clearStaleMarkers();
+            if (pokemon_time == -1) {
+                clearStaleMarkers();
+            }
         });
     };
 };
