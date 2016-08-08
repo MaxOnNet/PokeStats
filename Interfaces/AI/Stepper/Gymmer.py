@@ -84,7 +84,7 @@ class Gymmer(Normal):
                 'forts': [
                     {
                         'id': gym.id,
-                        'owned_by_team': 4,
+                        'owned_by_team': 0,
                         'gym_points': 1,
                         'latitude': gym.latitude,
                         'longitude': gym.longitude

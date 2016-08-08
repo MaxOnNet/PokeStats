@@ -29,6 +29,7 @@ class Metrica:
         if self.time_flush + datetime.timedelta(seconds=60) < datetime.datetime.now():
             log.debug("Сброс статистики в БД")
             self.time_flush = datetime.datetime.now()
+            self.session.commit()
             self.session.flush()
 
 
