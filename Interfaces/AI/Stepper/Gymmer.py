@@ -115,15 +115,15 @@ class Gymmer(Normal):
               ) AS "gym_distance"
             FROM gym
             HAVING gym_distance < {3}
-            ORDER BY gym_distance
+            ORDER BY date_change
 
         """.format(latitude, longitude, latitude, distance)
 
         coords = []
 
         for gym in self.session.execute(sql_text(sql)):
-            lat = gym[1] + random.uniform(-step_size/4, step_size/4)
-            lng = gym[2] + random.uniform(-step_size/4, step_size/4)
+            lat = gym[1] + random_lat_long_delta()
+            lng = gym[2] + random_lat_long_delta()
 
             coords.append({'lat': lat, 'lng': lng, 'id': gym[0]})
 

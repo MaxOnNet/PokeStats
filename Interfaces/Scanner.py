@@ -134,10 +134,7 @@ class Scanner(threading.Thread):
             return False
 
         try:
-            log.info("Обновляем данные о профиле и сумке")
             self.profile.update()
-            self.inventory.update()
-            #self.ai.heartbeat()
         finally:
             self.session.flush()
 

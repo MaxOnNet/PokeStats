@@ -8,7 +8,7 @@ from Interfaces.AI.Human import sleep, random_lat_long_delta
 from Interfaces.AI.Worker.Utils import distance, i2f, format_time
 
 from Interfaces.pgoapi.utilities import f2i, h2f
-from Interfaces.MySQL.Schema import parse_gym_membership, clear_gym_membership, parse_fort_details
+from Interfaces.MySQL.Schema import parse_gym_membership, clear_gym_membership, parse_fort_details, parse_gym
 log = logging.getLogger(__name__)
 
 
@@ -48,6 +48,13 @@ class SeenGym(object):
             response_dict = self.api.get_gym_details(gym_id=self.gym['id'],
                                  player_latitude=f2i(self.position[0]),
                                  player_longitude=f2i(self.position[1]))
+
+            if 'responses' in response_dict \
+                    and'GET_GYM_DETAILS' in response_dict['responses'] \
+                    and 'gym_state' in response_dict['responses']['GET_GYM_DETAILS']\
+                    and 'fort_data' in response_dict['responses']['GET_GYM_DETAILS']['gym_state']:
+
+                    parse_gym(response_dict['responses']['GET_GYM_DETAILS']['gym_state']['fort_data'], self.session)
 
             if 'responses' in response_dict \
                     and'GET_GYM_DETAILS' in response_dict['responses'] \

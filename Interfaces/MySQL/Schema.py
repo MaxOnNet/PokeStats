@@ -553,6 +553,7 @@ def parse_gym_membership(membership, gym_id, team_id, session):
 
         session.add(trainer)
     else:
+        trainer.cd_team = team_id
         trainer.level = max(trainer.level, trainer_level)
 
     member = GymMembership()
