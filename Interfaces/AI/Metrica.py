@@ -26,7 +26,7 @@ class Metrica:
         self.time_await = datetime.datetime.now()
         self.scanner.statistic.date_start = datetime.datetime.now()
 
-        if self.time_flush + datetime.timedelta(seconds=10) < datetime.datetime.now():
+        if self.time_flush + datetime.timedelta(seconds=60) < datetime.datetime.now():
             log.debug("Сброс статистики в БД")
             self.time_flush = datetime.datetime.now()
             self.session.flush()

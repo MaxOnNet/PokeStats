@@ -6,6 +6,7 @@ import logging
 import time
 import argparse
 import datetime
+import threading
 
 from Interfaces.Config import Config
 from Interfaces.Scanner import Scanner as tScanner
@@ -18,6 +19,8 @@ log = logging.getLogger(__name__)
 scanner_id = 11
 
 if __name__ == '__main__':
+    threading.current_thread().name = '00-00'
+
     logging.basicConfig(level=logging.INFO, format='%(asctime)s [%(module)15s] [%(funcName)15s] [%(lineno)4d] [%(levelname)7s] [%(threadName)5s] %(message)s')
 
     logging.getLogger("peewee").setLevel(logging.WARNING)
@@ -31,9 +34,11 @@ if __name__ == '__main__':
     logging.getLogger("Interfaces.AI.Stepper.Gymmer").setLevel(logging.DEBUG)
     logging.getLogger("Interfaces.AI.Stepper.Pokestopper").setLevel(logging.DEBUG)
     logging.getLogger("Interfaces.AI.Stepper.Starline").setLevel(logging.INFO)
-    logging.getLogger("Interfaces.AI.Metrica").setLevel(logging.INFO)
+    logging.getLogger("Interfaces.AI.Metrica").setLevel(logging.DEBUG)
     logging.getLogger("Interfaces.AI.Search").setLevel(logging.DEBUG)
     threads = []
+
+    log.info("Work")
 
     scanner = tScanner(scanner_id)
     scanner.start()

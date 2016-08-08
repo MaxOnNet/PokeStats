@@ -6,6 +6,7 @@ import logging
 import time
 import argparse
 import datetime
+import threading
 
 from Interfaces.Config import Config
 from Interfaces.Scanner import Scanner as tScanner
@@ -58,6 +59,7 @@ session_mysql = session_maker()
 
 scanner_alive = True
 if __name__ == '__main__':
+    threading.current_thread().name = '00-00'
     path = os.path.abspath(os.path.join(os.path.dirname(os.path.realpath(__file__)), '..'))
     pid = str(os.getpid())
     pidfile = "{0}/.log/worker.pid".format(path)
@@ -69,6 +71,7 @@ if __name__ == '__main__':
     logging.getLogger("requests").setLevel(logging.WARNING)
     logging.getLogger("Interfaces.pgoapi.pgoapi").setLevel(logging.WARNING)
     logging.getLogger("Interfaces.pgoapi.rpc_api").setLevel(logging.WARNING)
+    logging.getLogger("Interfaces.AI.Metrica").setLevel(logging.DEBUG)
 
     threads = []
 
