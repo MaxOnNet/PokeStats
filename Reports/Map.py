@@ -96,6 +96,8 @@ class Map(Flask):
         try:
             if int(pokemon_ids) != -1:
                 pokemon_ids = "and p.id in ({0})".format(pokemon_ids)
+            else:
+                pokemon_ids = ""
         except:
             pokemon_ids = "and p.id in ({0})".format(pokemon_ids)
 
@@ -121,8 +123,9 @@ class Map(Flask):
                 {5}
 
         """.format(ne_latitude, sw_latitude, ne_longitude, sw_longitude, pokemon_time, pokemon_ids)
-
+        print sql
         for row in session.execute(sqlalchemy.text(sql)):
+            print row
             pokemons.append({
                 "pokemon_id": row[0],
                 "pokemon_name": row[1],
