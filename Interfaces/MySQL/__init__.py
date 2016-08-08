@@ -35,7 +35,8 @@ def init(config):
         sessionmaker(
                 autoflush=False,
                 autocommit=False,
-                bind=db_engine
+                bind=db_engine,
+                expire_on_commit=False
             )
         )
 
@@ -53,6 +54,7 @@ def init_fast(config):
         sessionmaker(
                 autoflush=False,
                 autocommit=False,
-                bind=db_engine
+                bind=db_engine,
+                expire_on_commit=False
             )
         )
