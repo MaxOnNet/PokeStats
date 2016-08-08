@@ -18,10 +18,11 @@ class Gymmer(Normal):
         log.info('Точечное сканирование GYM, переопределяем переменные БД')
         self.scanner.mode.step = 0.0015
         self.scanner.mode.walk = 90
-        self.scanner.mode.is_catch = 0
-        self.scanner.mode.is_farm = 0
-        self.scanner.mode.is_lookup = 1
-        self.scanner.mode.is_defender = 0
+
+        self.scanner.mode.is_catch = False
+        self.scanner.mode.is_farm = False
+        self.scanner.mode.is_lookup = True
+        self.scanner.mode.is_defender = False
 
         self.scanner.location.distance = 20
 
@@ -51,21 +52,21 @@ class Gymmer(Normal):
 
 
     def _walk_to(self, speed, lat, lng, alt):
-        dist = distance(i2f(self.api._position_lat), i2f(self.api._position_lng), lat, lng)
+        dist = distance(self.api._position_lat, self.api._position_lng, lat, lng)
         steps = (dist + 0.0) / (speed + 0.0)  # may be rational number
         intSteps = int(steps)
         residuum = steps - intSteps
 
-        log.info('Бежим из ' + str((i2f(self.api._position_lat), i2f(self.api._position_lng))) + " в " + str(str((lat, lng))) +
+        log.info('Бежим из ' + str((self.api._position_lat, self.api._position_lng)) + " в " + str(str((lat, lng))) +
                    " на " + str(round(dist, 2)) + " по прямой. " + str(format_time(ceil(steps))))
 
         if steps != 0:
-            dLat = (lat - i2f(self.api._position_lat)) / steps
-            dLng = (lng - i2f(self.api._position_lng)) / steps
+            dLat = (lat - self.api._position_lat) / steps
+            dLng = (lng - self.api._position_lng) / steps
 
             for i in range(intSteps):
-                cLat = i2f(self.api._position_lat) + dLat + random_lat_long_delta()
-                cLng = i2f(self.api._position_lng) + dLng + random_lat_long_delta()
+                cLat = (self.api._position_lat) + dLat + random_lat_long_delta()
+                cLng = (self.api._position_lng) + dLng + random_lat_long_delta()
                 self.api.set_position(cLat, cLng, alt)
                 self.ai.heartbeat()
 
@@ -121,8 +122,8 @@ class Gymmer(Normal):
         coords = []
 
         for gym in self.session.execute(sql_text(sql)):
-            lat = gym[1] + random.uniform(-step_size, step_size)
-            lng = gym[2] + random.uniform(-step_size, step_size)
+            lat = gym[1] + random.uniform(-step_size/4, step_size/4)
+            lng = gym[2] + random.uniform(-step_size/4, step_size/4)
 
             coords.append({'lat': lat, 'lng': lng, 'id': gym[0]})
 

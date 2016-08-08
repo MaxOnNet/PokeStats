@@ -3,6 +3,8 @@
 import logging
 from enum import Enum
 
+from Interfaces.AI.Human import sleep
+
 log = logging.getLogger(__name__)
 
 class InventoryItem(Enum):
@@ -49,10 +51,10 @@ class Inventory:
 
     def update(self):
         log.info("Обновляем данные сундука")
+        sleep(5)
+        response_dict = self.api.get_inventory()
 
-        self.api.get_player().get_inventory()
-
-        response_dict = self.api.call()
+        #response_dict = self.api.call()
 
         if response_dict and 'status_code' in response_dict:
             if response_dict['status_code'] is 1:
@@ -167,8 +169,8 @@ class Inventory:
 
 
     def drop_item(self, item_id, count):
-        self.api.recycle_inventory_item(item_id=item_id, count=count)
-        response_dict = self.api.call()
+        response_dict = self.api.recycle_inventory_item(item_id=item_id, count=count)
+        #response_dict = self.api.call()
 
         if response_dict and 'status_code' in response_dict:
             if response_dict['status_code'] is 1:

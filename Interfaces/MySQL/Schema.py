@@ -438,13 +438,12 @@ def parse_pokemon_cell(cell, session):
 
     for p in cell.get('wild_pokemons', []):
 
-        # fix
         if int(p['time_till_hidden_ms']) < 0:
             p['time_till_hidden_ms'] = 300
 
         pokemon_spawnpoint = PokemonSpawnpoint()
 
-        pokemon_spawnpoint.id = p['spawnpoint_id']
+        pokemon_spawnpoint.id = p['spawn_point_id']
         pokemon_spawnpoint.cd_encounter = p['encounter_id']
         pokemon_spawnpoint.cd_pokemon = p['pokemon_data']['pokemon_id']
 

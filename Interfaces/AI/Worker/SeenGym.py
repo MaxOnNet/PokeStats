@@ -31,10 +31,8 @@ class SeenGym(object):
 
         if self.gym['owned_by_team'] !=0:
             log.info("GYM ownered by {0}, analyse".format(self.gym['owned_by_team']))
-            self.api.fort_details(fort_id=self.gym['id'], latitude=lat, longitude=lng)
-            response_dict = self.api.call()
+            response_dict = self.api.fort_details(fort_id=self.gym['id'])
 
-            print response_dict
             if 'responses' in response_dict \
                     and'FORT_DETAILS' in response_dict['responses'] \
                     and 'name' in response_dict['responses']['FORT_DETAILS']:
@@ -47,13 +45,10 @@ class SeenGym(object):
             log.info('[#] Now at GYM: ' + fort_name)
             sleep(5)
 
-            self.api.get_gym_details(gym_id=self.gym['id'],
-                                 gym_latitude=lat,
-                                 gym_longitude=lng,
+            response_dict = self.api.get_gym_details(gym_id=self.gym['id'],
                                  player_latitude=f2i(self.position[0]),
                                  player_longitude=f2i(self.position[1]))
-            response_dict = self.api.call()
-            print response_dict
+
             if 'responses' in response_dict \
                     and'GET_GYM_DETAILS' in response_dict['responses'] \
                     and 'gym_state' in response_dict['responses']['GET_GYM_DETAILS']\

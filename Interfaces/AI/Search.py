@@ -9,10 +9,9 @@ import random
 from Interfaces.MySQL.Schema import parse_map_cell
 
 from Interfaces.AI.Human import sleep, random_lat_long_delta
-from Interfaces.AI.Stepper import get_cell_ids
 from Interfaces.AI.Worker.Utils import distance, i2f, format_time, encode_coords
 
-from Interfaces.pgoapi.utilities import f2i, h2f
+from Interfaces.pgoapi.utilities import f2i, h2f, get_cell_ids
 from Interfaces.AI.Stepper.Starline import Starline
 from Interfaces.AI.Stepper.Spiral import Spiral
 from Interfaces.AI.Stepper.Normal import Normal
@@ -38,7 +37,7 @@ class Search:
 
         self.threads = list()
         self.thread_event = Event()
-        self.thread_create(5)
+        self.thread_create(1)
 
     def stop(self):
         self.thread_event.set()
@@ -81,9 +80,9 @@ class Search:
                     timestamp = [1, ] * len(cellid)
 
                     api.set_position(position['lat'], position['lng'], 0)
-                    api.get_map_objects(latitude=f2i(position['lat']), longitude=f2i(position['lng']),  since_timestamp_ms=timestamp, cell_id=cellid)
+                    response_dict = api.get_map_objects(latitude=f2i(position['lat']), longitude=f2i(position['lng']),  since_timestamp_ms=timestamp, cell_id=cellid)
 
-                    response_dict = api.call()
+                    #response_dict = api.call()
 
                     if response_dict and 'status_code' in response_dict:
                         if response_dict['status_code'] is 1:

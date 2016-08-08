@@ -41,6 +41,8 @@ class Scanner(threading.Thread):
         self._sleeplogin = 20
 
         self.api = PGoApi()
+        self.api.activate_signature(self.config.get("AI", "", "signature", "tess"))
+
 
         self.profile = Profile(self)
         self.inventory = Inventory(self)
@@ -50,8 +52,6 @@ class Scanner(threading.Thread):
 
         self.daemon = True
 
-
-
     def login(self):
         login_count = 0
         login_count_max = 5
@@ -59,7 +59,7 @@ class Scanner(threading.Thread):
         self.metrica.take_status(account_state=1, account_msg="Попытка авторизации ({0})".format(login_count))
         log.debug("Попытка авторизации ({0})".format(login_count))
 
-        self.api.set_position(*self.scanner.location.position)
+        self.api.set_position(self.scanner.location.latitude, self.scanner.location.longitude, 0)
 
         while not self.api.login(self.scanner.account.service, self.scanner.account.username, self.scanner.account.password):
             if login_count < login_count_max:
@@ -137,13 +137,13 @@ class Scanner(threading.Thread):
             log.info("Обновляем данные о профиле и сумке")
             self.profile.update()
             self.inventory.update()
-            self.ai.heartbeat()
+            #self.ai.heartbeat()
         finally:
             self.session.flush()
 
         log.info("Начинаем обработку")
         self.ai.take_step()
-        self.ai.heartbeat()
+        #self.ai.heartbeat()
 
         return True
 

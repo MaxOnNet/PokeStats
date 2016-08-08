@@ -13,11 +13,10 @@ from google.protobuf.internal import encoder
 
 from Interfaces import analyticts_timer
 from Interfaces.AI.Human import sleep, random_lat_long_delta
-from Interfaces.AI.Stepper import get_cell_ids
 from Interfaces.AI.Worker.Utils import distance, i2f, format_time
 from Interfaces.MySQL.Schema import parse_map_cell
 
-from Interfaces.pgoapi.utilities import f2i, h2f
+from Interfaces.pgoapi.utilities import f2i, h2f, get_cell_ids
 
 
 log = logging.getLogger(__name__)
@@ -79,25 +78,25 @@ class Normal(object):
             step += 1
 
     def _walk_to(self, speed, lat, lng, alt):
-        dist = distance(i2f(self.api._position_lat), i2f(self.api._position_lng), lat, lng)
+        dist = distance((self.api._position_lat), (self.api._position_lng), lat, lng)
         steps = (dist + 0.0) / (speed + 0.0)  # may be rational number
         intSteps = int(steps)
         residuum = steps - intSteps
 
-        log.info('Бежим из ' + str((i2f(self.api._position_lat), i2f(self.api._position_lng))) + " в " + str(str((lat, lng))) +
+        log.info('Бежим из ' + str((self.api._position_lat, self.api._position_lng)) + " в " + str(str((lat, lng))) +
                    " по прямой. " + str(format_time(ceil(steps))))
 
         if steps != 0:
-            dLat = (lat - i2f(self.api._position_lat)) / steps
-            dLng = (lng - i2f(self.api._position_lng)) / steps
+            dLat = (lat - self.api._position_lat) / steps
+            dLng = (lng - self.api._position_lng) / steps
 
             for i in range(intSteps):
-                cLat = i2f(self.api._position_lat) + dLat + random_lat_long_delta()
-                cLng = i2f(self.api._position_lng) + dLng + random_lat_long_delta()
+                cLat = self.api._position_lat + dLat + random_lat_long_delta()
+                cLng = self.api._position_lng + dLng + random_lat_long_delta()
                 self.api.set_position(cLat, cLng, alt)
                 self.ai.heartbeat()
 
-                self._work_at_position(i2f(self.api._position_lat), i2f(self.api._position_lng), alt, seen_pokemon=True, seen_pokestop=False, seen_gym=False)
+                self._work_at_position(self.api._position_lat, self.api._position_lng, alt, seen_pokemon=True, seen_pokestop=False, seen_gym=False)
                 sleep(2*self.scanner.mode.is_human)
             self.api.set_position(lat, lng, alt)
             self.ai.heartbeat()
@@ -109,11 +108,11 @@ class Normal(object):
         timestamp = [0, ] * len(cellid)
         map_cells = list()
 
-        self.api.get_map_objects(latitude=f2i(lat), longitude=f2i(lng),  since_timestamp_ms=timestamp, cell_id=cellid)
+        response_dict = self.api.get_map_objects(latitude=f2i(lat), longitude=f2i(lng),  since_timestamp_ms=timestamp, cell_id=cellid)
 
-        response_dict = self.api.call()
+        #response_dict = self.api.call()
         sleep(0.2)
-        self.search.search(lat, lng)
+        #self.search.search(lat, lng)
 
         if response_dict and 'status_code' in response_dict:
             if response_dict['status_code'] is 1:

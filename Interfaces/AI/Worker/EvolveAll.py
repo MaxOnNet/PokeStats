@@ -11,8 +11,8 @@ class EvolveAll(object):
         # self.position = bot.position
 
     def work(self):
-        self.api.get_inventory()
-        response_dict = self.api.call()
+        response_dict =self.api.get_inventory()
+        #response_dict = self.api.call()
         cache = {}
 
         try:

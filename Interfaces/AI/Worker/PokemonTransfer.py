@@ -111,9 +111,9 @@ class PokemonTransfer(object):
     def _release_pokemon_get_groups(self):
         pokemon_groups = {}
 
-        self.api.get_player().get_inventory()
+        inventory_req = self.api.get_inventory()
 
-        inventory_req = self.api.call()
+        #inventory_req = self.api.call()
         if inventory_req.get('responses', False) is False:
             return pokemon_groups
 
@@ -218,7 +218,7 @@ class PokemonTransfer(object):
         log.info('Обмен {} [CP {}] [Потенциал {}] на конфеты!'.format(pokemon_name,
                                                                             cp,
                                                                             iv))
-        response_dict = self.api.release_pokemon(pokemon_id=pokemon_id).call()
+        response_dict = self.api.release_pokemon(pokemon_id=pokemon_id)
         #print response_dict
         self.metrica.take_ping()
         sleep(4)

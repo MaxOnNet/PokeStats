@@ -34,9 +34,9 @@ class MoveToGym(object):
             else:
                 self.api.set_position(*position)
 
-            self.api.player_update(latitude=lat, longitude=lng)
+            response_dict = self.api.player_update(latitude=lat, longitude=lng)
             self.position = position
-            response_dict = self.api.call()
+            #response_dict = self.api.call()
             log.info('[#] Прибыли к GYM\'у')
             sleep(2)
             return response_dict

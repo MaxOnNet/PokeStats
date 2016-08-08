@@ -28,9 +28,8 @@ class SeenPokestop(object):
         lat = self.pokestop['latitude']
         lng = self.pokestop['longitude']
 
-        self.api.fort_details(fort_id=self.pokestop['id'], latitude=lat, longitude=lng)
-        response_dict = self.api.call()
-        print response_dict
+        response_dict = self.api.fort_details(fort_id=self.pokestop['id'])
+
         if 'responses' in response_dict \
                 and'FORT_DETAILS' in response_dict['responses'] \
                 and 'name' in response_dict['responses']['FORT_DETAILS']:
@@ -42,66 +41,66 @@ class SeenPokestop(object):
             fort_name = 'Unknown'
         log.info('[#] Now at Pokestop: ' + fort_name + ' - Spinning...')
         sleep(1)
-        self.api.fort_search(fort_id=self.pokestop['id'],
-                             fort_latitude=lat,
-                             fort_longitude=lng,
+        response_dict = self.api.fort_search(fort_id=self.pokestop['id'],
                              player_latitude=f2i(self.position[0]),
                              player_longitude=f2i(self.position[1]))
-        response_dict = self.api.call()
+
         if 'responses' in response_dict and \
                 'FORT_SEARCH' in response_dict['responses']:
 
             spin_details = response_dict['responses']['FORT_SEARCH']
-            if spin_details['result'] == 1:
-                log.info("[+] Loot: ")
-                experience_awarded = spin_details.get('experience_awarded', False)
-                if experience_awarded:
-                    log.info("[+] " + str(experience_awarded) + " xp")
+            if 'result' in spin_details:
+                if spin_details['result'] == 1:
+                    log.info("[+] Loot: ")
+                    experience_awarded = spin_details.get('experience_awarded', False)
+                    if experience_awarded:
+                        log.info("[+] " + str(experience_awarded) + " xp")
 
-                items_awarded = spin_details.get('items_awarded', False)
+                    items_awarded = spin_details.get('items_awarded', False)
 
-                if items_awarded:
-                    tmp_count_items = {}
-                    for item in items_awarded:
-                        item_id = item['item_id']
-                        if not item_id in tmp_count_items:
-                            tmp_count_items[item_id] = item['item_count']
-                        else:
-                            tmp_count_items[item_id] += item['item_count']
+                    if items_awarded:
+                        tmp_count_items = {}
+                        for item in items_awarded:
+                            item_id = item['item_id']
+                            if not item_id in tmp_count_items:
+                                tmp_count_items[item_id] = item['item_count']
+                            else:
+                                tmp_count_items[item_id] += item['item_count']
 
-                    for item_id, item_count in tmp_count_items.iteritems():
-                        log.info("[+] Loot: {0} count {1}".format(item_id, item_count))
-                else:
-                    log.info("[#] Nothing found.")
+                        for item_id, item_count in tmp_count_items.iteritems():
+                            log.info("[+] Loot: {0} count {1}".format(item_id, item_count))
+                    else:
+                        log.info("[#] Nothing found.")
 
-                pokestop_cooldown = spin_details.get('cooldown_complete_timestamp_ms')
-                if pokestop_cooldown:
-                    seconds_since_epoch = time.time()
-                    log.info('[#] PokeStop on cooldown. Time left: ' + str(
-                        format_time((pokestop_cooldown / 1000) - seconds_since_epoch)))
+                    pokestop_cooldown = spin_details.get('cooldown_complete_timestamp_ms')
+                    if pokestop_cooldown:
+                        seconds_since_epoch = time.time()
+                        log.info('[#] PokeStop on cooldown. Time left: ' + str(
+                            format_time((pokestop_cooldown / 1000) - seconds_since_epoch)))
 
-                if not items_awarded and not experience_awarded and not pokestop_cooldown:
-                    log.warning(
-                        'Stopped at Pokestop and did not find experience, items '
-                        'or information about the stop cooldown. You are '
-                        'probably softbanned. Try to play on your phone, '
-                        'if pokemons always ran away and you find nothing in '
-                        'PokeStops you are indeed softbanned. Please try again '
-                        'in a few hours.')
-            elif spin_details['result'] == 2:
-                log.info("[#] Pokestop out of range")
-            elif spin_details['result'] == 3:
-                pokestop_cooldown = spin_details.get(
-                    'cooldown_complete_timestamp_ms')
-                if pokestop_cooldown:
-                    seconds_since_epoch = time.time()
-                    log.info('[#] PokeStop on cooldown. Time left: ' + str(
-                        format_time((pokestop_cooldown / 1000) -
-                                    seconds_since_epoch)))
-            elif spin_details['result'] == 4:
-                log.info("[#] Inventory is full, switching to catch mode...")
-                #self.config.mode = 'poke'
-
+                    if not items_awarded and not experience_awarded and not pokestop_cooldown:
+                        log.warning(
+                            'Stopped at Pokestop and did not find experience, items '
+                            'or information about the stop cooldown. You are '
+                            'probably softbanned. Try to play on your phone, '
+                            'if pokemons always ran away and you find nothing in '
+                            'PokeStops you are indeed softbanned. Please try again '
+                            'in a few hours.')
+                elif spin_details['result'] == 2:
+                    log.info("[#] Pokestop out of range")
+                elif spin_details['result'] == 3:
+                    pokestop_cooldown = spin_details.get(
+                        'cooldown_complete_timestamp_ms')
+                    if pokestop_cooldown:
+                        seconds_since_epoch = time.time()
+                        log.info('[#] PokeStop on cooldown. Time left: ' + str(
+                            format_time((pokestop_cooldown / 1000) -
+                                        seconds_since_epoch)))
+                elif spin_details['result'] == 4:
+                    log.info("[#] Inventory is full, switching to catch mode...")
+                    #self.config.mode = 'poke'
+            else:
+                log.error("Error in Spin result")
             if 'chain_hack_sequence_number' in response_dict['responses'][
                     'FORT_SEARCH']:
                 time.sleep(2)

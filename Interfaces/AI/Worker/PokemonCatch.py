@@ -44,13 +44,13 @@ class PokemonCatch(object):
 
     def work(self):
         encounter_id = self.pokemon['encounter_id']
-        spawnpoint_id = self.pokemon['spawnpoint_id']
+        spawnpoint_id = self.pokemon['spawn_point_id']
         player_latitude = self.pokemon['latitude']
         player_longitude = self.pokemon['longitude']
 
-        self.api.encounter(encounter_id=encounter_id, spawnpoint_id=spawnpoint_id,
+        response_dict = self.api.encounter(encounter_id=encounter_id, spawn_point_id=spawnpoint_id,
                            player_latitude=player_latitude, player_longitude=player_longitude)
-        response_dict = self.api.call()
+        #response_dict = self.api.call()
 
         if response_dict and 'responses' in response_dict:
             if 'ENCOUNTER' in response_dict['responses']:
@@ -130,14 +130,14 @@ class PokemonCatch(object):
                             ))
 
                             id_list1 = self.count_pokemon_inventory()
-                            self.api.catch_pokemon(encounter_id=encounter_id,
+                            response_dict = self.api.catch_pokemon(encounter_id=encounter_id,
                                                    pokeball=pokeball,
                                                    normalized_reticle_size=1.950,
                                                    spawn_point_guid=spawnpoint_id,
                                                    hit_pokemon=1,
                                                    spin_modifier=1,
                                                    NormalizedHitPosition=1)
-                            response_dict = self.api.call()
+                            #response_dict = self.api.call()
 
                             if response_dict and \
                                 'responses' in response_dict and \
@@ -158,8 +158,8 @@ class PokemonCatch(object):
                                     if self.pokemon_evolve:
                                         try:
                                             pokemon_to_transfer = list(Set(id_list2) - Set(id_list1))
-                                            self.api.evolve_pokemon(pokemon_id=pokemon_to_transfer[0])
-                                            response_dict = self.api.call()
+                                            response_dict = self.api.evolve_pokemon(pokemon_id=pokemon_to_transfer[0])
+                                            #response_dict = self.api.call()
                                             status = response_dict['responses']['EVOLVE_POKEMON']['result']
                                             if status == 1:
                                                 log.info('{} has been evolved!'.format(pokemon_name))
@@ -185,8 +185,8 @@ class PokemonCatch(object):
         time.sleep(5)
 
     def _transfer_low_cp_pokemon(self, value):
-        self.api.get_inventory()
-        response_dict = self.api.call()
+        response_dict = self.api.get_inventory()
+        #response_dict = self.api.call()
         self._transfer_all_low_cp_pokemon(value, response_dict)
 
     def _transfer_all_low_cp_pokemon(self, value, response_dict):
@@ -209,16 +209,16 @@ class PokemonCatch(object):
 
     def _execute_pokemon_transfer(self, value, pokemon):
         if 'cp' in pokemon and pokemon['cp'] < value:
-            self.api.release_pokemon(pokemon_id=pokemon['id'])
-            response_dict = self.api.call()
+            response_dict = self.api.release_pokemon(pokemon_id=pokemon['id'])
+            #response_dict = self.api.call()
 
     def transfer_pokemon(self, pid):
-        self.api.release_pokemon(pokemon_id=pid)
-        response_dict = self.api.call()
+        response_dict = self.api.release_pokemon(pokemon_id=pid)
+        #response_dict = self.api.call()
 
     def count_pokemon_inventory(self):
-        self.api.get_inventory()
-        response_dict = self.api.call()
+        response_dict = self.api.get_inventory()
+        #response_dict = self.api.call()
         id_list = []
         return self.counting_pokemon(response_dict, id_list)
 

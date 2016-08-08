@@ -183,8 +183,9 @@ class AI(object):
 
 
     def heartbeat(self):
+        self.metrica.take_ping()
         self.api.get_player()
         self.api.get_hatched_eggs()
         self.api.get_inventory()
         self.api.check_awarded_badges()
-        self.api.call()
+        #self.api.call()
