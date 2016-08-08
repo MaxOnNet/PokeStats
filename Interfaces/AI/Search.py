@@ -46,7 +46,7 @@ class Search:
     def search(self, lat, lng):
         log.debug("Start Search at {} {}".format(lat, lng))
 
-        coords = Starline.generate_coords(lat, lng, self.step/3, self.distance/10)
+        coords = Starline.generate_coords(lat, lng, self.step, self.distance/2)
         log.debug(self.geolocation.get_google_polilyne(coords))
         for coord in coords:
             self.requests.put(coord)

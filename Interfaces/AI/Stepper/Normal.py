@@ -97,7 +97,7 @@ class Normal(object):
                 self.ai.heartbeat()
 
                 self._work_at_position(self.api._position_lat, self.api._position_lng, alt, seen_pokemon=True, seen_pokestop=False, seen_gym=False)
-                sleep(2*self.scanner.mode.is_human)
+                sleep(2)
             self.api.set_position(lat, lng, alt)
             self.ai.heartbeat()
 
@@ -110,7 +110,6 @@ class Normal(object):
 
         response_dict = self.api.get_map_objects(latitude=f2i(lat), longitude=f2i(lng),  since_timestamp_ms=timestamp, cell_id=cellid)
 
-        #response_dict = self.api.call()
         sleep(0.2)
         self.search.search(lat, lng)
 
