@@ -133,10 +133,10 @@ class PokemonCatch(object):
                             response_dict = self.api.catch_pokemon(encounter_id=encounter_id,
                                                    pokeball=pokeball,
                                                    normalized_reticle_size=1.950,
-                                                   spawn_point_guid=spawnpoint_id,
+                                                   spawn_point_id=spawnpoint_id,
                                                    hit_pokemon=1,
                                                    spin_modifier=1,
-                                                   NormalizedHitPosition=1)
+                                                   normalized_hit_position=1)
                             #response_dict = self.api.call()
 
                             if response_dict and \
