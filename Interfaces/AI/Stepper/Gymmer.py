@@ -91,7 +91,6 @@ class Gymmer(Normal):
                 ]
             }
 
-            sleep(5)
             self.api.set_position(lat, lng, alt)
             self.ai.work_on_cell(cell, (lat, lng, alt),  seen_pokemon=False,  seen_pokestop=False, seen_gym=True)
         else:

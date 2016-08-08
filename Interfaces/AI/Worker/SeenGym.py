@@ -43,7 +43,7 @@ class SeenGym(object):
             else:
                 fort_name = 'Unknown'
             log.info('[#] Now at GYM: ' + fort_name)
-            sleep(5)
+            sleep(2)
 
             response_dict = self.api.get_gym_details(gym_id=self.gym['id'],
                                  player_latitude=f2i(self.position[0]),
