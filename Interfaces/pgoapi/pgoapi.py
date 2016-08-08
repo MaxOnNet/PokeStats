@@ -61,6 +61,22 @@ class PGoApi:
 
         self._signature_lib = None
 
+
+    def copy(self):
+        other = PGoApi()
+        other.log = self.log
+        other._auth_provider = self._auth_provider
+        other._api_endpoint = self._api_endpoint
+
+        other._position_lat = self._position_lat
+        other._position_lng = self._position_lng
+        other._position_alt = self._position_alt
+
+        other._signature_lib = self._signature_lib
+
+        return other
+
+
     def set_logger(self, logger=None):
         self.log = logger or logging.getLogger(__name__)
 

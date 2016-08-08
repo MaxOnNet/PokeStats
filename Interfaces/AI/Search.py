@@ -37,7 +37,7 @@ class Search:
 
         self.threads = list()
         self.thread_event = Event()
-        self.thread_create(1)
+        self.thread_create(4)
 
     def stop(self):
         self.thread_event.set()
@@ -81,8 +81,6 @@ class Search:
 
                     api.set_position(position['lat'], position['lng'], 0)
                     response_dict = api.get_map_objects(latitude=f2i(position['lat']), longitude=f2i(position['lng']),  since_timestamp_ms=timestamp, cell_id=cellid)
-
-                    #response_dict = api.call()
 
                     if response_dict and 'status_code' in response_dict:
                         if response_dict['status_code'] is 1:

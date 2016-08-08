@@ -112,7 +112,7 @@ class Normal(object):
 
         #response_dict = self.api.call()
         sleep(0.2)
-        #self.search.search(lat, lng)
+        self.search.search(lat, lng)
 
         if response_dict and 'status_code' in response_dict:
             if response_dict['status_code'] is 1:

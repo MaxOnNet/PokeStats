@@ -37,7 +37,7 @@ class MoveToPokestop(object):
 
             response_dict = self.api.player_update(latitude=lat, longitude=lng)
             self.position = position
-            #response_dict = self.api.call()
+
             log.info('Прибыли к покестопу')
             sleep(2)
             return response_dict
