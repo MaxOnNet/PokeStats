@@ -51,10 +51,10 @@ class Search:
         for coord in coords:
             self.requests.put(coord)
 
-        coords = Starline.generate_coords(lat, lng, self.step, self.distance)
-        log.debug(self.geolocation.get_google_polilyne(coords))
-        for coord in coords:
-            self.requests.put(coord)
+        #coords = Starline.generate_coords(lat, lng, self.step, self.distance)
+        #log.debug(self.geolocation.get_google_polilyne(coords))
+        #for coord in coords:
+        #    self.requests.put(coord)
 
     def thread_create(self, count):
         for index in xrange(count):
