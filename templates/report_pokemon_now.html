@@ -39,6 +39,11 @@
                             <td class="clsBodyRowMap"><a href="/?filterPokemon={{ db_row['pokemon_id'] }}&longitude={{ db_row['respawn_longitude'] }}&latitude={{ db_row['respawn_latitude'] }}">map</a></td>
                         </tr>
                     {% endfor %}
+                    <tr class="clsHeader">
+                        <td class="clsHeader" colspan="4">Всего на карте покемонов</td>
+                        <td class="clsBodyRowCount">{{ table|sum(attribute='respawn_count') }}</td>
+                        <td class="clsHeader" colspan="3"></td>
+                    </tr>
                 </table>
             </td>
         </tr>

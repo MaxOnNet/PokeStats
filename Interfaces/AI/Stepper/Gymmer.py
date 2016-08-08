@@ -24,7 +24,7 @@ class Gymmer(Normal):
         self.scanner.mode.is_lookup = True
         self.scanner.mode.is_defender = False
 
-        self.scanner.location.distance = 20
+        self.scanner.location.distance = 10
 
         self.session.commit()
 
