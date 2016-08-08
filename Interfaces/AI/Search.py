@@ -37,24 +37,27 @@ class Search:
 
         self.threads = list()
         self.thread_event = Event()
-        self.thread_create(4)
+
+        if self.scanner.mode.is_search:
+            self.thread_create(4)
 
     def stop(self):
         self.thread_event.set()
         self.requests.join()
 
     def search(self, lat, lng):
-        log.debug("Start Search at {} {}".format(lat, lng))
+        if self.scanner.mode.is_search:
+            log.debug("Start Search at {} {}".format(lat, lng))
 
-        coords = Starline.generate_coords(lat, lng, self.step, self.distance/2)
-        log.debug(self.geolocation.get_google_polilyne(coords))
-        for coord in coords:
-            self.requests.put(coord)
+            coords = Starline.generate_coords(lat, lng, self.step, self.distance/2)
+            log.debug(self.geolocation.get_google_polilyne(coords))
+            for coord in coords:
+                self.requests.put(coord)
 
-        #coords = Starline.generate_coords(lat, lng, self.step, self.distance)
-        #log.debug(self.geolocation.get_google_polilyne(coords))
-        #for coord in coords:
-        #    self.requests.put(coord)
+            #coords = Starline.generate_coords(lat, lng, self.step, self.distance)
+            #log.debug(self.geolocation.get_google_polilyne(coords))
+            #for coord in coords:
+            #    self.requests.put(coord)
 
     def thread_create(self, count):
         for index in xrange(count):

@@ -18,7 +18,7 @@ def touch():
                     'Accept-Encoding': 'gzip, deflate, sdch, br',
                     'Accept-Language': 'en-US,en;q=0.8',
                 }
-    r = s.get('https://club.pokemon.com/us/', headers=headers)
+    r = s.get('https://club.pokemon.com/', headers=headers)
     print r.content
     relic = re.search('loader_config={xpid:".*"};window.NREUM', r.content)
     relic = re.sub('.*xpid:"', '', relic.group(0))

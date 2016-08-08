@@ -33,7 +33,7 @@ class Pokestopper(Normal):
 
         step = 1
         for coord in coords:
-            self.metrica.take_status(scanner_msg='Точечное сканирование P\S ({} / {})'.format(step, len(coords)))
+            self.metrica.take_status(scanner_msg='Point P\S ({} / {})'.format(step, len(coords)))
             log.info('Точечное сканирование P\S ({} / {})'.format(step, len(coords)))
 
             position = (coord['lat'], coord['lng'], 0)
@@ -86,7 +86,8 @@ class Pokestopper(Normal):
                 ]
             }
 
-            sleep(5)
+            self.metrica.take_search({'pokestops': 1})
+
             self.api.set_position(lat, lng, alt)
             self.ai.work_on_cell(cell, (lat, lng, alt),  seen_pokemon=False,  seen_pokestop=True, seen_gym=False)
         else:

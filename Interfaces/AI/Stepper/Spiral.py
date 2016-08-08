@@ -20,7 +20,7 @@ class Spiral(Normal):
         step = 1
         for coord in coords:
             # starting at 0 index
-            self.metrica.take_status(scanner_msg='Спиральное сканирование ({} / {})'.format(step, len(coords)))
+            self.metrica.take_status(scanner_msg='Спиральное ({} / {})'.format(step, len(coords)))
             log.info('Спиральное сканирование ({} / {})'.format(step, len(coords)))
 
             position = (coord['lat'], coord['lng'], 0)

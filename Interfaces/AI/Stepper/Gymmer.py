@@ -24,7 +24,7 @@ class Gymmer(Normal):
         self.scanner.mode.is_lookup = True
         self.scanner.mode.is_defender = False
 
-        self.scanner.location.distance = 10
+        self.scanner.location.distance = 25
 
         self.session.commit()
 
@@ -37,7 +37,7 @@ class Gymmer(Normal):
 
         step = 1
         for coord in coords:
-            self.metrica.take_status(scanner_msg='Точечное сканирование GYM ({} / {})'.format(step, len(coords)))
+            self.metrica.take_status(scanner_msg='Point GYM ({} / {})'.format(step, len(coords)))
             log.info('Точечное сканирование GYM ({} / {})'.format(step, len(coords)))
 
             position = (coord['lat'], coord['lng'], 0)
@@ -91,6 +91,8 @@ class Gymmer(Normal):
                      }
                 ]
             }
+
+            self.metrica.take_search({'gyms': 1})
 
             self.api.set_position(lat, lng, alt)
             self.ai.work_on_cell(cell, (lat, lng, alt),  seen_pokemon=False,  seen_pokestop=False, seen_gym=True)

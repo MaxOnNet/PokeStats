@@ -225,6 +225,7 @@ class ScannerMode(Base):
     is_farm = Column(Boolean(), default=True, nullable=False)
     is_lookup = Column(Boolean(), default=True, nullable=False)
     is_defender = Column(Boolean(), default=False, nullable=False)
+    is_search = Column(Boolean(), default=False, nullable=False)
 
     date_create = Column(DateTime(), nullable=False, default=func.now())
     date_change = Column(DateTime(), nullable=False, default=func.now(), onupdate=func.now())

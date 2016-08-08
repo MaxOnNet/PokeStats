@@ -27,7 +27,7 @@ _PTC_PROVIDER = 'ptc'  # Account provider (APIs take 'ptc' or 'google')
 
 
 # The base URL for Pokemon Trainer Club
-_BASE_URL = 'https://club.pokemon.com/us/pokemon-trainer-club'
+_BASE_URL = 'https://sso.pokemon.com/sso/login?locale=en'
 
 # Account creation validation is done by checking the response URLs
 # The following are control flow URL constants

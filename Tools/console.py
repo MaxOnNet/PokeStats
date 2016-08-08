@@ -5,12 +5,12 @@ from Tools.accountcreator import *
 from Tools.ptcexceptions import *
 
 
-for index in xrange(50):
+for index in xrange(2):
     try:
         print (index)
         # Create the random account
         account_info = create_account(
-            "mapDefender-{0}".format(index), "pwd-x-{0}".format(index), "mapDefender-{0}@tatarnikov.org".format(index)
+            "mapDefender-x{0}".format(index), "pwd-x-{0}".format(index), "mapDefender-{0}@tatarnikov.org".format(index)
         )
 
 

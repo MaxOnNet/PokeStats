@@ -24,7 +24,7 @@ Author: tjado <https://github.com/tejado>
 """
 
 from __future__ import absolute_import
-
+import time
 import re
 import six
 import logging
@@ -35,7 +35,7 @@ from Interfaces.pgoapi.rpc_api import RpcApi
 from Interfaces.pgoapi.auth_ptc import AuthPtc
 from Interfaces.pgoapi.auth_google import AuthGoogle
 from Interfaces.pgoapi.utilities import parse_api_endpoint
-from Interfaces.pgoapi.exceptions import AuthException, NotLoggedInException, ServerBusyOrOfflineException, NoPlayerPositionSetException, EmptySubrequestChainException, AuthTokenExpiredException, ServerApiEndpointRedirectException, UnexpectedResponseException
+from Interfaces.pgoapi.exceptions import AuthException, NotLoggedInException, ServerBusyOrOfflineException, NoPlayerPositionSetException, EmptySubrequestChainException, AuthTokenExpiredException, ServerApiEndpointRedirectException, UnexpectedResponseException, ServerSideRequestThrottlingException
 
 from . import protos
 from Interfaces.pgoapi.protos.POGOProtos.Networking.Requests_pb2 import RequestType
@@ -208,7 +208,63 @@ class PGoApiRequest:
 
         self._req_method_list = []
 
-    def call(self):
+    def call(self, max_retry=15):
+        result = None
+        try_cnt = 0
+        throttling_retry = 0
+        unexpected_response_retry = 0
+
+        while True:
+            should_throttle_retry = False
+            should_unexpected_response_retry = False
+
+            try:
+                result = self.call_wrapped()
+            except ServerSideRequestThrottlingException:
+                should_throttle_retry = True
+            except UnexpectedResponseException:
+                should_unexpected_response_retry = True
+            except:
+                should_unexpected_response_retry = True
+
+            if should_throttle_retry:
+                throttling_retry += 1
+                if throttling_retry >= max_retry:
+                    raise ServerSideRequestThrottlingException('Server throttled too many times')
+                time.sleep(1)
+                continue
+
+            if should_unexpected_response_retry:
+                unexpected_response_retry += 1
+                if unexpected_response_retry >= 5:
+                    self.log.warning('Server is not responding correctly to our requests.  Waiting for 30 seconds to reconnect.')
+                    time.sleep(30)
+                else:
+                    time.sleep(2)
+                continue
+
+            try:
+                if not result or 'responses' not in result:
+                    try_cnt += 1
+                    if try_cnt > 3:
+                        self.log.warning('Server seems to be busy or offline - try again - {}/{}'.format(try_cnt, max_retry))
+                    if try_cnt >= max_retry:
+                        raise ServerBusyOrOfflineException()
+                    time.sleep(1)
+                else:
+                    break
+            except:
+                try_cnt += 1
+                if try_cnt > 3:
+                    self.log.warning('Server seems to be busy or offline - try again - {}/{}'.format(try_cnt, max_retry))
+                if try_cnt >= max_retry:
+                    raise ServerBusyOrOfflineException()
+                time.sleep(1)
+
+        return result
+
+
+    def call_wrapped(self):
         if not self._req_method_list:
             raise EmptySubrequestChainException()
 
