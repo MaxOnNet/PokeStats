@@ -93,13 +93,13 @@ class Normal(object):
             for i in range(intSteps):
                 cLat = self.api._position_lat + dLat + random_lat_long_delta()
                 cLng = self.api._position_lng + dLng + random_lat_long_delta()
-                self.api.set_position(cLat, cLng, alt)
-                self.ai.heartbeat()
 
+                self.api.set_position(cLat, cLng, alt)
                 self._work_at_position(self.api._position_lat, self.api._position_lng, alt, seen_pokemon=True, seen_pokestop=False, seen_gym=False)
-                sleep(2)
-            self.api.set_position(lat, lng, alt)
-            self.ai.heartbeat()
+                sleep(1)
+
+        self.api.set_position(lat, lng, alt)
+        self.ai.heartbeat()
 
 
     def _work_at_position(self, lat, lng, alt, seen_pokemon=False, seen_pokestop=False, seen_gym=False, data=None):

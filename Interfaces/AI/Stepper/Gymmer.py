@@ -67,12 +67,13 @@ class Gymmer(Normal):
             for i in range(intSteps):
                 cLat = (self.api._position_lat) + dLat + random_lat_long_delta()
                 cLng = (self.api._position_lng) + dLng + random_lat_long_delta()
+
                 self.api.set_position(cLat, cLng, alt)
-                self.ai.heartbeat()
 
                 sleep(1)
-            self.api.set_position(lat, lng, alt)
-            self.ai.heartbeat()
+
+        self.api.set_position(lat, lng, alt)
+        self.ai.heartbeat()
 
 
 
