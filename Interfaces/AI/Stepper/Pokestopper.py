@@ -54,7 +54,7 @@ class Pokestopper(Normal):
         intSteps = int(steps)
         residuum = steps - intSteps
 
-        log.info('Бежим из ' + str(self.api._position_lat) +", " + str(self.api._position_lng) + " в " + str(str((lat, lng))) +
+        log.info('Бежим из ' + str((self.api._position_lat, self.api._position_lng)) + " в " + str(str((lat, lng))) +
                    " на " + str(round(dist, 2)) + " по прямой. " + str(format_time(ceil(steps))))
 
         if steps != 0:
