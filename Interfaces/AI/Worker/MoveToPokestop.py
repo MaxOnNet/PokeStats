@@ -2,7 +2,7 @@
 
 import logging
 
-from Interfaces.AI.Human import sleep
+from Interfaces.AI.Human import sleep, action_delay
 from Interfaces.AI.Worker.Utils import distance, format_dist
 
 log = logging.getLogger(__name__)
@@ -39,7 +39,7 @@ class MoveToPokestop(object):
             self.position = position
 
             log.info('Прибыли к покестопу')
-            sleep(2)
+            action_delay(self.ai.delay_action_min, self.ai.delay_action_max)
             return response_dict
 
         return None

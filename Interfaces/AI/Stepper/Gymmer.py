@@ -4,7 +4,7 @@ import random
 from math import ceil
 from sqlalchemy import text as sql_text
 from Interfaces.MySQL.Schema import Gym
-from Interfaces.AI.Human import sleep, random_lat_long_delta
+from Interfaces.AI.Human import sleep, random_lat_long_delta, action_delay
 from Interfaces.AI.Stepper.Normal import Normal
 from Interfaces.AI.Worker.Utils import i2f, format_time, encode_coords, distance, format_dist
 
@@ -45,9 +45,10 @@ class Gymmer(Normal):
                 self._walk_to(self.walk, *position)
             else:
                 self.api.set_position(*position)
-            sleep(1)
+                self.ai.heartbeat()
+
             self._work_at_position(position[0], position[1], position[2], seen_pokemon=False, seen_pokestop=False, seen_gym=True, data=coord['id'])
-            sleep(1)
+            action_delay(self.ai.delay_action_min, self.ai.delay_action_max)
             step += 1
 
 
@@ -65,12 +66,14 @@ class Gymmer(Normal):
             dLng = (lng - self.api._position_lng) / steps
 
             for i in range(intSteps):
-                cLat = (self.api._position_lat) + dLat + random_lat_long_delta()
-                cLng = (self.api._position_lng) + dLng + random_lat_long_delta()
+                cLat = self.api._position_lat + dLat + random_lat_long_delta()
+                cLng = self.api._position_lng + dLng + random_lat_long_delta()
+
 
                 self.api.set_position(cLat, cLng, alt)
+                self.ai.heartbeat()
 
-                sleep(1)
+                action_delay(self.ai.delay_action_min, self.ai.delay_action_max)
 
         self.api.set_position(lat, lng, alt)
         self.ai.heartbeat()

@@ -2,7 +2,7 @@
 
 import logging
 
-from Interfaces.AI.Human import sleep, random_lat_long_delta
+from Interfaces.AI.Human import sleep, random_lat_long_delta, action_delay
 from Interfaces.AI.Worker.Utils import distance, format_dist
 
 log = logging.getLogger(__name__)
@@ -36,10 +36,10 @@ class MoveToGym(object):
 
             response_dict = self.api.player_update(latitude=lat, longitude=lng)
             self.position = position
-            #response_dict = self.api.call()
-            log.info('[#] Прибыли к GYM\'у')
-            sleep(2)
-            return response_dict
 
+            log.info('[#] Прибыли к GYM\'у')
+            action_delay(self.ai.delay_action_min, self.ai.delay_action_max)
+
+            return response_dict
         return None
 

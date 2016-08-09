@@ -3,7 +3,7 @@ import logging
 import math
 import random
 
-from Interfaces.AI.Human import sleep, random_lat_long_delta
+from Interfaces.AI.Human import sleep, random_lat_long_delta, action_delay
 from Interfaces.AI.Stepper.Normal import Normal
 from Interfaces.AI.Worker.Utils import encode_coords, distance, format_dist
 log = logging.getLogger(__name__)
@@ -29,10 +29,11 @@ class Starline(Normal):
                 self._walk_to(self.walk, *position)
             else:
                 self.api.set_position(*position)
-            sleep(2)
-            self._work_at_position(position[0], position[1], position[2], seen_pokemon=True, seen_pokestop=True, seen_gym=True)
+                self.ai.heartbeat()
 
-            sleep(2)
+            self._work_at_position(position[0], position[1], position[2], seen_pokemon=True, seen_pokestop=True, seen_gym=True)
+            action_delay(self.ai.delay_action_min, self.ai.delay_action_max)
+
             step += 1
 
     @staticmethod
@@ -40,8 +41,8 @@ class Starline(Normal):
         coords = [{'lat': latitude, 'lng': longitude}]
 
         for coord in Starline.generate_starline([latitude, longitude], step_size):
-            lat = coord[0] + random.uniform(-step_size/6, step_size/6)
-            lng = coord[1] + random.uniform(-step_size/6, step_size/6)
+            lat = coord[0] + random_lat_long_delta()
+            lng = coord[1] + random_lat_long_delta()
 
             coords.append({'lat': lat, 'lng': lng})
 

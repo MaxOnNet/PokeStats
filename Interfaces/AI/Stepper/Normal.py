@@ -12,7 +12,7 @@ from s2sphere import CellId, LatLng
 from google.protobuf.internal import encoder
 
 from Interfaces import analyticts_timer
-from Interfaces.AI.Human import sleep, random_lat_long_delta
+from Interfaces.AI.Human import sleep, random_lat_long_delta, action_delay
 from Interfaces.AI.Worker.Utils import distance, i2f, format_time
 from Interfaces.MySQL.Schema import parse_map_cell
 
@@ -71,10 +71,11 @@ class Normal(object):
                 self._walk_to(self.walk, *position)
             else:
                 self.api.set_position(*position)
-            sleep(1)
-            self._work_at_position(position[0], position[1], position[2], seen_pokemon=True, seen_pokestop=True, seen_gym=True)
+                self.ai.heartbeat()
 
-            sleep(10*self.scanner.mode.is_human)
+            self._work_at_position(position[0], position[1], position[2], seen_pokemon=True, seen_pokestop=True, seen_gym=True)
+            action_delay(self.ai.delay_action_min, self.ai.delay_action_max)
+
             step += 1
 
     def _walk_to(self, speed, lat, lng, alt):
@@ -95,8 +96,11 @@ class Normal(object):
                 cLng = self.api._position_lng + dLng + random_lat_long_delta()
 
                 self.api.set_position(cLat, cLng, alt)
+                self.ai.heartbeat()
                 self._work_at_position(self.api._position_lat, self.api._position_lng, alt, seen_pokemon=True, seen_pokestop=False, seen_gym=False)
-                sleep(1)
+
+                action_delay(self.ai.delay_action_min, self.ai.delay_action_max)
+
 
         self.api.set_position(lat, lng, alt)
         self.ai.heartbeat()
@@ -108,9 +112,9 @@ class Normal(object):
         timestamp = [0, ] * len(cellid)
         map_cells = list()
 
+        sleep(self.ai.delay_scan)
         response_dict = self.api.get_map_objects(latitude=f2i(lat), longitude=f2i(lng),  since_timestamp_ms=timestamp, cell_id=cellid)
 
-        sleep(0.2)
         self.search.search(lat, lng)
 
         if response_dict and 'status_code' in response_dict:
@@ -135,17 +139,18 @@ class Normal(object):
             else:
                 log.warning("Получен неверный статус: {0}".format(response_dict['status_code']))
 
-        log.info("Ожидаем конца сканирования, и по ходу парсим данные")
-        while not self.search.requests.empty():
-            if not self.search.response.empty():
+        if self.scanner.mode.is_search:
+            log.info("Ожидаем конца сканирования, и по ходу парсим данные")
+            while not self.search.requests.empty():
+                if not self.search.response.empty():
+                    cell = self.search.response.get()
+                    self.metrica.take_search(parse_map_cell(cell, self.session))
+                    self.search.response.task_done()
+
+            while not self.search.response.empty():
                 cell = self.search.response.get()
                 self.metrica.take_search(parse_map_cell(cell, self.session))
                 self.search.response.task_done()
-
-        while not self.search.response.empty():
-            cell = self.search.response.get()
-            self.metrica.take_search(parse_map_cell(cell, self.session))
-            self.search.response.task_done()
 
         self.api.set_position(lat, lng, alt)
 

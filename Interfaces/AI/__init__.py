@@ -43,11 +43,16 @@ class AI(object):
         self.inventory = thread.inventory
         self.metrica = thread.metrica
 
+        self.delay_action_min = float(self.config.get("AI", "", "delay_action_min", 2))
+        self.delay_action_max = float(self.config.get("AI", "", "delay_action_max", 5))
+        self.delay_scan = float(self.config.get("AI", "", "delay_scan", 2))
 
         self.position = self.scanner.location.position
         self.search = Search(self)
         self.seen_pokestop = {}
         self.seen_gym = {}
+
+
 
         if self.scanner.mode.stepper == "normal":
             self.stepper = Normal(self)
@@ -184,8 +189,8 @@ class AI(object):
 
     def heartbeat(self):
         self.metrica.take_ping()
-        self.api.get_player()
+        self.api.player_update(latitude=self.position[0], longitude=self.position[1])
+        #self.api.get_player()
         self.api.get_hatched_eggs()
-        self.api.get_inventory()
+        #self.api.get_inventory()
         self.api.check_awarded_badges()
-        #self.api.call()

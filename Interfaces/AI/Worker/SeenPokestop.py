@@ -4,7 +4,7 @@ import json
 import time
 import logging
 
-from Interfaces.AI.Human import sleep, random_lat_long_delta
+from Interfaces.AI.Human import sleep, random_lat_long_delta, action_delay
 from Interfaces.AI.Worker.Utils import distance, i2f, format_time
 from Interfaces.MySQL.Schema import parse_fort_details
 from Interfaces.pgoapi.utilities import f2i, h2f
@@ -40,7 +40,7 @@ class SeenPokestop(object):
         else:
             fort_name = 'Unknown'
         log.info('[#] Now at Pokestop: ' + fort_name + ' - Spinning...')
-        sleep(1)
+        action_delay(self.ai.delay_action_min, self.ai.delay_action_max)
         response_dict = self.api.fort_search(fort_id=self.pokestop['id'],
                              player_latitude=f2i(self.position[0]),
                              player_longitude=f2i(self.position[1]))
@@ -109,7 +109,9 @@ class SeenPokestop(object):
             else:
                 log.info('[#] may search too often, lets have a rest')
                 return 11
-        sleep(8)
+
+        action_delay(self.ai.delay_action_min*2, self.ai.delay_action_max*2)
+
         return 0
 
     @staticmethod

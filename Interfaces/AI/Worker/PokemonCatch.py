@@ -8,7 +8,7 @@ import os
 from sets import Set
 
 from Interfaces.AI.Worker.Utils import distance
-from Interfaces.AI.Human import sleep
+from Interfaces.AI.Human import sleep, action_delay, normalized_reticle_size, spin_modifier
 from Interfaces.AI.Inventory import InventoryItem
 
 log = logging.getLogger(__name__)
@@ -90,7 +90,7 @@ class PokemonCatch(object):
                                 ))
 
                                 # Simulate app
-                                sleep(3)
+                                action_delay(self.ai.delay_action_min, self.ai.delay_action_max)
 
                         balls_stock = self.inventory.pokeball()
 
@@ -132,10 +132,10 @@ class PokemonCatch(object):
                             id_list1 = self.count_pokemon_inventory()
                             response_dict = self.api.catch_pokemon(encounter_id=encounter_id,
                                                    pokeball=pokeball,
-                                                   normalized_reticle_size=1.950,
+                                                   normalized_reticle_size=normalized_reticle_size(1.5),
                                                    spawn_point_id=spawnpoint_id,
                                                    hit_pokemon=1,
-                                                   spin_modifier=1,
+                                                   spin_modifier=spin_modifier(0.9),
                                                    normalized_hit_position=1)
                             #response_dict = self.api.call()
 
@@ -146,7 +146,7 @@ class PokemonCatch(object):
                                 status = response_dict['responses']['CATCH_POKEMON']['status']
                                 if status is 2:
                                     log.warning('Attempted to capture {}- failed.. trying again!'.format(pokemon_name))
-                                    sleep(2)
+                                    action_delay(self.ai.delay_action_min, self.ai.delay_action_max)
                                     continue
                                 if status is 3:
                                     log.warning('Oh no! {} vanished! :('.format(pokemon_name))
@@ -182,7 +182,7 @@ class PokemonCatch(object):
                                     else:
                                         log.info('Captured {}! [CP {}]'.format(pokemon_name, cp))
                             break
-        time.sleep(5)
+        action_delay(self.ai.delay_action_min, self.ai.delay_action_max)
 
     def _transfer_low_cp_pokemon(self, value):
         response_dict = self.api.get_inventory()
