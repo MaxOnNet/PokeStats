@@ -22,8 +22,6 @@ class Pokestopper(Normal):
         self.scanner.mode.is_lookup = False
         self.scanner.mode.is_defender = False
 
-        self.session.commit()
-
     def take_step(self):
         position = [self.origin_lat, self.origin_lon, 0]
         coords = self.generate_coords(self.origin_lat, self.origin_lon, self.step, self.distance)

@@ -33,6 +33,7 @@ class Scanner(threading.Thread):
         self.session_maker = init(self.config)
         self.session = self.session_maker()
 
+        #self.scanner_db = self.session.query(dbScanner).get(scanner_id)
         self.scanner = self.session.query(dbScanner).get(scanner_id)
 
         self._stopevent = threading.Event()
@@ -51,6 +52,35 @@ class Scanner(threading.Thread):
         self.ai = AI(self)
 
         self.daemon = True
+
+    def _scanner_snapshot(self, scanner_id):
+        scanner = self.session.query(dbScanner).get(scanner_id)
+
+        scanner.location.fix(self.geolocation)
+
+        return {
+            "location": {
+                "latitude": scanner.location.latitude,
+                "longitude": scanner.location.longitude,
+                "position": [scanner.location.latitude, scanner.location.longitude, 0],
+                "distance": scanner.location.distance
+            },
+            "account": {
+                "username": scanner.account.username,
+                "password": scanner.account.password,
+                "service": scanner.account.service
+            },
+            "mode": {
+                "walk": scanner.mode.walk,
+                "step": scanner.mode.step,
+                "stepper": scanner.mode.stepper,
+                "is_catch": scanner.mode.is_catch,
+                "is_farm": scanner.mode.is_farm,
+                "is_defender": scanner.mode.is_defender,
+                "is_lookup": scanner.mode.is_lookup,
+                "is_search": scanner.mode.is_search
+            }
+        }
 
     def login(self):
         login_count = 0
@@ -83,7 +113,6 @@ class Scanner(threading.Thread):
 
     def run(self):
         self.alive = True
-        self.scanner.location.fix(self.geolocation)
 
         self.metrica.take_status(scanner_state=1, scanner_msg="Запускаем сканнер", account_state=1)
         log.info("Запускаем сканнер")
