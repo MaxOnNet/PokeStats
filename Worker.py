@@ -82,6 +82,7 @@ if __name__ == '__main__':
         sys.exit()
 
     for scanner in server.scanners:
+        log.error('Обнуление статистики для сканера:{0}.'.format(scanner.id))
         scanner.state = ""
         scanner.is_active = 0
         scanner.statistic.date_start = datetime.datetime.now()
