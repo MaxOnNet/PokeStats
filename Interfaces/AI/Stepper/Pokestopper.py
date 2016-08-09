@@ -15,7 +15,7 @@ class Pokestopper(Normal):
     def inicialise(self):
         log.info('Точечное сканирование P\S, переопределяем переменные БД')
         self.scanner.mode.step = 0.0015
-        self.scanner.mode.walk = 25
+        self.scanner.mode.walk = 6
 
         self.scanner.mode.is_catch = False
         self.scanner.mode.is_farm = True
