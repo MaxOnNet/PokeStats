@@ -11,7 +11,7 @@ class Metrica:
     def __init__(self, thread):
         self.thread = thread
         self.session = thread.session
-        self.scanner = thread.scanner_db
+        self.scanner = thread.scanner
 
         self.time_flush = datetime.datetime.now()
         self.time_await = datetime.datetime.now()
