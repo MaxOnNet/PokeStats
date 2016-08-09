@@ -41,7 +41,7 @@ class SeenPokestop(object):
         else:
             fort_name = 'Unknown'
         log.info('[#] Now at Pokestop: ' + fort_name + ' - Spinning...')
-        
+
         action_delay(self.ai.delay_action_min*2, self.ai.delay_action_max*2)
 
         response_dict = self.api.fort_search(fort_id=self.pokestop['id'],
