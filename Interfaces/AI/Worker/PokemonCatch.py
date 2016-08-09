@@ -89,8 +89,8 @@ class PokemonCatch(object):
                                     pokemon['pokemon_data']['individual_defense']
                                 ))
 
-                                # Simulate app
-                                action_delay(self.ai.delay_action_min, self.ai.delay_action_max)
+                        # Simulate app
+                        action_delay(self.ai.delay_action_min, self.ai.delay_action_max)
 
                         balls_stock = self.inventory.pokeball()
 
