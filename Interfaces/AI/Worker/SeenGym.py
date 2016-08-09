@@ -29,7 +29,7 @@ class SeenGym(object):
         lat = self.gym['latitude']
         lng = self.gym['longitude']
 
-        action_delay(self.ai.delay_action_min, self.ai.delay_action_max)
+        action_delay(self.ai.delay_action_min*2, self.ai.delay_action_max*2)
 
         log.info("GYM ownered by {0}, analyse".format(self.gym['owned_by_team']))
         response_dict = self.api.fort_details(fort_id=self.gym['id'])
@@ -45,7 +45,7 @@ class SeenGym(object):
             fort_name = 'Unknown'
         log.info('[#] Now at GYM: ' + fort_name)
 
-        action_delay(self.ai.delay_action_min, self.ai.delay_action_max)
+        action_delay(self.ai.delay_action_min*2, self.ai.delay_action_max*2)
 
         response_dict = self.api.get_gym_details(gym_id=self.gym['id'],
                              player_latitude=f2i(self.position[0]),

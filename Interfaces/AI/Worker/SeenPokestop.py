@@ -28,6 +28,7 @@ class SeenPokestop(object):
         lat = self.pokestop['latitude']
         lng = self.pokestop['longitude']
 
+        action_delay(self.ai.delay_action_min*2, self.ai.delay_action_max*2)
         response_dict = self.api.fort_details(fort_id=self.pokestop['id'])
 
         if 'responses' in response_dict \
@@ -40,7 +41,9 @@ class SeenPokestop(object):
         else:
             fort_name = 'Unknown'
         log.info('[#] Now at Pokestop: ' + fort_name + ' - Spinning...')
-        action_delay(self.ai.delay_action_min, self.ai.delay_action_max)
+        
+        action_delay(self.ai.delay_action_min*2, self.ai.delay_action_max*2)
+
         response_dict = self.api.fort_search(fort_id=self.pokestop['id'],
                              player_latitude=f2i(self.position[0]),
                              player_longitude=f2i(self.position[1]))
