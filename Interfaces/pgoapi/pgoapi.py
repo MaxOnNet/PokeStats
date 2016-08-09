@@ -220,11 +220,14 @@ class PGoApiRequest:
 
             try:
                 result = self.call_wrapped()
-            except ServerSideRequestThrottlingException:
+            except ServerSideRequestThrottlingException as e:
+                self.log.error(e)
                 should_throttle_retry = True
-            except UnexpectedResponseException:
+            except UnexpectedResponseException as e:
+                self.log.error(e)
                 should_unexpected_response_retry = True
-            except:
+            except Exception as e:
+                self.log.error(e)
                 should_unexpected_response_retry = True
 
             if should_throttle_retry:
