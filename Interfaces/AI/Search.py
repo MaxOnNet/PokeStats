@@ -8,7 +8,7 @@ import random
 
 from Interfaces.MySQL.Schema import parse_map_cell
 
-from Interfaces.AI.Human import sleep, random_lat_long_delta
+from Interfaces.AI.Human import sleep, random_lat_long_delta, action_delay
 from Interfaces.AI.Worker.Utils import distance, i2f, format_time, encode_coords
 
 from Interfaces.pgoapi.utilities import f2i, h2f, get_cell_ids
@@ -21,6 +21,7 @@ log = logging.getLogger(__name__)
 
 class Search:
     def __init__(self, ai):
+        self.ai = ai
         self.thread = ai.thread
         self.api = ai.api
         self.geolocation = ai.geolocation
@@ -69,11 +70,13 @@ class Search:
 
     def thread_search(self, requests, response, api_orig,event):
         log.info("Поток начал свою работу")
-        sleep(5)
+
+        action_delay(self.ai.delay_action_min*2, self.ai.delay_action_max*2)
+
         while not event.isSet():
             position = requests.get()
             log.debug("Put work at {} {}".format(position['lat'], position['lng']))
-            sleep(4)
+            action_delay(self.ai.delay_action_min, self.ai.delay_action_max)
             api = api_orig.copy()
             try:
                 response_index = 0
@@ -100,12 +103,13 @@ class Search:
                                             response_index = 999
                                         else:
                                             log.warning("Получен неверный статус: {0}".format(response_dict['responses']['GET_MAP_OBJECTS']['status']))
+                                            action_delay(self.ai.delay_action_min, self.ai.delay_action_max)
                         else:
                             log.debug("Получен неверный статус: {0}".format(response_dict['status_code']))
 
                             if response_dict['status_code'] == 52:
                                 response_index += 1
-                                sleep(5)
+                                action_delay(self.ai.delay_action_min, self.ai.delay_action_max)
 
             except Exception as e:
                 log.error("Ошибка в обработке дочернего потока: {}".format(e))
