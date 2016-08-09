@@ -125,7 +125,6 @@ class Map(Flask):
         """.format(ne_latitude, sw_latitude, ne_longitude, sw_longitude, pokemon_time, pokemon_ids)
 
         for row in session.execute(sqlalchemy.text(sql)):
-            print row
             pokemons.append({
                 "pokemon_id": row[0],
                 "pokemon_name": row[1],
