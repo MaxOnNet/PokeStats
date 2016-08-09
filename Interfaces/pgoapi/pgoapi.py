@@ -236,11 +236,15 @@ class PGoApiRequest:
 
             if should_unexpected_response_retry:
                 unexpected_response_retry += 1
+                if unexpected_response_retry >= 10:
+                    raise ServerBusyOrOfflineException()
+                
                 if unexpected_response_retry >= 5:
                     self.log.warning('Server is not responding correctly to our requests.  Waiting for 30 seconds to reconnect.')
                     time.sleep(30)
                 else:
                     time.sleep(2)
+
                 continue
 
             try:
