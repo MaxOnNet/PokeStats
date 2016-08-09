@@ -62,10 +62,10 @@ if __name__ == '__main__':
     threading.current_thread().name = '00-00'
     path = os.path.abspath(os.path.join(os.path.dirname(os.path.realpath(__file__)), '..'))
     pid = str(os.getpid())
-    pidfile = "{0}/.log/worker.pid".format(path)
+    pidfile = "{0}/.log/worker.{0}.pid".format(path, arguments.server)
     file(pidfile, 'w').write(pid)
 
-    logging.basicConfig(filename="{0}/.log/worker.log".format(path), filemode='w', level=logging.INFO, format='%(asctime)s [%(module)15s] [%(funcName)15s] [%(lineno)4d] [%(levelname)7s] [%(threadName)5s] %(message)s')
+    logging.basicConfig(filename="{0}/.log/worker.{1}.log".format(path, arguments.server), filemode='w', level=logging.INFO, format='%(asctime)s [%(module)15s] [%(funcName)15s] [%(lineno)4d] [%(levelname)7s] [%(threadName)5s] %(message)s')
 
     logging.getLogger("peewee").setLevel(logging.WARNING)
     logging.getLogger("requests").setLevel(logging.WARNING)
