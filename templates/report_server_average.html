@@ -7,90 +7,95 @@
 {% endblock %}
 
 {% block content %}
-    <table cellpadding="0" cellspacing="1" border="0" class="clsTableParent" >
-        <tr>
-            <td class="clsTableParentBody">
-                <table cellpadding="0" cellspacing="1" class="clsTable">
-                    <tr class="clsHeader">
-                        <td class="clsHeader" rowspan="1" colspan="7">Scanner</td>
-                        <td class="clsHeader" rowspan="1" colspan="3">Location</td>
-                        <td class="clsHeader" rowspan="1" colspan="4">Account</td>
-                        <td class="clsHeader" rowspan="1" colspan="4">Session Statistic</td>
-                        <td class="clsHeader" rowspan="1" colspan="8">Stepper</td>
-                    </tr>
-                    <tr class="clsHeader">
-                        <td class="clsHeader">№</td>
-                        <td class="clsHeader">ID</td>
-                        <td class="clsHeaderE">E</td>
-                        <td class="clsHeaderE">A</td>
-                        <td class="clsHeader">Status</td>
-                        <td class="clsHeader">Path</td>
-                        <td class="clsHeader">Map</td>
-
-                        <td class="clsHeader">ID</td>
-                        <td class="clsHeader">Address</td>
-                        <td class="clsHeader">Map</td>
-
-                        <td class="clsHeader">ID</td>
-                        <td class="clsHeaderE">A</td>
-                        <td class="clsHeader">Service</td>
-                        <td class="clsHeader">Status</td>
-
-                        <td class="clsHeader">AWait</td>
-                        <td class="clsHeader">Pk</td>
-                        <td class="clsHeader">Gm</td>
-                        <td class="clsHeader">Ps</td>
-
-                        <td class="clsHeader">C</td>
-                        <td class="clsHeader">F</td>
-                        <td class="clsHeader">L</td>
-                        <td class="clsHeader">S</td>
-
-                        <td class="clsHeader">Stepper</td>
-                        <td class="clsHeader">St</td>
-                        <td class="clsHeader">Sp</td>
-                        <td class="clsHeader">Di</td>
-                    </tr>
-                    {% for db_row in table %}
-                        <tr class="clsBodyRow">
-                            <td class="clsBodyRowId">{{ loop.index }}</td>
-                            <td class="clsBodyRowId">{{ db_row["s_id"] }}</td>
-                            <td class="clsBodyRowEnabled clsBodyRowEnabled_{{ db_row['s_enable'] }}">{{ db_row["s_enable"] }}</td>
-                            <td class="clsBodyRowEnabled clsBodyRowEnabled_{{ db_row['s_active'] }}">{{ db_row["s_active"] }}</td>
-                            <td class="clsBodyRowStatusStr">{{ db_row["s_state"] }}</td>
-                            <td class="clsBodyRowMap"><a href="{{ db_row['s_google_path'] }}" class="link">path</a></td>
-                            <td class="clsBodyRowMap"><a href="/?longitude={{ db_row['s_longitude'] }}&latitude={{ db_row['s_latitude'] }}">map</a></td>
-
-                            <td class="clsBodyRowId">{{ db_row["sl_id"] }}</td>
-                            <td class="clsBodyRowAddress">{{ db_row["sl_address"] }}</td>
-                            <td class="clsBodyRowMap"><a href="/?filterScaneer={{ db_row['s_id'] }}&longitude={{ db_row['sl_longitude'] }}&latitude={{ db_row['sl_latitude'] }}">map</a></td>
-
-                            <td class="clsBodyRowId">{{ db_row["sa_id"] }}</td>
-                            <td class="clsBodyRowEnabled clsBodyRowEnabled_{{ db_row['sa_active'] }}">{{ db_row["sa_active"] }}</td>
-                            <td class="clsBodyRowName">{{ db_row["sa_service"] }}</td>
-                            <td class="clsBodyRowStatusStr">{{ db_row["sa_state"] }}</td>
-
-                            <td class="clsBodyRowAWait">{{ db_row["ss_await"] }}</td>
-                        <!--    <td class="clsBodyRowDate">{{ db_row["ss_reload"] }}</td> -->
-                            <td class="clsBodyRowCount4">{{ db_row["ss_pokemons"] }}</td>
-                            <td class="clsBodyRowCount4">{{ db_row["ss_gyms"] }}</td>
-                            <td class="clsBodyRowCount4">{{ db_row["ss_pokestops"] }}</td>
-
-                            <td class="clsBodyRowEnabled clsBodyRowEnabled_{{ db_row['sm_catch'] }}">{{ db_row["sm_catch"] }}</td>
-                            <td class="clsBodyRowEnabled clsBodyRowEnabled_{{ db_row['sm_farm'] }}">{{ db_row["sm_farm"] }}</td>
-                            <td class="clsBodyRowEnabled clsBodyRowEnabled_{{ db_row['sm_lookup'] }}">{{ db_row["sm_lookup"] }}</td>
-                            <td class="clsBodyRowEnabled clsBodyRowEnabled_{{ db_row['sm_search'] }}">{{ db_row["sm_search"] }}</td>
-
-                            <td class="clsBodyRowName">{{ db_row["sm_stepper"] }}</td>
-                            <td class="clsBodyRowCount6">{{ db_row["sm_step"] }}</td>
-                            <td class="clsBodyRowCount4">{{ db_row["sm_walk"] }}</td>
-                            <td class="clsBodyRowCount4">{{ db_row["sl_distance"] }}</td>
-
+    {% for db_row_server in table %}
+        <table cellpadding="0" cellspacing="1" border="0" class="clsTableParent" >
+            <tr>
+                <td class="clsTableParentBody">
+                    <table cellpadding="0" cellspacing="1" class="clsTable">
+                        <tr>
+                            <td class="clsHeaderTableName" rowspan="1" colspan="26">Сервер № {{ db_row_server["server_id"] }}, кодовое имя {{ db_row_server["server_name"] }} тип {{ db_row_server["server_description"] }}, расположен по адресу {{ db_row_server["server_address"] }}.</td>
                         </tr>
-                    {% endfor %}
-                </table>
-            </td>
-        </tr>
-    </table>
+                        <tr class="clsHeader">
+                            <td class="clsHeader" rowspan="1" colspan="7">Scanner</td>
+                            <td class="clsHeader" rowspan="1" colspan="3">Location</td>
+                            <td class="clsHeader" rowspan="1" colspan="4">Account</td>
+                            <td class="clsHeader" rowspan="1" colspan="4">Session Statistic</td>
+                            <td class="clsHeader" rowspan="1" colspan="8">Stepper</td>
+                        </tr>
+                        <tr class="clsHeader">
+                            <td class="clsHeader">№</td>
+                            <td class="clsHeader">ID</td>
+                            <td class="clsHeaderE">E</td>
+                            <td class="clsHeaderE">A</td>
+                            <td class="clsHeader">Status</td>
+                            <td class="clsHeader">Path</td>
+                            <td class="clsHeader">Map</td>
 
+                            <td class="clsHeader">ID</td>
+                            <td class="clsHeader">Address</td>
+                            <td class="clsHeader">Map</td>
+
+                            <td class="clsHeader">ID</td>
+                            <td class="clsHeaderE">A</td>
+                            <td class="clsHeader">Service</td>
+                            <td class="clsHeader">Status</td>
+
+                            <td class="clsHeader">AWait</td>
+                            <td class="clsHeader">Pk</td>
+                            <td class="clsHeader">Gm</td>
+                            <td class="clsHeader">Ps</td>
+
+                            <td class="clsHeader">C</td>
+                            <td class="clsHeader">F</td>
+                            <td class="clsHeader">L</td>
+                            <td class="clsHeader">S</td>
+
+                            <td class="clsHeader">Stepper</td>
+                            <td class="clsHeader">St</td>
+                            <td class="clsHeader">Sp</td>
+                            <td class="clsHeader">Di</td>
+                        </tr>
+                        {% for db_row in db_row_server["server_data"] %}
+                            <tr class="clsBodyRow">
+                                <td class="clsBodyRowId">{{ loop.index }}</td>
+                                <td class="clsBodyRowId">{{ db_row["s_id"] }}</td>
+                                <td class="clsBodyRowEnabled clsBodyRowEnabled_{{ db_row['s_enable'] }}">{{ db_row["s_enable"] }}</td>
+                                <td class="clsBodyRowEnabled clsBodyRowEnabled_{{ db_row['s_active'] }}">{{ db_row["s_active"] }}</td>
+                                <td class="clsBodyRowStatusStr">{{ db_row["s_state"] }}</td>
+                                <td class="clsBodyRowMap"><a href="{{ db_row['s_google_path'] }}" class="link">path</a></td>
+                                <td class="clsBodyRowMap"><a href="/?longitude={{ db_row['s_longitude'] }}&latitude={{ db_row['s_latitude'] }}">map</a></td>
+
+                                <td class="clsBodyRowId">{{ db_row["sl_id"] }}</td>
+                                <td class="clsBodyRowAddress">{{ db_row["sl_address"] }}</td>
+                                <td class="clsBodyRowMap"><a href="/?filterScaneer={{ db_row['s_id'] }}&longitude={{ db_row['sl_longitude'] }}&latitude={{ db_row['sl_latitude'] }}">map</a></td>
+
+                                <td class="clsBodyRowId">{{ db_row["sa_id"] }}</td>
+                                <td class="clsBodyRowEnabled clsBodyRowEnabled_{{ db_row['sa_active'] }}">{{ db_row["sa_active"] }}</td>
+                                <td class="clsBodyRowName">{{ db_row["sa_service"] }}</td>
+                                <td class="clsBodyRowStatusStr">{{ db_row["sa_state"] }}</td>
+
+                                <td class="clsBodyRowAWait">{{ db_row["ss_await"] }}</td>
+                            <!--    <td class="clsBodyRowDate">{{ db_row["ss_reload"] }}</td> -->
+                                <td class="clsBodyRowCount4">{{ db_row["ss_pokemons"] }}</td>
+                                <td class="clsBodyRowCount4">{{ db_row["ss_gyms"] }}</td>
+                                <td class="clsBodyRowCount4">{{ db_row["ss_pokestops"] }}</td>
+
+                                <td class="clsBodyRowEnabled clsBodyRowEnabled_{{ db_row['sm_catch'] }}">{{ db_row["sm_catch"] }}</td>
+                                <td class="clsBodyRowEnabled clsBodyRowEnabled_{{ db_row['sm_farm'] }}">{{ db_row["sm_farm"] }}</td>
+                                <td class="clsBodyRowEnabled clsBodyRowEnabled_{{ db_row['sm_lookup'] }}">{{ db_row["sm_lookup"] }}</td>
+                                <td class="clsBodyRowEnabled clsBodyRowEnabled_{{ db_row['sm_search'] }}">{{ db_row["sm_search"] }}</td>
+
+                                <td class="clsBodyRowName">{{ db_row["sm_stepper"] }}</td>
+                                <td class="clsBodyRowCount6">{{ db_row["sm_step"] }}</td>
+                                <td class="clsBodyRowCount4">{{ db_row["sm_walk"] }}</td>
+                                <td class="clsBodyRowCount4">{{ db_row["sl_distance"] }}</td>
+
+                            </tr>
+                        {% endfor %}
+                    </table>
+                </td>
+            </tr>
+        </table>
+        <br/>
+    {% endfor %}
 {% endblock %}

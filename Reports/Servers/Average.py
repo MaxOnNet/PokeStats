@@ -7,6 +7,19 @@ from flask.views import View
 class Average(Report, View):
     methods = ['GET']
 
+    sql_report_servers = """
+        SELECT
+            ss.id 	            as "server_id",
+            ss.name	            as "server_name",
+            ss.description      as "server_description",
+            ss.ip               as "server_ip",
+            ss.address          as "server_address"
+        FROM
+            db_pokestats.scanner_server as ss
+        ORDER BY
+            ss.id ASC;
+    """
+
     sql_report = """
         SELECT
             s.id 			as "s_id",
@@ -53,7 +66,8 @@ class Average(Report, View):
                 s.cd_account = sa.id
             and s.cd_location = sl.id
             and s.id = ss.cd_scanner
-            and s.cd_mode = sm.id;
+            and s.cd_mode = sm.id
+            and s.cd_server = {};
     """
 
     def __init__(self, config):
@@ -63,43 +77,60 @@ class Average(Report, View):
         return self.render()
 
     def _prepare_data(self):
-        result = self._database_execute(self.sql_report)
+        result_servers = self._database_execute(self.sql_report_servers)
 
-        for row in result:
+        for row_server in result_servers:
+            row_data = []
+            row_dict = {}
+
+            result = self._database_execute(self.sql_report.format(int(row_server[0])))
+
+            for row in result:
+                row_dict = {
+                    "s_id": row[0],
+                    "s_enable": row[1],
+                    "s_active": row[2],
+                    "s_state": row[3],
+                    "s_latitude": row[4],
+                    "s_longitude": row[5],
+                    "s_google_path": row[6],
+
+                    "sl_id": row[7],
+                    "sl_address": row[8],
+                    "sl_latitude": row[9],
+                    "sl_longitude": row[10],
+                    "sl_distance": row[11],
+
+                    "sa_id": row[12],
+                    "sa_username": row[13],
+                    "sa_service": row[14],
+                    "sa_state": row[15],
+                    "sa_active": row[16],
+
+                    "ss_await": row[17],
+                    "ss_reload": row[18],
+                    "ss_pokemons": row[19],
+                    "ss_gyms": row[20],
+                    "ss_pokestops": row[21],
+
+                    "sm_stepper": row[22],
+                    "sm_step": row[23],
+                    "sm_walk": row[24],
+                    "sm_catch": row[25],
+                    "sm_farm": row[26],
+                    "sm_lookup": row[27],
+                    "sm_search": row[28]
+                }
+
+                row_data.append(row_dict)
+
             row_dict = {
-                "s_id": row[0],
-                "s_enable": row[1],
-                "s_active": row[2],
-                "s_state": row[3],
-                "s_latitude": row[4],
-                "s_longitude": row[5],
-                "s_google_path": row[6],
-
-                "sl_id": row[7],
-                "sl_address": row[8],
-                "sl_latitude": row[9],
-                "sl_longitude": row[10],
-                "sl_distance": row[11],
-
-                "sa_id": row[12],
-                "sa_username": row[13],
-                "sa_service": row[14],
-                "sa_state": row[15],
-                "sa_active": row[16],
-
-                "ss_await": row[17],
-                "ss_reload": row[18],
-                "ss_pokemons": row[19],
-                "ss_gyms": row[20],
-                "ss_pokestops": row[21],
-
-                "sm_stepper": row[22],
-                "sm_step": row[23],
-                "sm_walk": row[24],
-                "sm_catch": row[25],
-                "sm_farm": row[26],
-                "sm_lookup": row[27],
-                "sm_search": row[28]
+                "server_id": row_server[0],
+                "server_name": row_server[1],
+                "server_description": row_server[2],
+                "server_ip": row_server[3],
+                "server_address": row_server[4],
+                "server_data": row_data
             }
 
             self.data.append(row_dict)

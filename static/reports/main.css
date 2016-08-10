@@ -52,6 +52,14 @@
                 font-weight: bold;
             }
 
+td.clsHeaderTableName {
+    background-color: #666666;
+    color: #F9F9F9;
+    padding: 3px;
+
+    text-align: left;
+
+}
 td.clsBodyMenuItem  {
     width: 120px;
     text-align: center;

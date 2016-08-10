@@ -7,6 +7,19 @@ from flask.views import View
 class Account(Report, View):
     methods = ['GET']
 
+    sql_report_servers = """
+        SELECT
+            ss.id 	            as "server_id",
+            ss.name	            as "server_name",
+            ss.description      as "server_description",
+            ss.ip               as "server_ip",
+            ss.address          as "server_address"
+        FROM
+            db_pokestats.scanner_server as ss
+        ORDER BY
+            ss.id ASC;
+    """
+
     sql_report = """
         SELECT
             s.id 					as "s_id",
@@ -52,6 +65,7 @@ class Account(Report, View):
         WHERE
                 s.cd_account = sa.id
             and s.cd_account = sac.cd_account
+            and s.cd_server = {}
         ORDER BY sac.level DESC, sac.experience_to_level ASC;
     """
 
@@ -62,48 +76,63 @@ class Account(Report, View):
         return self.render()
 
     def _prepare_data(self):
-        result = self._database_execute(self.sql_report)
+        result_servers = self._database_execute(self.sql_report_servers)
 
-        for row in result:
+        for row_server in result_servers:
+            row_data = []
+            row_dict = {}
+
+            result = self._database_execute(self.sql_report.format(int(row_server[0])))
+
+            for row in result:
+                row_dict = {
+                    "s_id": row[0],
+                    "s_enable": row[1],
+                    "s_active": row[2],
+
+                    "sa_login": row[3],
+                    "sa_name": row[4],
+                    "sa_level": row[5],
+                    "sa_exp2lev": row[6],
+
+                    "sa_stardust": row[7],
+                    "sa_coins": row[8],
+
+                    "sa_bag_items": row[9],
+                    "sa_bag_pokemons": row[10],
+
+                    "sa_seen_pokestops": row[11],
+                    "sa_seen_pokemons": row[12],
+
+                    "sa_ball_poke": row[13],
+                    "sa_ball_great": row[14],
+                    "sa_ball_ultra": row[15],
+                    "sa_ball_master": row[16],
+
+                    "sa_potion_normal": row[17],
+                    "sa_potion_super": row[18],
+                    "sa_potion_huper": row[19],
+                    "sa_potion_max": row[20],
+
+                    "sa_revive_normal": row[21],
+                    "sa_revive_master": row[22],
+
+                    "sa_berry_razz": row[23],
+                    "sa_berry_bluk": row[24],
+                    "sa_berry_nanab": row[25],
+                    "sa_berry_wepar": row[26],
+                    "sa_berry_pinap": row[27]
+                }
+
+                row_data.append(row_dict)
+
             row_dict = {
-                "s_id": row[0],
-                "s_enable": row[1],
-                "s_active": row[2],
-
-                "sa_login": row[3],
-                "sa_name": row[4],
-                "sa_level": row[5],
-                "sa_exp2lev": row[6],
-
-                "sa_stardust": row[7],
-                "sa_coins": row[8],
-
-                "sa_bag_items": row[9],
-                "sa_bag_pokemons": row[10],
-
-                "sa_seen_pokestops": row[11],
-                "sa_seen_pokemons": row[12],
-
-                "sa_ball_poke": row[13],
-                "sa_ball_great": row[14],
-                "sa_ball_ultra": row[15],
-                "sa_ball_master": row[16],
-
-                "sa_potion_normal": row[17],
-                "sa_potion_super": row[18],
-                "sa_potion_huper": row[19],
-                "sa_potion_max": row[20],
-
-                "sa_revive_normal": row[21],
-                "sa_revive_master": row[22],
-
-                "sa_berry_razz": row[23],
-                "sa_berry_bluk": row[24],
-                "sa_berry_nanab": row[25],
-                "sa_berry_wepar": row[26],
-                "sa_berry_pinap": row[27]
+                "server_id": row_server[0],
+                "server_name": row_server[1],
+                "server_description": row_server[2],
+                "server_ip": row_server[3],
+                "server_address": row_server[4],
+                "server_data": row_data
             }
 
             self.data.append(row_dict)
-
-
