@@ -220,7 +220,7 @@ class ScannerMode(Base):
     walk = Column(Integer(), default=25, nullable=False)
     step = Column(Float(), default=0.001, nullable=False)
     stepper = Column(String(16), default="Normal", nullable=False)
-
+    stepper_data = Column(String(64), default="Normal", nullable=False)
     is_catch = Column(Boolean(), default=True, nullable=False)
     is_farm = Column(Boolean(), default=True, nullable=False)
     is_lookup = Column(Boolean(), default=True, nullable=False)

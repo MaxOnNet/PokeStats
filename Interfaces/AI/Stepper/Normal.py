@@ -40,6 +40,7 @@ class Normal(object):
 
         self.walk = self.scanner.mode.walk
         self.step = self.scanner.mode.step
+        self.stepper_data = self.scanner.mode.stepper_data
         self.distance = self.scanner.location.distance * 1000
 
         self.origin_lat = ai.position[0]
