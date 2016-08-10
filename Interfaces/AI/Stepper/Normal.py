@@ -141,7 +141,7 @@ class Normal(object):
             self.search.search(lat, lng)
 
         try:
-            for radius in (50, 100, 500, 1000):
+            for radius in (50, 100, 1000):
                 log.debug("Сканируем область в радиусе {} метров.".format(radius))
                 response_index = 0
 
