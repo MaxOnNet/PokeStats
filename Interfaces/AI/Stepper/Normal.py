@@ -48,6 +48,7 @@ class Normal(object):
         self.google_path = ""
 
         self.use_search = self.scanner.mode.is_search
+        self.use_work_on_cell = self.scanner.mode.is_catch | self.scanner.mode.is_farm | self.scanner.mode.is_defender | self.scanner.mode.is_lookup
 
 
     def inicialise(self):
@@ -196,8 +197,9 @@ class Normal(object):
 
         self.api.set_position(lat, lng, alt)
 
-        for cell in map_cells:
-            self.ai.work_on_cell(cell, position,  seen_pokemon=seen_pokemon,  seen_pokestop=seen_pokestop, seen_gym=seen_gym)
+        if self.use_work_on_cell:
+            for cell in map_cells:
+                self.ai.work_on_cell(cell, position,  seen_pokemon=seen_pokemon,  seen_pokestop=seen_pokestop, seen_gym=seen_gym)
 
     @staticmethod
     def generate_coords(latitude, longitude, step_size, distance_limit):

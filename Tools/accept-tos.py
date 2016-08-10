@@ -17,8 +17,8 @@ def accept_tos(username, password):
 	req.mark_tutorial_complete(tutorials_completed = 0, send_marketing_emails = False, send_push_notifications = False)
 	response = req.call()
 	print('Accepted Terms of Service for {}'.format(username))
-	print('Response dictionary: \r\n{}'.format(pprint.PrettyPrinter(indent=4).pformat(response)))
+#	print('Response dictionary: \r\n{}'.format(pprint.PrettyPrinter(indent=4).pformat(response)))
 
-for index in xrange(50):
+for index in xrange(300):
     if index > 4:
         accept_tos("mapDefenderx{0}".format(index), "pwdxSf1{0}".format(index))

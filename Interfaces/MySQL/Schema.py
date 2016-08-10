@@ -72,7 +72,7 @@ class ScannerAccountStatistic(Base):
     id = Column(Integer(), primary_key=True, autoincrement=True, doc="")
     cd_account = Column(Integer(), ForeignKey('scanner_account.id'), default=0, nullable=False, doc="")
 
-    username = Column(String(64), nullable=False, doc="")
+    username = Column(String(64), nullable=False, default="")
     date_start = Column(DateTime(), nullable=False, default=func.now())
 
     stardust = Column(Integer(), default=0, nullable=False)

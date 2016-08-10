@@ -56,6 +56,13 @@ if (delta_lat == 0 and delta_lng == 0) or walk_distance < walk_speed:
     sys.exit(0)
 
 
+q = 1
+w = 1
+e = 1
+
+x = q & w & e
+print x
+sys.exit(0)
 while True:
     total_delta_step = walk_distance/int(walk_steps)
     total_delta_lat = (dest_lat - init_lat)

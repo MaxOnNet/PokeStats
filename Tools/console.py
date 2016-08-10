@@ -9,8 +9,8 @@ from Tools.ptcexceptions import *
 # account_info = create_account(
 #            "clubmap{0}".format(index), "pwdxSf1{0}".format(index), "v{0}@tatarnikov.org".format(index)
 #        )
-for index in xrange(150):
-    if index < 72:
+for index in xrange(300):
+    if index < 200:
         pass
     else:
         status = 0
@@ -31,4 +31,4 @@ for index in xrange(150):
                 status = 1
             except PTCException as err:
                 print('Failed to create account! General error:  {}'.format(err))
-#INSERT INTO `db_pokestats`.`scanner_account` (`username`, `password`, `service`, `is_enable`, `is_active`) VALUES ('mapDefenderx50', 'pwdxSf150', 'ptc', '1', '0'); 51
+# 51
