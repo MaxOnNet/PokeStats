@@ -76,7 +76,7 @@ class Normal(object):
                 self.ai.heartbeat()
 
             self._work_at_position(position[0], position[1], position[2], seen_pokemon=True, seen_pokestop=True, seen_gym=True)
-            action_delay(self.ai.delay_action_min, self.ai.delay_action_max)
+            sleep(1)
 
             step += 1
 
@@ -126,7 +126,7 @@ class Normal(object):
             self.api.set_position(c_lat, c_lng, 0)
             self.ai.heartbeat()
 
-            action_delay(self.ai.delay_action_min, self.ai.delay_action_max)
+            sleep(1)
 
             self._work_at_position(self.api._position_lat, self.api._position_lng, alt, seen_pokemon=True, seen_pokestop=False, seen_gym=False)
 

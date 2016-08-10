@@ -32,7 +32,7 @@ class Starline(Normal):
                 self.ai.heartbeat()
 
             self._work_at_position(position[0], position[1], position[2], seen_pokemon=True, seen_pokestop=True, seen_gym=True)
-            action_delay(self.ai.delay_action_min, self.ai.delay_action_max)
+            sleep(1)
 
             step += 1
 
