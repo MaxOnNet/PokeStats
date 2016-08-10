@@ -85,6 +85,9 @@ if __name__ == '__main__':
         log.info('Обнуление статистики для сканера:{0}.'.format(scanner.id))
         scanner.state = ""
         scanner.is_active = 0
+        scanner.is_throttled = 0
+        scanner.is_warning = 0
+
         scanner.statistic.date_start = datetime.datetime.now()
         scanner.statistic.pokemons = 0
         scanner.statistic.pokestops = 0

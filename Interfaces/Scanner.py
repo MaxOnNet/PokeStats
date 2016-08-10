@@ -116,13 +116,13 @@ class Scanner(threading.Thread):
         self.session = self.session_maker()
 
         self.scanner = self.session.query(dbScanner).get(self.scanner_id)
+        self.metrica = Metrica(self)
 
-        self.api = PGoApi()
+        self.api = PGoApi(metrica=self.metrica)
         self.api.activate_signature(self.config.get("AI", "", "signature", "tess"))
 
         self.profile = Profile(self)
         self.inventory = Inventory(self)
-        self.metrica = Metrica(self)
 
         self.ai = AI(self)
 

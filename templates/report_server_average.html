@@ -13,10 +13,10 @@
                 <td class="clsTableParentBody">
                     <table cellpadding="0" cellspacing="1" class="clsTable">
                         <tr>
-                            <td class="clsHeaderTableName" rowspan="1" colspan="26">Сервер № {{ db_row_server["server_id"] }}, кодовое имя {{ db_row_server["server_name"] }} тип {{ db_row_server["server_description"] }}, расположен по адресу {{ db_row_server["server_address"] }}.</td>
+                            <td class="clsHeaderTableName" rowspan="1" colspan="28">Сервер № {{ db_row_server["server_id"] }}, кодовое имя {{ db_row_server["server_name"] }} тип {{ db_row_server["server_description"] }}, расположен по адресу {{ db_row_server["server_address"] }}.</td>
                         </tr>
                         <tr class="clsHeader">
-                            <td class="clsHeader" rowspan="1" colspan="7">Scanner</td>
+                            <td class="clsHeader" rowspan="1" colspan="9">Scanner</td>
                             <td class="clsHeader" rowspan="1" colspan="3">Location</td>
                             <td class="clsHeader" rowspan="1" colspan="4">Account</td>
                             <td class="clsHeader" rowspan="1" colspan="4">Session Statistic</td>
@@ -27,6 +27,8 @@
                             <td class="clsHeader">ID</td>
                             <td class="clsHeaderE">E</td>
                             <td class="clsHeaderE">A</td>
+                            <td class="clsHeaderE">T</td>
+                            <td class="clsHeaderE">W</td>
                             <td class="clsHeader">Status</td>
                             <td class="clsHeader">Path</td>
                             <td class="clsHeader">Map</td>
@@ -61,6 +63,8 @@
                                 <td class="clsBodyRowId">{{ db_row["s_id"] }}</td>
                                 <td class="clsBodyRowEnabled clsBodyRowEnabled_{{ db_row['s_enable'] }}">{{ db_row["s_enable"] }}</td>
                                 <td class="clsBodyRowEnabled clsBodyRowEnabled_{{ db_row['s_active'] }}">{{ db_row["s_active"] }}</td>
+                                <td class="clsBodyRowEnabled clsBodyRowEnabled_{{ (2+db_row['s_throttled']) }}">{{ db_row["s_throttled"] }}</td>
+                                <td class="clsBodyRowEnabled clsBodyRowEnabled_{{ (4+db_row['s_warning']) }}">{{ db_row["s_warning"] }}</td>
                                 <td class="clsBodyRowStatusStr">{{ db_row["s_state"] }}</td>
                                 <td class="clsBodyRowMap"><a href="{{ db_row['s_google_path'] }}" class="link">path</a></td>
                                 <td class="clsBodyRowMap"><a href="/?longitude={{ db_row['s_longitude'] }}&latitude={{ db_row['s_latitude'] }}">map</a></td>

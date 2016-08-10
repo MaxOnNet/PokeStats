@@ -192,6 +192,8 @@ class Scanner(Base):
 
     is_enable = Column(Boolean(), default=False)
     is_active = Column(Boolean(), default=False)
+    is_throttled = Column(Boolean(), default=False)
+    is_warning = Column(Boolean(), default=False)
 
     state = Column(String(256), nullable=False, doc="")
 

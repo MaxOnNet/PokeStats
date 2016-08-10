@@ -54,7 +54,10 @@ class Average(Report, View):
             sm.is_catch		as "sm_catch",
             sm.is_farm		as "sm_farm",
             sm.is_lookup	as "sm_lookup",
-            sm.is_search	as "sm_search"
+            sm.is_search	as "sm_search",
+
+            s.is_throttled as "s_throttled",
+            s.is_warning as "s_warning"
 
         FROM
             db_pokestats.scanner as s,
@@ -119,7 +122,9 @@ class Average(Report, View):
                     "sm_catch": row[25],
                     "sm_farm": row[26],
                     "sm_lookup": row[27],
-                    "sm_search": row[28]
+                    "sm_search": row[28],
+                    "s_throttled": row[29],
+                    "s_warning": row[30]
                 }
 
                 row_data.append(row_dict)

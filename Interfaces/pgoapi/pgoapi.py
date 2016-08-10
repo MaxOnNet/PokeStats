@@ -40,12 +40,14 @@ from Interfaces.pgoapi.exceptions import AuthException, NotLoggedInException, Se
 from . import protos
 from Interfaces.pgoapi.protos.POGOProtos.Networking.Requests_pb2 import RequestType
 
+from Interfaces.AI.Metrica import Metrica
+
 logger = logging.getLogger(__name__)
 
 
 class PGoApi:
 
-    def __init__(self, provider=None, oauth2_refresh_token=None, username=None, password=None, position_lat=None, position_lng=None, position_alt=None):
+    def __init__(self, provider=None, oauth2_refresh_token=None, username=None, password=None, position_lat=None, position_lng=None, position_alt=None, metrica=None):
         self.set_logger()
         self.log.info('%s v%s - %s', __title__, __version__, __copyright__)
 
@@ -60,7 +62,7 @@ class PGoApi:
         self._position_alt = position_alt
 
         self._signature_lib = None
-
+        self._metrica = metrica
 
     def copy(self):
         other = PGoApi()
@@ -206,13 +208,17 @@ class PGoApiRequest:
         self._position_lng = position_lng
         self._position_alt = position_alt
 
+        self._metrica = parent._metrica
+
         self._req_method_list = []
 
-    def call(self, max_retry=15):
+    def call(self, max_retry=10):
         result = None
         try_cnt = 0
-        throttling_retry = 0
-        unexpected_response_retry = 0
+        index_throttling_retry = 0
+        index_unexpected_response_retry = 0
+
+        self._metrica.take_throttling()
 
         while True:
             should_throttle_retry = False
@@ -222,7 +228,6 @@ class PGoApiRequest:
                 result = self.call_wrapped()
             except ServerSideRequestThrottlingException as e:
                 self.log.error(e)
-                time.sleep(5*throttling_retry)
                 should_throttle_retry = True
             except UnexpectedResponseException as e:
                 self.log.error(e)
@@ -232,31 +237,38 @@ class PGoApiRequest:
                 should_unexpected_response_retry = True
 
             if should_throttle_retry:
-                throttling_retry += 1
+                index_throttling_retry += 1
 
-                if throttling_retry >= max_retry:
+                self._metrica.take_throttling(level_throttling=index_throttling_retry)
+
+                if index_throttling_retry >= max_retry:
                     raise ServerSideRequestThrottlingException('Server throttled too many times')
                 else:
-                    time.sleep(10)
+                    time.sleep(10*index_throttling_retry)
                 continue
 
             if should_unexpected_response_retry:
-                unexpected_response_retry += 1
+                index_unexpected_response_retry += 1
 
-                if unexpected_response_retry >= 10:
+                self._metrica.take_throttling(level_error=index_unexpected_response_retry)
+
+                if index_unexpected_response_retry >= 10:
                     raise ServerBusyOrOfflineException()
 
-                elif unexpected_response_retry >= 5:
+                elif index_unexpected_response_retry >= 5:
                     self.log.warning('Server is not responding correctly to our requests.  Waiting for 30 seconds to reconnect.')
                     time.sleep(30)
                 else:
-                    time.sleep(5)
+                    time.sleep(5*index_unexpected_response_retry)
 
                 continue
 
             try:
                 if not result or 'responses' not in result:
                     try_cnt += 1
+
+                    self._metrica.take_throttling(level_error=try_cnt)
+
                     if try_cnt > 3:
                         self.log.warning('Server seems to be busy or offline - try again - {}/{}'.format(try_cnt, max_retry))
                     if try_cnt >= max_retry:
@@ -266,11 +278,16 @@ class PGoApiRequest:
                     break
             except:
                 try_cnt += 1
+
+                self._metrica.take_throttling(level_error=try_cnt)
+
                 if try_cnt > 3:
                     self.log.warning('Server seems to be busy or offline - try again - {}/{}'.format(try_cnt, max_retry))
                 if try_cnt >= max_retry:
                     raise ServerBusyOrOfflineException()
                 time.sleep(1)
+
+        self._metrica.take_throttling()
 
         return result
 

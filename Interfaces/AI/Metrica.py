@@ -19,8 +19,25 @@ class Metrica:
         log.debug("Обнуляем счетсчики в БД")
         self.take_status(scanner_state=0, scanner_msg="", account_state=0, account_msg="")
         self.take_position([0, 0], "")
+
         self.take_step()
         self.session.flush()
+
+
+    def take_throttling(self, level_throttling=0, level_error=0):
+        if level_throttling == 0:
+            self.scanner.is_throttled = 0
+        else:
+            self.scanner.is_throttled = 1
+
+        if level_error == 0:
+            self.scanner.is_warning = 0
+        else:
+            self.scanner.is_warning = 1
+
+        self.session.commit()
+        self.take_ping()
+
 
     def take_ping(self):
         self.time_await = datetime.datetime.now()
