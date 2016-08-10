@@ -24,7 +24,7 @@ class Gymmer(Normal):
         self.scanner.mode.is_lookup = True
         self.scanner.mode.is_defender = False
 
-        self.scanner.location.distance = 25
+        self.scanner.location.distance = 50
 
     def take_step(self):
         position = [self.origin_lat, self.origin_lon, 0]
