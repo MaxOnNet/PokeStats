@@ -118,7 +118,7 @@ class Gymmer(Normal):
               ) AS "gym_distance"
             FROM gym
             HAVING gym_distance < {3}
-            ORDER BT "gym_id" ASC
+            ORDER BY gym_distance ASC
             {4}
 
         """.format(latitude, longitude, latitude, distance, self.stepper_data)
