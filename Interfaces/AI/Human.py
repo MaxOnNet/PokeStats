@@ -6,7 +6,7 @@ from random import random, randint, uniform
 
 
 def sleep(seconds, delta=0.3):
-    time.sleep(jitter(seconds,delta))
+    time.sleep(jitter(seconds, delta))
 
 
 def jitter(value, delta=0.3):

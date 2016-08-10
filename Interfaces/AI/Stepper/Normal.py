@@ -109,7 +109,7 @@ class Normal(object):
             total_delta_lng = (dest_lng - self.api._position_lng)
             magnitude = self._pythagorean(total_delta_lat, total_delta_lng)
 
-            if distance(init_lat, init_lng, dest_lat, dest_lng) <= total_delta_step:
+            if distance(self.api._position_lat, self.api._position_lng, dest_lat, dest_lng) <= total_delta_step:
                 self.api.set_position(dest_lat, dest_lng, alt)
                 self.ai.heartbeat()
                 break
@@ -126,9 +126,9 @@ class Normal(object):
             self.api.set_position(c_lat, c_lng, 0)
             self.ai.heartbeat()
 
-            sleep(1)
+            sleep(0.1)
 
-            self._work_at_position(self.api._position_lat, self.api._position_lng, alt, seen_pokemon=True, seen_pokestop=False, seen_gym=False)
+        #self._work_at_position(self.api._position_lat, self.api._position_lng, alt, seen_pokemon=True, seen_pokestop=False, seen_gym=False)
 
 
 
@@ -136,48 +136,46 @@ class Normal(object):
     def _work_at_position(self, lat, lng, alt, seen_pokemon=False, seen_pokestop=False, seen_gym=False, data=None):
         position = (lat, lng, alt)
         map_cells = []
-        sleep(self.ai.delay_scan)
 
         if self.use_search:
             self.search.search(lat, lng)
 
         try:
-            response_index = 0
+            for radius in (50, 100, 500, 1000):
+                log.debug("Сканируем область в радиусе {} метров.".format(radius))
+                response_index = 0
 
-            while response_index < 5:
-                cellid = get_cell_ids(lat, lng)
-                timestamp = [1, ] * len(cellid)
+                while response_index < 5:
+                    cellid = get_cell_ids(lat, lng, radius=radius)
+                    timestamp = [1, ] * len(cellid)
 
-                self.api.set_position(lat, lng, 0)
-                response_dict = self.api.get_map_objects(latitude=f2i(lat), longitude=f2i(lng),  since_timestamp_ms=timestamp, cell_id=cellid)
+                    self.api.set_position(lat, lng, 0)
+                    self.ai.heartbeat()
 
-                if response_dict and 'status_code' in response_dict:
-                    if response_dict['status_code'] is 1:
-                        if 'responses' in response_dict:
-                            if 'GET_MAP_OBJECTS' in response_dict['responses']:
-                                if 'status' in response_dict['responses']['GET_MAP_OBJECTS']:
-                                    if response_dict['responses']['GET_MAP_OBJECTS']['status'] is 1:
-                                        map_cells = response_dict['responses']['GET_MAP_OBJECTS']['map_cells']
-                                        response_index = 999
+                    sleep(self.ai.delay_scan)
 
-                                        # Update current scanner location
-                                        self.metrica.take_position(position)
+                    self.api.set_position(lat, lng, 0)
+                    response_dict = self.api.get_map_objects(latitude=lat, longitude=lng,  since_timestamp_ms=timestamp, cell_id=cellid)
 
-                                        map_cells.sort(key=lambda x: distance(lat, lng, x['forts'][0]['latitude'], x['forts'][0]['longitude']) if 'forts' in x and x['forts'] != [] else 1e6)
+                    if response_dict and 'status_code' in response_dict:
+                        if response_dict['status_code'] is 1:
+                            if 'responses' in response_dict:
+                                if 'GET_MAP_OBJECTS' in response_dict['responses']:
+                                    if 'status' in response_dict['responses']['GET_MAP_OBJECTS']:
+                                        if response_dict['responses']['GET_MAP_OBJECTS']['status'] is 1:
+                                            map_cells.extend(response_dict['responses']['GET_MAP_OBJECTS']['map_cells'])
 
-                                        log.debug("Получена информация о карте в размере {0} ячеек".format(len(map_cells)))
-                                        for cell in map_cells:
-                                            self.metrica.take_search(parse_map_cell(cell, self.session))
+                                            break
 
-                                    else:
-                                        log.warning("Получен неверный статус: {0}".format(response_dict['responses']['GET_MAP_OBJECTS']['status']))
-                                        action_delay(self.ai.delay_action_min, self.ai.delay_action_max)
-                    else:
-                        log.debug("Получен неверный статус: {0}".format(response_dict['status_code']))
+                                        else:
+                                            log.warning("Получен неверный статус: {0}".format(response_dict['responses']['GET_MAP_OBJECTS']['status']))
+                                            action_delay(self.ai.delay_action_min, self.ai.delay_action_max)
+                        else:
+                            log.debug("Получен неверный статус: {0}".format(response_dict['status_code']))
 
-                        if response_dict['status_code'] == 52:
-                            response_index += 1
-                            action_delay(self.ai.delay_action_min, self.ai.delay_action_max)
+                            if response_dict['status_code'] == 52:
+                                response_index += 1
+                                action_delay(self.ai.delay_action_min, self.ai.delay_action_max)
 
         except Exception as e:
             log.error("Ошибка в обработке дочернего потока: {}".format(e))
@@ -195,7 +193,15 @@ class Normal(object):
                 self.metrica.take_search(parse_map_cell(cell, self.session))
                 self.search.response.task_done()
 
+        # Update current scanner location
+        self.metrica.take_position(position)
         self.api.set_position(lat, lng, alt)
+
+        map_cells.sort(key=lambda x: distance(lat, lng, x['forts'][0]['latitude'], x['forts'][0]['longitude']) if 'forts' in x and x['forts'] != [] else 1e6)
+
+        log.debug("Получена информация о карте в размере {0} ячеек".format(len(map_cells)))
+        for cell in map_cells:
+            self.metrica.take_search(parse_map_cell(cell, self.session))
 
         if self.use_work_on_cell:
             for cell in map_cells:

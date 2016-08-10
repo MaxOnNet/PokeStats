@@ -27,14 +27,13 @@ def _pythagorean(lat, lng):
 def get_google_polilyne(coords):
     return 'http://maps.googleapis.com/maps/api/staticmap?size=400x400&apikey={1}&path=enc:{0}'.format(encode_coords(coords), "AIzaSyA3OUM5s1t1mX3mqtSMNSToPD_uaTAdP3M")
 
-init_lat = 55.0467
-init_lng = 73.3111
+init_lat = 55.0467073568
+init_lng = 73.3111072005
 
-dest_lat = 55.0306
-dest_lng = 73.3305
-walk_speed = 50
+dest_lat = 55.0487228502
+dest_lng = 73.3131540588
+walk_speed = 4
 walk_coords = []
-
 
 walk_distance = distance(init_lat, init_lng, dest_lat, dest_lng)
 walk_distance_total = max(1, walk_distance)
@@ -56,13 +55,12 @@ if (delta_lat == 0 and delta_lng == 0) or walk_distance < walk_speed:
     sys.exit(0)
 
 
-q = 1
-w = 1
-e = 1
+#for index in xrange(251):
+#    print """INSERT INTO `db_pokestats`.`scanner` (`id`, `cd_server`, `cd_account`, `cd_location`, `cd_mode`, `is_enable`) VALUES ({}, '3', '{}', '{}', '4', '1');""".format((index+92),(index+77),(index+74))
 
-x = q & w & e
-print x
-sys.exit(0)
+
+
+
 while True:
     total_delta_step = walk_distance/int(walk_steps)
     total_delta_lat = (dest_lat - init_lat)

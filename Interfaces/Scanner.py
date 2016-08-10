@@ -27,30 +27,26 @@ log = logging.getLogger(__name__)
 class Scanner(threading.Thread):
     def __init__(self, scanner_id):
         threading.Thread.__init__(self, name=scanner_id)
+        self.scanner_id = scanner_id
+        self.config = None
+        self.geolocation = None
+        self.session_maker = None
+        self.session = None
 
-        self.config = Config()
-        self.geolocation = Geolocation(self)
-        self.session_maker = init(self.config)
-        self.session = self.session_maker()
-
-        #self.scanner_db = self.session.query(dbScanner).get(scanner_id)
-        self.scanner = self.session.query(dbScanner).get(scanner_id)
+        self.scanner = None
 
         self._stopevent = threading.Event()
 
         self._sleepperiod = 10
         self._sleeplogin = 20
 
-        self.api = PGoApi()
-        self.api.activate_signature(self.config.get("AI", "", "signature", "tess"))
+        self.api = None
 
+        self.profile = None
+        self.inventory = None
+        self.metrica = None
 
-        self.profile = Profile(self)
-        self.inventory = Inventory(self)
-        self.metrica = Metrica(self)
-
-        self.ai = AI(self)
-
+        self.ai = None
         self.daemon = True
 
     def _scanner_snapshot(self, scanner_id):
@@ -113,6 +109,22 @@ class Scanner(threading.Thread):
 
     def run(self):
         self.alive = True
+
+        self.config = Config()
+        self.geolocation = Geolocation(self)
+        self.session_maker = init(self.config)
+        self.session = self.session_maker()
+
+        self.scanner = self.session.query(dbScanner).get(self.scanner_id)
+
+        self.api = PGoApi()
+        self.api.activate_signature(self.config.get("AI", "", "signature", "tess"))
+
+        self.profile = Profile(self)
+        self.inventory = Inventory(self)
+        self.metrica = Metrica(self)
+
+        self.ai = AI(self)
 
         self.metrica.take_status(scanner_state=1, scanner_msg="Запускаем сканнер", account_state=1)
         log.info("Запускаем сканнер")

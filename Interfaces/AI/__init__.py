@@ -189,8 +189,8 @@ class AI(object):
 
     def heartbeat(self):
         self.metrica.take_ping()
-        #self.api.player_update(latitude=self.position[0], longitude=self.position[1])
-        self.api.get_player()
-        self.api.get_hatched_eggs()
-        self.api.get_inventory()
-        self.api.check_awarded_badges()
+        request = self.api.create_request()
+        request.get_player()
+        request.check_awarded_badges()
+        request.call()
+
