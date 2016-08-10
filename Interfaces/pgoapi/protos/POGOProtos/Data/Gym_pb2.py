@@ -21,8 +21,8 @@ POGOProtos_dot_Inventory_dot_Item__pb2 = POGOProtos_dot_Data__pb2.POGOProtos_dot
 from POGOProtos.Data import Player_pb2 as POGOProtos_dot_Data_dot_Player__pb2
 POGOProtos_dot_Enums__pb2 = POGOProtos_dot_Data_dot_Player__pb2.POGOProtos_dot_Enums__pb2
 from POGOProtos.Map import Fort_pb2 as POGOProtos_dot_Map_dot_Fort__pb2
-POGOProtos_dot_Enums__pb2 = POGOProtos_dot_Map_dot_Fort__pb2.POGOProtos_dot_Enums__pb2
 POGOProtos_dot_Inventory_dot_Item__pb2 = POGOProtos_dot_Map_dot_Fort__pb2.POGOProtos_dot_Inventory_dot_Item__pb2
+POGOProtos_dot_Enums__pb2 = POGOProtos_dot_Map_dot_Fort__pb2.POGOProtos_dot_Enums__pb2
 
 from POGOProtos.Data_pb2 import *
 from POGOProtos.Data.Player_pb2 import *

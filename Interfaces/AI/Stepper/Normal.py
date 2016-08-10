@@ -16,7 +16,7 @@ from Interfaces.AI.Human import sleep, random_lat_long_delta, action_delay
 from Interfaces.AI.Worker.Utils import distance, i2f, format_time
 from Interfaces.MySQL.Schema import parse_map_cell
 
-from Interfaces.pgoapi.utilities import f2i, h2f, get_cell_ids
+from Interfaces.pgoapi.utilities import f2i, h2f, get_cell_ids, get_cell_ids_alt
 
 
 log = logging.getLogger(__name__)
@@ -141,13 +141,13 @@ class Normal(object):
             self.search.search(lat, lng)
 
         try:
-            for radius in (50, 100, 1000):
+            for radius in (70, 200, 1000):
                 log.debug("Сканируем область в радиусе {} метров.".format(radius))
                 response_index = 0
 
                 while response_index < 5:
                     cellid = get_cell_ids(lat, lng, radius=radius)
-                    timestamp = [1, ] * len(cellid)
+                    timestamp = [0, ] * len(cellid)
 
                     self.api.set_position(lat, lng, 0)
                     self.ai.heartbeat()
@@ -164,7 +164,7 @@ class Normal(object):
                                     if 'status' in response_dict['responses']['GET_MAP_OBJECTS']:
                                         if response_dict['responses']['GET_MAP_OBJECTS']['status'] is 1:
                                             map_cells.extend(response_dict['responses']['GET_MAP_OBJECTS']['map_cells'])
-                                            print ('Response dictionary: \r\n{}'.format(pprint.PrettyPrinter(indent=4).pformat(response_dict['responses']['GET_MAP_OBJECTS'])))
+                                            log.debug('Response dictionary: \r\n{}'.format(pprint.PrettyPrinter(indent=4).pformat(response_dict['responses']['GET_MAP_OBJECTS'])))
                                             break
 
                                         else:

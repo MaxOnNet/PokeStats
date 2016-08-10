@@ -36,7 +36,7 @@ from binascii import unhexlify
 # other stuff
 from google.protobuf.internal import encoder
 from geopy.geocoders import GoogleV3
-from s2sphere import LatLng, Angle, Cap, RegionCoverer, math
+from s2sphere import LatLng, Angle, Cap, RegionCoverer, math, CellId
 
 log = logging.getLogger(__name__)
 
@@ -81,6 +81,31 @@ def get_cell_ids(lat, long, radius=200):
     cells = coverer.get_covering(region)
     cells = cells[:100]  # len(cells) = 100 is max allowed by the server
     return sorted([x.id() for x in cells])
+
+
+
+def get_cell_ids_alt( lat, lng, radius=10):
+    origin = CellId.from_lat_lng(
+        LatLng.from_degrees(
+            lat,
+            lng
+        )
+    ).parent(15)
+
+    # Create walk around area
+    walk = [origin.id()]
+    right = origin.next()
+    left = origin.prev()
+
+    # Search around provided radius
+    for _ in range(radius):
+        walk.append(right.id())
+        walk.append(left.id())
+        right = right.next()
+        left = left.prev()
+
+    # Return everything
+    return sorted(walk)
 
 def get_time(ms = False):
     if ms:

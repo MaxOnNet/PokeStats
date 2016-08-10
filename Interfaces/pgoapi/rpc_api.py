@@ -207,9 +207,9 @@ class RpcApi:
 
                 signature_proto = sig.SerializeToString()
 
-                u6 = request.unknown6.add()
+                u6 = request.unknown6
                 u6.request_type = 6
-                u6.unknown2.unknown1 = self._generate_signature(signature_proto)
+                u6.unknown2.encrypted_signature = self._generate_signature(signature_proto)
         else:
             self.log.debug('No Session Ticket found - using OAUTH Access Token')
             request.auth_info.provider = self._auth_provider.get_name()
