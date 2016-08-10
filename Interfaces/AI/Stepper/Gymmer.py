@@ -17,7 +17,7 @@ class Gymmer(Normal):
     def inicialise(self):
         log.info('Точечное сканирование GYM, переопределяем переменные БД')
         self.scanner.mode.step = 0.0015
-        self.scanner.mode.walk = 190
+        self.scanner.mode.walk = 0
 
         self.scanner.mode.is_catch = False
         self.scanner.mode.is_farm = False
