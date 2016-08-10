@@ -300,10 +300,7 @@ td.clsBodyRowEnabled {
     color: #000000;
     background-color: #FFFFFF;
 }
-td.clsBodyRowEnabled_2 {
-    background-color: #9932CC;
-    color: #9932CC;
-}
+
 td.clsBodyRowEnabled_1 {
     background-color: #3CB371;
     color: #3CB371;
@@ -313,6 +310,24 @@ td.clsBodyRowEnabled_0 {
     color: #B22222;
 }
 
+td.clsBodyRowEnabled_2 {
+    background-color: #9932CC;
+    color: #9932CC;
+}
+td.clsBodyRowEnabled_3 {
+    background-color: #0066cc;
+    color: #0066cc;
+}
+
+
+td.clsBodyRowEnabled_4 {
+    background-color: #9932CC;
+    color: #9932CC;
+}
+td.clsBodyRowEnabled_5 {
+    background-color: #ff9933;
+    color: #ff9933;
+}
 a {
     color: #eeeeee;
     text-transform: none;
