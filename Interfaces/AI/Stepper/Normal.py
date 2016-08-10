@@ -132,8 +132,6 @@ class Normal(object):
         #self._work_at_position(self.api._position_lat, self.api._position_lng, alt, seen_pokemon=True, seen_pokestop=False, seen_gym=False)
 
 
-
-
     def _work_at_position(self, lat, lng, alt, seen_pokemon=False, seen_pokestop=False, seen_gym=False, data=None):
         position = (lat, lng, alt)
         map_cells = []
@@ -142,7 +140,16 @@ class Normal(object):
             self.search.search(lat, lng)
 
         try:
-            for radius in (70, 200, 1000):
+            radius_array = []
+
+            if seen_pokemon:
+                radius_array.append(70)
+                radius_array.append(190)
+
+            if seen_pokestop | seen_gym:
+                radius_array.append(1000)
+
+            for radius in radius_array:
                 log.debug("Сканируем область в радиусе {} метров.".format(radius))
                 response_index = 0
 
