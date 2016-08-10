@@ -236,7 +236,7 @@ class PGoApiRequest:
                 if throttling_retry >= max_retry:
                     raise ServerSideRequestThrottlingException('Server throttled too many times')
                 else:
-                    time.sleep(1)
+                    time.sleep(10)
                 continue
 
             if should_unexpected_response_retry:
@@ -249,7 +249,7 @@ class PGoApiRequest:
                     self.log.warning('Server is not responding correctly to our requests.  Waiting for 30 seconds to reconnect.')
                     time.sleep(30)
                 else:
-                    time.sleep(2)
+                    time.sleep(5)
 
                 continue
 
@@ -260,7 +260,7 @@ class PGoApiRequest:
                         self.log.warning('Server seems to be busy or offline - try again - {}/{}'.format(try_cnt, max_retry))
                     if try_cnt >= max_retry:
                         raise ServerBusyOrOfflineException()
-                    time.sleep(1)
+                    time.sleep(5)
                 else:
                     break
             except:
