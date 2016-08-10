@@ -164,7 +164,7 @@ class Normal(object):
                                     if 'status' in response_dict['responses']['GET_MAP_OBJECTS']:
                                         if response_dict['responses']['GET_MAP_OBJECTS']['status'] is 1:
                                             map_cells.extend(response_dict['responses']['GET_MAP_OBJECTS']['map_cells'])
-
+                                            print ('Response dictionary: \r\n{}'.format(pprint.PrettyPrinter(indent=4).pformat(response_dict['responses']['GET_MAP_OBJECTS'])))
                                             break
 
                                         else:

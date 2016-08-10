@@ -118,7 +118,7 @@ class Gymmer(Normal):
               ) AS "gym_distance"
             FROM gym
             HAVING gym_distance < {3}
-            ORDER BY date_change
+            ORDER BY RAND()
 
         """.format(latitude, longitude, latitude, distance)
 

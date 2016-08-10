@@ -55,8 +55,9 @@
 td.clsHeaderTableName {
     background-color: #666666;
     color: #F9F9F9;
-    padding: 3px;
-
+    padding-top: 3px;
+    padding-bottom: 3px;
+    padding-left: 15px;
     text-align: left;
 
 }
