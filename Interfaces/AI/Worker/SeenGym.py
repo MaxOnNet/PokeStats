@@ -29,42 +29,71 @@ class SeenGym(object):
         lat = self.gym['latitude']
         lng = self.gym['longitude']
 
-        action_delay(self.ai.delay_action_min, self.ai.delay_action_max)
-
         log.info("GYM ownered by {0}, analyse".format(self.gym['owned_by_team']))
-        response_dict = self.api.fort_details(fort_id=self.gym['id'])
-
-        if 'responses' in response_dict \
-                and'FORT_DETAILS' in response_dict['responses'] \
-                and 'name' in response_dict['responses']['FORT_DETAILS']:
-            fort_details = response_dict['responses']['FORT_DETAILS']
-            fort_name = fort_details['name'].encode('utf8', 'replace')
-
-            parse_fort_details(self.gym['id'], 0, fort_details, self.session)
-        else:
-            fort_name = 'Unknown'
-        log.info('[#] Now at GYM: ' + fort_name)
 
         action_delay(self.ai.delay_action_min, self.ai.delay_action_max)
 
-        response_dict = self.api.get_gym_details(gym_id=self.gym['id'],
+        response_index = 0
+
+        while response_index < 5:
+            response_dict = self.api.fort_details(fort_id=self.gym['id'])
+
+            if response_dict and 'status_code' in response_dict:
+                if response_dict['status_code'] is 1:
+                    if 'responses' in response_dict:
+                        if 'FORT_DETAILS' in response_dict['responses']:
+                            if 'status' in response_dict['responses']['FORT_DETAILS']:
+                                if response_dict['responses']['FORT_DETAILS']['status'] is 1:
+                                    fort_name = response_dict['responses']['FORT_DETAILS']['name'].encode('utf8', 'replace')
+
+                                    log.info('[#] Now at GYM: ' + fort_name)
+
+                                    parse_fort_details(self.gym['id'], 0, response_dict['responses']['FORT_DETAILS'], self.session)
+                                    break
+                                else:
+                                    log.warning("Получен неверный статус: {0}".format(response_dict['responses']['FORT_DETAILS']['status']))
+                                    action_delay(self.ai.delay_action_min, self.ai.delay_action_max)
+                else:
+                    log.debug("Получен неверный статус: {0}".format(response_dict['status_code']))
+
+                    if response_dict['status_code'] == 52:
+                        response_index += 1
+                        action_delay(self.ai.delay_action_min, self.ai.delay_action_max)
+
+        action_delay(self.ai.delay_action_min, self.ai.delay_action_max)
+
+        response_index = 0
+
+        while response_index < 5:
+            response_dict = self.api.get_gym_details(gym_id=self.gym['id'],
                              player_latitude=f2i(self.position[0]),
                              player_longitude=f2i(self.position[1]))
 
-        if 'responses' in response_dict \
-                and'GET_GYM_DETAILS' in response_dict['responses'] \
-                and 'gym_state' in response_dict['responses']['GET_GYM_DETAILS']\
-                and 'fort_data' in response_dict['responses']['GET_GYM_DETAILS']['gym_state']:
+            if response_dict and 'status_code' in response_dict:
+                if response_dict['status_code'] is 1:
+                    if 'responses' in response_dict:
+                        if 'GET_GYM_DETAILS' in response_dict['responses']:
+                            if 'status' in response_dict['responses']['GET_GYM_DETAILS']:
+                                if response_dict['responses']['GET_GYM_DETAILS']['status'] is 1:
+                                    if 'gym_state' in response_dict['responses']['GET_GYM_DETAILS']:
+                                        if 'fort_data' in response_dict['responses']['GET_GYM_DETAILS']['gym_state']:
+                                            self.gym = response_dict['responses']['GET_GYM_DETAILS']['gym_state']['fort_data']
 
-                parse_gym(response_dict['responses']['GET_GYM_DETAILS']['gym_state']['fort_data'], self.session)
-                self.gym = response_dict['responses']['GET_GYM_DETAILS']['gym_state']['fort_data']
+                                            parse_gym(self.gym, self.session)
 
-        if 'responses' in response_dict \
-                and'GET_GYM_DETAILS' in response_dict['responses'] \
-                and 'gym_state' in response_dict['responses']['GET_GYM_DETAILS']\
-                and 'memberships' in response_dict['responses']['GET_GYM_DETAILS']['gym_state']:
+                                        if 'memberships' in response_dict['responses']['GET_GYM_DETAILS']['gym_state']:
+                                            clear_gym_membership(self.gym['id'], self.session)
 
-                clear_gym_membership(self.gym['id'], self.session)
+                                            for membership in response_dict['responses']['GET_GYM_DETAILS']['gym_state']['memberships']:
+                                                parse_gym_membership(membership, self.gym['id'], self.gym['owned_by_team'], self.session)
 
-                for membership in response_dict['responses']['GET_GYM_DETAILS']['gym_state']['memberships']:
-                    parse_gym_membership(membership, self.gym['id'], self.gym['owned_by_team'], self.session)
+                                        break
+                                else:
+                                    log.warning("Получен неверный статус: {0}".format(response_dict['responses']['GET_GYM_DETAILS']['status']))
+                                    action_delay(self.ai.delay_action_min, self.ai.delay_action_max)
+                else:
+                    log.debug("Получен неверный статус: {0}".format(response_dict['status_code']))
+
+                    if response_dict['status_code'] == 52:
+                        response_index += 1
+                        action_delay(self.ai.delay_action_min, self.ai.delay_action_max)
