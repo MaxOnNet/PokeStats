@@ -16,15 +16,15 @@ log = logging.getLogger(__name__)
 class Gymmer(Normal):
     def inicialise(self):
         log.info('Точечное сканирование GYM, переопределяем переменные БД')
-        self.scanner.mode.step = 0
-        self.scanner.mode.walk = 0
+        self.scanner.mode.step = 0.0015
+        self.scanner.mode.walk = 190
 
         self.scanner.mode.is_catch = False
         self.scanner.mode.is_farm = False
         self.scanner.mode.is_lookup = True
         self.scanner.mode.is_defender = False
 
-        self.scanner.location.distance = 0
+        self.scanner.location.distance = 100
 
     def take_step(self):
         position = [self.origin_lat, self.origin_lon, 0]
@@ -117,7 +117,7 @@ class Gymmer(Normal):
                 ) * 1000
               ) AS "gym_distance"
             FROM gym
-           --  HAVING gym_distance < {3}
+            HAVING gym_distance < {3}
             ORDER BY gym_distance ASC
             {4}
 
