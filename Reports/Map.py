@@ -93,14 +93,16 @@ class Map(Flask):
         except:
             pokemon_time = "now()"
 
-        try:
-            if int(pokemon_ids) != -1:
+        if pokemon_ids is not None:
+            try:
+                if int(pokemon_ids) != -1:
+                    pokemon_ids = "and p.id in ({0})".format(pokemon_ids)
+                else:
+                    pokemon_ids = ""
+            except:
                 pokemon_ids = "and p.id in ({0})".format(pokemon_ids)
-            else:
-                pokemon_ids = ""
-        except:
-            pokemon_ids = "and p.id in ({0})".format(pokemon_ids)
-
+        else:
+            pokemon_ids = ""
 
         sql = """
             SELECT
