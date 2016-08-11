@@ -13,7 +13,7 @@
                 <td class="clsTableParentBody">
                     <table cellpadding="0" cellspacing="1" class="clsTable">
                         <tr>
-                            <td class="clsBodyRowEnabled clsBodyRowEnabled_{{ db_row['s_enable'] }}">{{ db_row["server_enable"] }}</td>
+                            <td class="clsBodyRowEnabled clsBodyRowEnabled_{{ db_row_server['server_enable'] }}">{{ db_row_server["server_enable"] }}</td>
                             <td class="clsHeaderTableName" rowspan="1" colspan="28">Сервер № {{ db_row_server["server_id"] }}, кодовое имя {{ db_row_server["server_name"] }} тип {{ db_row_server["server_description"] }}, расположен по адресу {{ db_row_server["server_address"] }}.</td>
                         </tr>
                         <tr class="clsHeader">
