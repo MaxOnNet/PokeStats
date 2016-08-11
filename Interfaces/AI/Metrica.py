@@ -23,6 +23,7 @@ class Metrica:
         self.take_step()
         self.session.flush()
 
+        self._level_banning = 0
 
     def take_throttling(self, level_throttling=0, level_error=0):
         if level_throttling == 0:
@@ -34,6 +35,20 @@ class Metrica:
             self.scanner.is_warning = 0
         else:
             self.scanner.is_warning = 1
+
+        self.session.commit()
+        self.take_ping()
+
+
+    def take_banning(self, level_banning=0):
+        if level_banning == 0:
+            self._level_banning = 0
+            self.scanner.is_banned = 0
+        else:
+            self._level_banning += 1
+
+            if self._level_banning > 5:
+                self.scanner.is_banned = 1
 
         self.session.commit()
         self.take_ping()
@@ -71,14 +86,29 @@ class Metrica:
 
 
     def take_search(self, response):
+        is_exist_items = 0
+
         if 'pokemons' in response:
             self.scanner.statistic.pokemons += response['pokemons']
+
+            if response['pokemons'] > 0:
+                is_exist_items |= 1
 
         if 'pokestops' in response:
             self.scanner.statistic.pokestops += response['pokestops']
 
+            if response['pokestops'] > 0:
+                is_exist_items |= 1
+
         if 'gyms' in response:
             self.scanner.statistic.gyms += response['gyms']
+            if response['gyms'] > 0:
+                is_exist_items |= 1
+
+        if is_exist_items == 0:
+            self.take_banning(1)
+        else:
+            self.take_banning(0)
 
         self.session.commit()
         self.take_ping()

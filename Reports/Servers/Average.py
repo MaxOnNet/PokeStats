@@ -59,8 +59,8 @@ class Average(Report, View):
             sm.is_search	as "sm_search",
 
             s.is_throttled as "s_throttled",
-            s.is_warning as "s_warning"
-
+            s.is_warning as "s_warning",
+            s.is_banned as "s_banned"
         FROM
             db_pokestats.scanner as s,
             db_pokestats.scanner_account as sa,
@@ -126,7 +126,8 @@ class Average(Report, View):
                     "sm_lookup": row[27],
                     "sm_search": row[28],
                     "s_throttled": row[29],
-                    "s_warning": row[30]
+                    "s_warning": row[30],
+                    "s_banned": row[31]
                 }
 
                 row_data.append(row_dict)

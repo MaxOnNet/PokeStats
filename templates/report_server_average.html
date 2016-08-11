@@ -14,10 +14,10 @@
                     {% for db_row_server in table %}
                         <tr>
                             <td class="clsBodyRowEnabled clsBodyRowEnabled_{{ db_row_server['server_enable'] }}">{{ db_row_server["server_enable"] }}</td>
-                            <td class="clsHeaderTableName" rowspan="1" colspan="27">Сервер № {{ db_row_server["server_id"] }}, кодовое имя {{ db_row_server["server_name"] }} тип {{ db_row_server["server_description"] }}, расположен по адресу {{ db_row_server["server_address"] }}.</td>
+                            <td class="clsHeaderTableName" rowspan="1" colspan="28">Сервер № {{ db_row_server["server_id"] }}, кодовое имя {{ db_row_server["server_name"] }} тип {{ db_row_server["server_description"] }}, расположен по адресу {{ db_row_server["server_address"] }}.</td>
                         </tr>
                         <tr class="clsHeader">
-                            <td class="clsHeader" rowspan="1" colspan="9">Scanner</td>
+                            <td class="clsHeader" rowspan="1" colspan="10">Scanner</td>
                             <td class="clsHeader" rowspan="1" colspan="2">Location</td>
                             <td class="clsHeader" rowspan="1" colspan="5">Account</td>
                             <td class="clsHeader" rowspan="1" colspan="4">Session Statistic</td>
@@ -67,6 +67,7 @@
                                 <td class="clsBodyRowEnabled clsBodyRowEnabled_{{ db_row['s_active'] }}">{{ db_row["s_active"] }}</td>
                                 <td class="clsBodyRowEnabled clsBodyRowEnabled_{{ (2+db_row['s_throttled']) }}">{{ db_row["s_throttled"] }}</td>
                                 <td class="clsBodyRowEnabled clsBodyRowEnabled_{{ (4+db_row['s_warning']) }}">{{ db_row["s_warning"] }}</td>
+                                <td class="clsBodyRowEnabled clsBodyRowEnabled_{{ (6+db_row['s_banned']) }}">{{ db_row["s_banned"] }}</td>
                                 <td class="clsBodyRowStatusStr">{{ db_row["s_state"] }}</td>
                                 <td class="clsBodyRowMap"><a href="{{ db_row['s_google_path'] }}" class="link">path</a></td>
                                 <td class="clsBodyRowMap"><a href="/?longitude={{ db_row['s_longitude'] }}&latitude={{ db_row['s_latitude'] }}">map</a></td>
@@ -100,7 +101,7 @@
                             </tr>
                         {% endfor %}
                             <tr>
-                                <td class="clsHeaderTableSpaser" rowspan="1" colspan="28"></td>
+                                <td class="clsHeaderTableSpaser" rowspan="1" colspan="29"></td>
                             </tr>
                     {% endfor %}
                 </table>

@@ -338,6 +338,16 @@ td.clsBodyRowEnabled_5 {
     background-color: #ff9933;
     color: #ff9933;
 }
+
+td.clsBodyRowEnabled_6 {
+    background-color:  #3CB371;
+    color: #3CB371;
+}
+td.clsBodyRowEnabled_7 {
+    background-color: #FF0099;
+    color: #FF0099;
+}
+
 a {
     color: #eeeeee;
     text-transform: none;

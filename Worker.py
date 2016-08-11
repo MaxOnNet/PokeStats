@@ -91,6 +91,7 @@ if __name__ == '__main__':
         scanner.is_active = 0
         scanner.is_throttled = 0
         scanner.is_warning = 0
+        scanner.is_banned = 0
 
         scanner.statistic.date_start = datetime.datetime.now()
         scanner.statistic.pokemons = 0
