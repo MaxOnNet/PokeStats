@@ -248,7 +248,9 @@ class PGoApiRequest:
                 self._metrica.take_throttling(level_throttling=index_throttling_retry)
 
                 if index_throttling_retry >= max_retry:
-                    raise ServerSideRequestThrottlingException('Server throttled too many times')
+                    self.log.error('Server throttled too many times')
+
+                    break
                 else:
                     time.sleep(10*index_throttling_retry)
                 continue
@@ -259,8 +261,9 @@ class PGoApiRequest:
                 self._metrica.take_throttling(level_error=index_unexpected_response_retry)
 
                 if index_unexpected_response_retry >= 10:
-                    raise ServerBusyOrOfflineException()
+                    self.log.error('Server seems to be busy or offline')
 
+                    break
                 elif index_unexpected_response_retry >= 5:
                     self.log.warning('Server is not responding correctly to our requests.  Waiting for 30 seconds to reconnect.')
                     time.sleep(30)
@@ -278,7 +281,9 @@ class PGoApiRequest:
                     if try_cnt > 3:
                         self.log.warning('Server seems to be busy or offline - try again - {}/{}'.format(try_cnt, max_retry))
                     if try_cnt >= max_retry:
-                        raise ServerBusyOrOfflineException()
+                        self.log.error('Server seems to be busy or offline')
+
+                        break
                     time.sleep(5)
                 else:
                     break
@@ -290,8 +295,11 @@ class PGoApiRequest:
                 if try_cnt > 3:
                     self.log.warning('Server seems to be busy or offline - try again - {}/{}'.format(try_cnt, max_retry))
                 if try_cnt >= max_retry:
-                    raise ServerBusyOrOfflineException()
-                time.sleep(1)
+                    self.log.error('Server seems to be busy or offline')
+
+                    break
+
+                time.sleep(10)
 
         self._metrica.take_throttling()
 
