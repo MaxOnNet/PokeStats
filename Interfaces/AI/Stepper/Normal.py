@@ -216,6 +216,32 @@ class Normal(object):
             for cell in map_cells:
                 self.ai.work_on_cell(cell, position,  seen_pokemon=seen_pokemon,  seen_pokestop=seen_pokestop, seen_gym=seen_gym)
 
+    def take_step_at_position(self):
+        lat = self.api._position_lat + random_lat_long_delta()
+        lng = self.api._position_lng + random_lat_long_delta()
+
+        self.metrica.take_position((lat, lng, 0))
+        self.api.set_position(lat, lng, 0)
+        self.ai.heartbeat()
+
+        sleep(self.ai.delay_scan)
+
+        cellid = get_cell_ids(lat, lng, radius=70)
+        timestamp = [0, ] * len(cellid)
+
+        self.api.set_position(lat, lng, 0)
+        response_dict = self.api.get_map_objects(latitude=lat, longitude=lng,  since_timestamp_ms=timestamp, cell_id=cellid)
+
+        if response_dict and 'status_code' in response_dict:
+            if response_dict['status_code'] is 1:
+                if 'responses' in response_dict:
+                    if 'GET_MAP_OBJECTS' in response_dict['responses']:
+                        if 'status' in response_dict['responses']['GET_MAP_OBJECTS']:
+                            if response_dict['responses']['GET_MAP_OBJECTS']['status'] is 1:
+                                for map_cell in response_dict['responses']['GET_MAP_OBJECTS']['map_cells']:
+                                    parse_map_cell(map_cell, self.session)
+
+
     @staticmethod
     def generate_coords(latitude, longitude, step_size, distance_limit):
         coords = [{'lat': latitude, 'lng': longitude}]
