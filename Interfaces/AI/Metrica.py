@@ -18,8 +18,8 @@ class Metrica:
 
         log.debug("Обнуляем счетсчики в БД")
         self.take_status(scanner_state=0, scanner_msg="", account_state=0, account_msg="")
-        self.take_position([0, 0], "")
-
+        self.take_banning()
+        self.take_throttling()
         self.take_step()
         self.session.flush()
 
