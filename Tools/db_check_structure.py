@@ -31,7 +31,7 @@ for p_i in xrange(326):
             scanner[0].cd_server = s_i
 
             s_ii +=1
-            if s_ii == 100:
+            if s_ii == 25:
                 s_ii = 0
                 s_i += 1
 

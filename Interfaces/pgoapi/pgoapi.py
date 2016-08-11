@@ -218,7 +218,7 @@ class PGoApiRequest:
 
         self._req_method_list = []
 
-    def call_t(self, max_retry=10):
+    def call(self, max_retry=10):
         result = None
         try_cnt = 0
         index_throttling_retry = 0
@@ -298,7 +298,7 @@ class PGoApiRequest:
         return result
 
 
-    def call(self):
+    def call_wrapped(self):
         if not self._req_method_list:
             raise EmptySubrequestChainException()
 
