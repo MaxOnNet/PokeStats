@@ -12,7 +12,6 @@ class Metrica:
         self.thread = thread
         self.session = thread.session
         self.scanner = thread.scanner
-        self.stepper = thread.ai.stepper
 
         self.time_flush = datetime.datetime.now()
         self.time_await = datetime.datetime.now()
@@ -57,7 +56,7 @@ class Metrica:
 
                 for index in xrange(4):
                     self.take_ping()
-                    self.stepper.take_step_at_position()
+                    self.thread.ai.stepper.take_step_at_position()
 
         self.session.commit()
         self.take_ping()
