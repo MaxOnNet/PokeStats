@@ -54,6 +54,7 @@ class SeenGym(object):
                                 break
                             else:
                                 log.warning("Получен неверный ответ, отсутствует имя GYM")
+                                log.warning(response_dict['responses'])
                                 action_delay(self.ai.delay_action_min, self.ai.delay_action_max)
                 else:
                     log.debug("Получен неверный статус: {0}".format(response_dict['status_code']))
@@ -93,6 +94,7 @@ class SeenGym(object):
                                 break
                             else:
                                 log.warning("Получен неверный ответ, отсутствует состояние GYM")
+                                log.warning(response_dict['responses'])
                                 action_delay(self.ai.delay_action_min, self.ai.delay_action_max)
                 else:
                     log.debug("Получен неверный статус: {0}".format(response_dict['status_code']))
