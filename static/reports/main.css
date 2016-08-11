@@ -84,7 +84,14 @@ td.clsBodyMenuItem  {
                 padding-left: 3px;
                 padding-right: 3px;
             }
-
+td.clsBodyRowUserName {
+    width: 120px;
+    text-align: left;
+    background-color: #AAAAAA;
+    color: #e6e6e6;
+    padding-left: 3px;
+    padding-right: 3px;
+}
 td.clsBodyRowName {
     width: 80px;
     text-align: center;
