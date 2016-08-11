@@ -17,8 +17,8 @@
                         </tr>
                         <tr class="clsHeader">
                             <td class="clsHeader" rowspan="1" colspan="9">Scanner</td>
-                            <td class="clsHeader" rowspan="1" colspan="3">Location</td>
-                            <td class="clsHeader" rowspan="1" colspan="4">Account</td>
+                            <td class="clsHeader" rowspan="1" colspan="2">Location</td>
+                            <td class="clsHeader" rowspan="1" colspan="5">Account</td>
                             <td class="clsHeader" rowspan="1" colspan="4">Session Statistic</td>
                             <td class="clsHeader" rowspan="1" colspan="8">Stepper</td>
                         </tr>
@@ -34,12 +34,13 @@
                             <td class="clsHeader">Map</td>
 
                             <td class="clsHeader">ID</td>
-                            <td class="clsHeader">Address</td>
+                        <!--    <td class="clsHeader">Address</td> -->
                             <td class="clsHeader">Map</td>
 
                             <td class="clsHeader">ID</td>
                             <td class="clsHeaderE">A</td>
                             <td class="clsHeader">Service</td>
+                            <td class="clsHeader">User Name</td>
                             <td class="clsHeader">Status</td>
 
                             <td class="clsHeader">AWait</td>
@@ -70,12 +71,13 @@
                                 <td class="clsBodyRowMap"><a href="/?longitude={{ db_row['s_longitude'] }}&latitude={{ db_row['s_latitude'] }}">map</a></td>
 
                                 <td class="clsBodyRowId">{{ db_row["sl_id"] }}</td>
-                                <td class="clsBodyRowAddress">{{ db_row["sl_address"] }}</td>
+                            <!--    <td class="clsBodyRowAddress">{{ db_row["sl_address"] }}</td> -->
                                 <td class="clsBodyRowMap"><a href="/?filterScaneer={{ db_row['s_id'] }}&longitude={{ db_row['sl_longitude'] }}&latitude={{ db_row['sl_latitude'] }}">map</a></td>
 
                                 <td class="clsBodyRowId">{{ db_row["sa_id"] }}</td>
                                 <td class="clsBodyRowEnabled clsBodyRowEnabled_{{ db_row['sa_active'] }}">{{ db_row["sa_active"] }}</td>
                                 <td class="clsBodyRowName">{{ db_row["sa_service"] }}</td>
+                                <td class="clsBodyRowTrainerName">{{ db_row["sa_username"] }}</td>
                                 <td class="clsBodyRowStatusStr">{{ db_row["sa_state"] }}</td>
 
                                 <td class="clsBodyRowAWait">{{ db_row["ss_await"] }}</td>
