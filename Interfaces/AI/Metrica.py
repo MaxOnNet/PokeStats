@@ -54,7 +54,7 @@ class Metrica:
                 #
                 self.scanner.is_banned = 1
 
-                for index in xrange(4):
+                for index in xrange(2):
                     self.take_ping()
                     self.thread.ai.stepper.take_step_at_position()
 
