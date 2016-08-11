@@ -2,6 +2,7 @@
 
 import json
 import time
+import pprint
 import logging
 
 from Interfaces.AI.Human import sleep, random_lat_long_delta, action_delay
@@ -37,23 +38,23 @@ class SeenGym(object):
 
         while response_index < 5:
             response_dict = self.api.fort_details(fort_id=self.gym['id'])
+            log.debug('Response dictionary: \r\n{}'.format(pprint.PrettyPrinter(indent=4).pformat(response_dict)))
 
             if response_dict and 'status_code' in response_dict:
                 if response_dict['status_code'] is 1:
                     if 'responses' in response_dict:
                         if 'FORT_DETAILS' in response_dict['responses']:
-                            if 'status' in response_dict['responses']['FORT_DETAILS']:
-                                if response_dict['responses']['FORT_DETAILS']['status'] is 1:
-                                    fort_name = response_dict['responses']['FORT_DETAILS']['name'].encode('utf8', 'replace')
+                            if 'name' in response_dict['responses']['FORT_DETAILS']:
+                                fort_name = response_dict['responses']['FORT_DETAILS']['name'].encode('utf8', 'replace')
 
-                                    log.info('[#] Now at GYM: ' + fort_name)
+                                log.info('[#] Now at GYM: ' + fort_name)
 
-                                    parse_fort_details(self.gym['id'], 0, response_dict['responses']['FORT_DETAILS'], self.session)
+                                parse_fort_details(self.gym['id'], 0, response_dict['responses']['FORT_DETAILS'], self.session)
 
-                                    break
-                                else:
-                                    log.warning("Получен неверный статус: {0}".format(response_dict['responses']['FORT_DETAILS']['status']))
-                                    action_delay(self.ai.delay_action_min, self.ai.delay_action_max)
+                                break
+                            else:
+                                log.warning("Получен неверный ответ, отсутствует имя GYM")
+                                action_delay(self.ai.delay_action_min, self.ai.delay_action_max)
                 else:
                     log.debug("Получен неверный статус: {0}".format(response_dict['status_code']))
 
@@ -71,28 +72,28 @@ class SeenGym(object):
                              player_latitude=f2i(self.position[0]),
                              player_longitude=f2i(self.position[1]))
 
+            log.debug('Response dictionary: \r\n{}'.format(pprint.PrettyPrinter(indent=4).pformat(response_dict['responses'])))
+
             if response_dict and 'status_code' in response_dict:
                 if response_dict['status_code'] is 1:
                     if 'responses' in response_dict:
                         if 'GET_GYM_DETAILS' in response_dict['responses']:
-                            if 'status' in response_dict['responses']['GET_GYM_DETAILS']:
-                                if response_dict['responses']['GET_GYM_DETAILS']['status'] is 1:
-                                    if 'gym_state' in response_dict['responses']['GET_GYM_DETAILS']:
-                                        if 'fort_data' in response_dict['responses']['GET_GYM_DETAILS']['gym_state']:
-                                            self.gym = response_dict['responses']['GET_GYM_DETAILS']['gym_state']['fort_data']
+                            if 'gym_state' in response_dict['responses']['GET_GYM_DETAILS']:
+                                if 'fort_data' in response_dict['responses']['GET_GYM_DETAILS']['gym_state']:
+                                    self.gym = response_dict['responses']['GET_GYM_DETAILS']['gym_state']['fort_data']
 
-                                            parse_gym(self.gym, self.session)
+                                    parse_gym(self.gym, self.session)
 
-                                        if 'memberships' in response_dict['responses']['GET_GYM_DETAILS']['gym_state']:
-                                            clear_gym_membership(self.gym['id'], self.session)
+                                if 'memberships' in response_dict['responses']['GET_GYM_DETAILS']['gym_state']:
+                                    clear_gym_membership(self.gym['id'], self.session)
 
-                                            for membership in response_dict['responses']['GET_GYM_DETAILS']['gym_state']['memberships']:
-                                                parse_gym_membership(membership, self.gym['id'], self.gym['owned_by_team'], self.session)
+                                    for membership in response_dict['responses']['GET_GYM_DETAILS']['gym_state']['memberships']:
+                                        parse_gym_membership(membership, self.gym['id'], self.gym['owned_by_team'], self.session)
 
-                                        break
-                                else:
-                                    log.warning("Получен неверный статус: {0}".format(response_dict['responses']['GET_GYM_DETAILS']['status']))
-                                    action_delay(self.ai.delay_action_min, self.ai.delay_action_max)
+                                break
+                            else:
+                                log.warning("Получен неверный ответ, отсутствует состояние GYM")
+                                action_delay(self.ai.delay_action_min, self.ai.delay_action_max)
                 else:
                     log.debug("Получен неверный статус: {0}".format(response_dict['status_code']))
 

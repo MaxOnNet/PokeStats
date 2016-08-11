@@ -16,7 +16,7 @@ from Interfaces.MySQL.Schema import ScannerServer as dbScannerServer
 
 log = logging.getLogger(__name__)
 
-scanner_id = 210
+scanner_id = 19
 
 if __name__ == '__main__':
     threading.current_thread().name = '00-00'
@@ -36,6 +36,7 @@ if __name__ == '__main__':
     logging.getLogger("Interfaces.AI.Stepper.Starline").setLevel(logging.INFO)
     logging.getLogger("Interfaces.AI.Metrica").setLevel(logging.DEBUG)
     logging.getLogger("Interfaces.AI.Search").setLevel(logging.DEBUG)
+    logging.getLogger("Interfaces.AI.Worker.SeenGym").setLevel(logging.DEBUG)
     threads = []
 
     log.info("Work")
