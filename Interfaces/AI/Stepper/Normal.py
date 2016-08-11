@@ -49,6 +49,7 @@ class Normal(object):
         self.google_path = ""
 
         self.use_search = self.scanner.mode.is_search
+        self.use_long_radius = self.scanner.mode.is_farm | self.scanner.mode.is_defender | self.scanner.mode.is_lookup
         self.use_work_on_cell = self.scanner.mode.is_catch | self.scanner.mode.is_farm | self.scanner.mode.is_defender | self.scanner.mode.is_lookup
 
 
@@ -127,7 +128,7 @@ class Normal(object):
             self.api.set_position(c_lat, c_lng, 0)
             self.ai.heartbeat()
 
-            sleep(0.1)
+            sleep(1)
 
         #self._work_at_position(self.api._position_lat, self.api._position_lng, alt, seen_pokemon=True, seen_pokestop=False, seen_gym=False)
 
@@ -146,7 +147,7 @@ class Normal(object):
                 radius_array.append(70)
                 radius_array.append(190)
 
-            if seen_pokestop | seen_gym:
+            if (seen_pokestop | seen_gym) & self.use_long_radius:
                 radius_array.append(1000)
 
             for radius in radius_array:

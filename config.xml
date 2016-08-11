@@ -8,7 +8,7 @@
     <map>
         <google key="AIzaSyA3OUM5s1t1mX3mqtSMNSToPD_uaTAdP3M" />
     </map>
-    <AI signature="$path/Blob/libencrypt.so" delay_action_min="10" delay_action_max="30"  delay_scan="15">
+    <AI signature="$path/Blob/libencrypt.so" delay_action_min="15" delay_action_max="30"  delay_scan="20">
         <PokemonCatch use_evolve="0" use_transfer="1" data_transfer="$path/Data/pokemon_transfer.json" data_pokemon="$path/Data/pokemon.json" data_catch="$path/Data/pokemon_catch.json" reticle_factor="1" spin_factor="1"/>
 
         <PokemonTransfer use_evolve="0" use_transfer="1" data_transfer="$path/Data/pokemon_transfer.json" data_pokemon="$path/Data/pokemon.json" />

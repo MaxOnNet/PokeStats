@@ -29,7 +29,7 @@ class PokemonCatch(object):
 
         self.pokemon = pokemon
         self.pokemon_transfer = bool(self.config.get("AI",  self.__class__.__name__, "use_transfer", 1))
-        self.pokemon_evolve = bool(self.config.get("AI",  self.__class__.__name__, "use_evolve", 1))
+        self.pokemon_evolve = bool(self.config.get("AI",  self.__class__.__name__, "use_evolve", 0))
 
         self.data_pokemon = {}
         self.data_transfer = {}
