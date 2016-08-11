@@ -10,9 +10,11 @@ class Average(Report, View):
     sql_report_servers = """
         SELECT
             ss.id 	            as "server_id",
+            ss.is_enable	    as "server_enable",
             ss.name	            as "server_name",
             ss.description      as "server_description",
             ss.ip               as "server_ip",
+            ss.hostname         as "server_hostname",
             ss.address          as "server_address"
         FROM
             db_pokestats.scanner_server as ss
@@ -131,10 +133,12 @@ class Average(Report, View):
 
             row_dict = {
                 "server_id": row_server[0],
-                "server_name": row_server[1],
-                "server_description": row_server[2],
-                "server_ip": row_server[3],
-                "server_address": row_server[4],
+                "server_enable": row_server[1],
+                "server_name": row_server[2],
+                "server_description": row_server[3],
+                "server_ip": row_server[4],
+                "server_hostname": row_server[5],
+                "server_address": row_server[6],
                 "server_data": row_data
             }
 

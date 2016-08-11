@@ -41,6 +41,11 @@ class ScannerServer(Base):
     id = Column(Integer(), primary_key=True, autoincrement=True, doc="")
     name = Column(String(64), nullable=False, doc="")
     description = Column(String(256), nullable=False, doc="")
+    address = Column(String(256), nullable=False, doc="")
+    ip = Column(String(256), nullable=False, doc="")
+    hostname = Column(String(256), nullable=False, doc="")
+
+    is_enable = Column(Boolean(), default=False)
 
     scanners = relationship("Scanner")
 
