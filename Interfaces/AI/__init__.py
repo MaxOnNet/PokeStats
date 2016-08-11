@@ -47,12 +47,14 @@ class AI(object):
         self.delay_action_max = float(self.config.get("AI", "", "delay_action_max", 5))
         self.delay_scan = float(self.config.get("AI", "", "delay_scan", 2))
 
-        self.position = (self.api._position_lat, self.api._position_lng, 0)
+        self.position = self.scanner.location.position
         self.search = Search(self)
         self.seen_pokestop = {}
         self.seen_gym = {}
 
-
+        if self.scanner.latitude != 0 and self.scanner.longitude != 0:
+            # Есть старая точка, от нее и бежать, ибо на ней мы выходили и на ней мы авторизировались
+            self.api.set_position(self.scanner.latitude, self.scanner.longitude, 0)
 
         if self.scanner.mode.stepper == "normal":
             self.stepper = Normal(self)
