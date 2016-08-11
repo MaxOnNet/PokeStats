@@ -183,8 +183,9 @@ class Normal(object):
                             log.debug("Получен неверный статус: {0}".format(response_dict['status_code']))
 
                             if response_dict['status_code'] == 52:
-                                response_index += 1
                                 action_delay(self.ai.delay_action_min, self.ai.delay_action_max)
+
+                    response_index += 1
 
         except Exception as e:
             log.error("Ошибка в обработке дочернего потока: {}".format(e))

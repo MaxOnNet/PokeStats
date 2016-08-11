@@ -49,6 +49,7 @@ class SeenGym(object):
                                     log.info('[#] Now at GYM: ' + fort_name)
 
                                     parse_fort_details(self.gym['id'], 0, response_dict['responses']['FORT_DETAILS'], self.session)
+
                                     break
                                 else:
                                     log.warning("Получен неверный статус: {0}".format(response_dict['responses']['FORT_DETAILS']['status']))
@@ -57,8 +58,9 @@ class SeenGym(object):
                     log.debug("Получен неверный статус: {0}".format(response_dict['status_code']))
 
                     if response_dict['status_code'] == 52:
-                        response_index += 1
                         action_delay(self.ai.delay_action_min, self.ai.delay_action_max)
+
+            response_index += 1
 
         action_delay(self.ai.delay_action_min, self.ai.delay_action_max)
 
@@ -95,5 +97,6 @@ class SeenGym(object):
                     log.debug("Получен неверный статус: {0}".format(response_dict['status_code']))
 
                     if response_dict['status_code'] == 52:
-                        response_index += 1
                         action_delay(self.ai.delay_action_min, self.ai.delay_action_max)
+
+            response_index += 1
