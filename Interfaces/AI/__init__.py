@@ -47,7 +47,7 @@ class AI(object):
         self.delay_action_max = float(self.config.get("AI", "", "delay_action_max", 5))
         self.delay_scan = float(self.config.get("AI", "", "delay_scan", 2))
 
-        self.position = self.scanner.location.position
+        self.position = (self.api._position_lat, self.api._position_lng, 0)
         self.search = Search(self)
         self.seen_pokestop = {}
         self.seen_gym = {}

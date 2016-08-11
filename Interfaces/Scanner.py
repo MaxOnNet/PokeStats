@@ -85,7 +85,10 @@ class Scanner(threading.Thread):
         self.metrica.take_status(account_state=1, account_msg="Попытка авторизации ({0})".format(login_count))
         log.debug("Попытка авторизации ({0})".format(login_count))
 
-        self.api.set_position(self.scanner.location.latitude, self.scanner.location.longitude, 0)
+        if self.scanner.latitude != 0 and self.scanner.longitude != 0:
+            self.api.set_position(self.scanner.latitude, self.scanner.longitude, 0)
+        else:
+            self.api.set_position(self.scanner.location.latitude, self.scanner.location.longitude, 0)
 
         while not self.api.login(self.scanner.account.service, self.scanner.account.username, self.scanner.account.password):
             if login_count < login_count_max:
