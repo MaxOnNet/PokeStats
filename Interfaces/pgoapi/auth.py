@@ -30,7 +30,7 @@ from Interfaces.pgoapi.utilities import get_time, get_format_time_diff
 
 class Auth:
 
-    def __init__(self):
+    def __init__(self, proxy_config=None):
         self.log = logging.getLogger(__name__)
 
         self._auth_provider = None

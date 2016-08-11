@@ -28,7 +28,6 @@ import time
 import re
 import six
 import logging
-import requests
 
 from . import __title__, __version__, __copyright__
 from Interfaces.pgoapi.rpc_api import RpcApi
@@ -39,8 +38,6 @@ from Interfaces.pgoapi.exceptions import AuthException, NotLoggedInException, Se
 
 from . import protos
 from Interfaces.pgoapi.protos.POGOProtos.Networking.Requests_pb2 import RequestType
-
-from Interfaces.AI.Metrica import Metrica
 
 logger = logging.getLogger(__name__)
 
@@ -56,6 +53,8 @@ class PGoApi:
             self.set_authentication(provider, oauth2_refresh_token, username, password)
 
         self.set_api_endpoint("pgorelease.nianticlabs.com/plfe")
+
+        self._proxy = None
 
         self._position_lat = position_lat
         self._position_lng = position_lng
@@ -84,7 +83,7 @@ class PGoApi:
 
     def set_authentication(self, provider=None, oauth2_refresh_token=None, username=None, password=None):
         if provider == 'ptc':
-            self._auth_provider = AuthPtc()
+            self._auth_provider = AuthPtc(proxy_config=self._proxy)
         elif provider == 'google':
             self._auth_provider = AuthGoogle()
         elif provider is None:
@@ -100,6 +99,11 @@ class PGoApi:
             self._auth_provider.user_login(username, password)
         else:
             raise AuthException("Invalid Credential Input - Please provide username/password or an oauth2 refresh token")
+
+
+    def set_proxy(self, proxy_config):
+         self._proxy = proxy_config
+
 
     def get_position(self):
         return (self._position_lat, self._position_lng, self._position_alt)
@@ -124,7 +128,7 @@ class PGoApi:
         return self._auth_provider
 
     def create_request(self):
-        request = PGoApiRequest(self, self._position_lat, self._position_lng, self._position_alt)
+        request = PGoApiRequest(self, self._position_lat, self._position_lng, self._position_alt, self._proxy)
         return request
 
     def activate_signature(self, lib_path):
@@ -195,7 +199,7 @@ class PGoApi:
 
 
 class PGoApiRequest:
-    def __init__(self, parent, position_lat, position_lng, position_alt):
+    def __init__(self, parent, position_lat, position_lng, position_alt, proxy=None):
         self.log = logging.getLogger(__name__)
 
         self.__parent__ = parent
@@ -203,6 +207,8 @@ class PGoApiRequest:
         """ Inherit necessary parameters from parent """
         self._api_endpoint = self.__parent__.get_api_endpoint()
         self._auth_provider = self.__parent__.get_auth_provider()
+
+        self._proxy = proxy
 
         self._position_lat = position_lat
         self._position_lng = position_lng
@@ -212,7 +218,7 @@ class PGoApiRequest:
 
         self._req_method_list = []
 
-    def call(self, max_retry=10):
+    def call_t(self, max_retry=10):
         result = None
         try_cnt = 0
         index_throttling_retry = 0
@@ -292,7 +298,7 @@ class PGoApiRequest:
         return result
 
 
-    def call_wrapped(self):
+    def call(self):
         if not self._req_method_list:
             raise EmptySubrequestChainException()
 
@@ -303,7 +309,7 @@ class PGoApiRequest:
             self.log.info('Not logged in')
             return NotLoggedInException()
 
-        request = RpcApi(self._auth_provider)
+        request = RpcApi(self._auth_provider, self._proxy)
 
         lib_path = self.__parent__.get_signature_lib()
         if lib_path is not None:

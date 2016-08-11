@@ -50,6 +50,19 @@ class ScannerServer(Base):
     scanners = relationship("Scanner")
 
 
+class ScannerProxy(Base):
+    __tablename__ = 'scanner_proxy'
+    __table_args__ = {'mysql_engine': 'InnoDB', 'mysql_charset': 'utf8', 'mysql_collate': 'utf8_general_ci',
+                      'mysql_comment': ''}
+
+    id = Column(Integer(), primary_key=True, autoincrement=True, doc="")
+    ip = Column(String(64), nullable=False, doc="")
+    port = Column(Integer(), nullable=False, doc="")
+    username = Column(String(256), nullable=False, doc="")
+    password = Column(String(256), nullable=False, doc="")
+
+    scanners = relationship("Scanner")
+
 class ScannerAccount(Base):
     __tablename__ = 'scanner_account'
     __table_args__ = {'mysql_engine': 'InnoDB', 'mysql_charset': 'utf8', 'mysql_collate': 'utf8_general_ci',
@@ -194,6 +207,7 @@ class Scanner(Base):
     cd_account = Column(Integer(), ForeignKey('scanner_account.id'), default=0, nullable=False, doc="")
     cd_location = Column(Integer(), ForeignKey('scanner_location.id'), default=0, nullable=False, doc="")
     cd_mode = Column(Integer(), ForeignKey('scanner_mode.id'), default=0, nullable=False, doc="")
+    cd_proxy = Column(Integer(), ForeignKey('scanner_proxy.id'), default=0, nullable=True, doc="")
 
     is_enable = Column(Boolean(), default=False)
     is_active = Column(Boolean(), default=False)
@@ -213,6 +227,7 @@ class Scanner(Base):
     account = relationship("ScannerAccount", backref="Scanner")
     location = relationship("ScannerLocation", backref="Scanner")
     mode = relationship("ScannerMode", backref="Scanner")
+    proxy = relationship("ScannerProxy", backref="Scanner")
 
     statistic = relationship("ScannerStatistic", uselist=False)
 

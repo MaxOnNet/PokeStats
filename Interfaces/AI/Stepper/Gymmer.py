@@ -17,7 +17,7 @@ class Gymmer(Normal):
     def inicialise(self):
         log.info('Точечное сканирование GYM, переопределяем переменные БД')
         self.scanner.mode.step = 0.0015
-        self.scanner.mode.walk = 25
+        self.scanner.mode.walk = 60
 
         self.scanner.mode.is_catch = False
         self.scanner.mode.is_farm = False
@@ -71,7 +71,9 @@ class Gymmer(Normal):
                 self.api.set_position(cLat, cLng, alt)
                 self.ai.heartbeat()
 
-                action_delay(self.ai.delay_action_min, self.ai.delay_action_max)
+                sleep(1)
+
+        action_delay(self.ai.delay_action_min, self.ai.delay_action_max)
 
         self.api.set_position(lat, lng, alt)
         self.ai.heartbeat()

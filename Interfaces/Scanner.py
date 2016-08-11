@@ -121,8 +121,17 @@ class Scanner(threading.Thread):
         self.scanner = self.session.query(dbScanner).get(self.scanner_id)
         self.metrica = Metrica(self)
 
+
+
         self.api = PGoApi(metrica=self.metrica)
         self.api.activate_signature(self.config.get("AI", "", "signature", "tess"))
+
+        if self.scanner.proxy:
+            log.info("Используем Proxy!")
+
+            self.api.set_proxy({
+                "https":  "http://{}:{}".format(self.scanner.proxy.ip, self.scanner.proxy.port)
+            })
 
         self.profile = Profile(self)
         self.inventory = Inventory(self)

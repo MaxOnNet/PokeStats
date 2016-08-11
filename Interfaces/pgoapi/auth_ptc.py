@@ -45,13 +45,15 @@ class AuthPtc(Auth):
     PTC_LOGIN_OAUTH = 'https://sso.pokemon.com/sso/oauth2.0/accessToken'
     PTC_LOGIN_CLIENT_SECRET = 'w8ScCUXJQc6kXKw8FiOhd8Fixzht18Dq3PEVkUCP5ZPxtgyWsbTvWHFLm2wNY0JR'
 
-    def __init__(self):
+    def __init__(self, proxy_config=None):
         Auth.__init__(self)
         
         self._auth_provider = 'ptc'
-        
         self._session = requests.session()
         self._session.verify = True
+
+        if proxy_config is not None:
+            self._session.proxies = proxy_config
 
     def user_login(self, username, password):
         self.log.info('PTC User Login for: {}'.format(username))

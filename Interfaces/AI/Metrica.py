@@ -47,7 +47,7 @@ class Metrica:
         else:
             self._level_banning += 1
 
-            if self._level_banning > 5:
+            if self._level_banning > 18:
                 log.warning("Суки забанили! топчемся на месте...")
                 #
                 # CСуки опять блокируют, 1 минуту занимаемся херней, каждые 10 сек, топчемся на 1 месте и посылаем сердцепиения
@@ -57,6 +57,8 @@ class Metrica:
                 for index in xrange(4):
                     self.take_ping()
                     self.thread.ai.stepper.take_step_at_position()
+
+                self._level_banning = 0
 
         self.session.commit()
         self.take_ping()

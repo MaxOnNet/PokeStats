@@ -16,7 +16,7 @@ from Interfaces.MySQL.Schema import ScannerServer as dbScannerServer
 
 log = logging.getLogger(__name__)
 
-scanner_id = 19
+scanner_id = 210
 
 if __name__ == '__main__':
     threading.current_thread().name = '00-00'
