@@ -1,9 +1,2 @@
-Добавить авторизацию на сайте басик авторизатион
-Добавить в схму престиж
-
-засунуть мерджи в тру
-
-
-
-        <worker enable="False" auth-service="ptc" login="MaxOnNet" password="b7nYgJKFU22dRe" />
-        <worker enable="False"  auth-service="ptc" login="kuzyiaa" password="123456" />
+# Переработать алгоритм движения степпера, для ускорения в середине пути и замедлением в конце
+# Пересмотреть работу прокси

@@ -113,8 +113,7 @@ class PokemonTransfer(object):
 
         inventory_req = self.api.get_inventory()
 
-        #inventory_req = self.api.call()
-        if inventory_req.get('responses', False) is False:
+        if 'responses' not in inventory_req:
             return pokemon_groups
 
         inventory_dict = inventory_req['responses']['GET_INVENTORY']['inventory_delta']['inventory_items']

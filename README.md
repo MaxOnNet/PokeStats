@@ -1,6 +1,9 @@
 
 # PokeStats
+Проект находится на стадии глубокой альвы, и постоянно переписывается, частота коммитов обуславливается с системой доставки на сервера.
+
 [live](http://pokestats.tatarnikov.org) Работа данного кода
+[reports](http://pokestats.tatarnikov.org/report/server/average) Статистики
 
 Карта города омска, статистика по GYM, Trainers и много е другое.
 

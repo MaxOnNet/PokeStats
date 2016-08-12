@@ -1,12 +1,10 @@
-
 import random
 import string
-
 from urllib import urlencode
 
 import requests
 
-from Tools.ptcexceptions import *
+from Tools._trash.ptcexceptions import *
 
 
 __all__ = [

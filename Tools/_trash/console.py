@@ -1,8 +1,7 @@
-import argparse
-import sys
-
-from Tools.accountcreator import *
 from Tools.ptcexceptions import *
+
+from Tools._trash.accountcreator import *
+
 
 # 	clubmap9   v
 
