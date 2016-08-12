@@ -3,6 +3,7 @@
 
 import datetime
 import logging
+import time
 
 log = logging.getLogger(__name__)
 
@@ -26,6 +27,7 @@ class Metrica:
 
         self.session.flush()
 
+        self._search_timestamp = time.time()
         self._level_banning = 0
 
     def take_throttling(self, level_throttling=0, level_error=0):
@@ -102,7 +104,7 @@ class Metrica:
         self.take_ping()
 
 
-    def take_search(self, response):
+    def take_search(self, response, timestamp):
         is_exist_items = 0
 
         if 'pokemons' in response:
@@ -123,7 +125,9 @@ class Metrica:
                 is_exist_items |= 1
 
         if is_exist_items == 0:
-            self.take_banning(1)
+            if self._search_timestamp != timestamp:
+                self._search_timestamp = timestamp
+                self.take_banning(1)
         else:
             self.take_banning(0)
 

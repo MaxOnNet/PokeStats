@@ -136,6 +136,7 @@ class Normal(object):
     def _work_at_position(self, lat, lng, alt, seen_pokemon=False, seen_pokestop=False, seen_gym=False, data=None):
         position = (lat, lng, alt)
         map_cells = []
+        map_cells_timestamp = time.time()
 
         if self.use_search:
             self.search.search(lat, lng)
@@ -203,7 +204,7 @@ class Normal(object):
 
         log.debug("Получена информация о карте в размере {0} ячеек".format(len(map_cells)))
         for cell in map_cells:
-            self.metrica.take_search(parse_map_cell(cell, self.session))
+            self.metrica.take_search(parse_map_cell(cell, self.session), timestamp=map_cells_timestamp)
 
         if self.use_work_on_cell:
             for cell in map_cells:
