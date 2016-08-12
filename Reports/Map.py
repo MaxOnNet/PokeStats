@@ -8,13 +8,10 @@ import sqlalchemy
 from flask import Flask, jsonify, render_template, request
 from flask.json import JSONEncoder
 
-
 from datetime import datetime
 
 from Interfaces.Config import Config
 from Interfaces.MySQL import init_fast as init
-from Interfaces.MySQL.Schema import PokemonSpawnpoint, Gym, Pokestop, Pokemon, Scanner, ScannerStatistic, ScannerLocation
-
 
 # Reports
 from Reports.Trainers.Top import Top as ReportTrainerTop
@@ -340,14 +337,6 @@ class CustomJSONEncoder(JSONEncoder):
                     obj.microsecond / 1000
                 )
                 return millis
-
-            if isinstance(obj, sqlalchemy.orm.state.InstanceState):
-                return ""
-
-            if isinstance(obj, ScannerStatistic):
-                return ""
-            if isinstance(obj, ScannerLocation):
-                return ""
 
             iterable = iter(obj)
         except TypeError:
