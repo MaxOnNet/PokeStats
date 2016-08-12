@@ -14,13 +14,13 @@
                     {% for db_row_server in table %}
                         <tr>
                             <td class="clsBodyRowEnabled clsBodyRowEnabled_{{ db_row_server['server_enable'] }}">{{ db_row_server["server_enable"] }}</td>
-                            <td class="clsHeaderTableName" rowspan="1" colspan="28">Сервер № {{ db_row_server["server_id"] }}, кодовое имя {{ db_row_server["server_name"] }} тип {{ db_row_server["server_description"] }}, расположен по адресу {{ db_row_server["server_address"] }}.</td>
+                            <td class="clsHeaderTableName" rowspan="1" colspan="29">Сервер № {{ db_row_server["server_id"] }}, кодовое имя {{ db_row_server["server_name"] }} тип {{ db_row_server["server_description"] }}, расположен по адресу {{ db_row_server["server_address"] }}.</td>
                         </tr>
                         <tr class="clsHeader">
                             <td class="clsHeader" rowspan="1" colspan="10">Scanner</td>
                             <td class="clsHeader" rowspan="1" colspan="2">Location</td>
                             <td class="clsHeader" rowspan="1" colspan="5">Account</td>
-                            <td class="clsHeader" rowspan="1" colspan="4">Session Statistic</td>
+                            <td class="clsHeader" rowspan="1" colspan="5">Session Statistic</td>
                             <td class="clsHeader" rowspan="1" colspan="8">Stepper</td>
                         </tr>
                         <tr class="clsHeader">
@@ -45,6 +45,7 @@
                             <td class="clsHeader">User Name</td>
                             <td class="clsHeader">Status</td>
 
+                            <td class="clsHeader">AWork</td>
                             <td class="clsHeader">AWait</td>
                             <td class="clsHeader">Pk</td>
                             <td class="clsHeader">Gm</td>
@@ -83,6 +84,7 @@
                                 <td class="clsBodyRowUserName">{{ db_row["sa_username"] }}</td>
                                 <td class="clsBodyRowStatusStr">{{ db_row["sa_state"] }}</td>
 
+                                <td class="clsBodyRowAWait">{{ db_row["ss_awork"] }}</td>
                                 <td class="clsBodyRowAWait">{{ db_row["ss_await"] }}</td>
                             <!--    <td class="clsBodyRowDate">{{ db_row["ss_reload"] }}</td> -->
                                 <td class="clsBodyRowCount4">{{ db_row["ss_pokemons"] }}</td>
@@ -102,7 +104,7 @@
                             </tr>
                         {% endfor %}
                             <tr>
-                                <td class="clsHeaderTableSpaser" rowspan="1" colspan="29"></td>
+                                <td class="clsHeaderTableSpaser" rowspan="1" colspan="30"></td>
                             </tr>
                     {% endfor %}
                 </table>

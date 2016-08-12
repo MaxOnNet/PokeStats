@@ -44,11 +44,11 @@ class Average(Report, View):
             sa.state 		as "sa_status",
             sa.is_active 	as "sa_active",
 
-            (now() - ss.date_start) as "ss_await",
-            ss.date_start 			as "ss_reload",
-            ss.pokemons 			as "ss_pokemons",
-            ss.gyms 				as "ss_gyms",
-            ss.pokestops 			as "ss_pokestops",
+            (now() - ss.date_change) as "ss_await",
+            ss.date_start 			 as "ss_reload",
+            ss.pokemons 			 as "ss_pokemons",
+            ss.gyms 				 as "ss_gyms",
+            ss.pokestops 			 as "ss_pokestops",
 
             sm.stepper		as "sm_stepper",
             sm.step			as "sm_step",
@@ -60,7 +60,8 @@ class Average(Report, View):
 
             s.is_throttled as "s_throttled",
             s.is_warning as "s_warning",
-            s.is_banned as "s_banned"
+            s.is_banned as "s_banned",
+            (now() - ss.date_start) as "ss_awork"
         FROM
             db_pokestats.scanner as s,
             db_pokestats.scanner_account as sa,
@@ -112,6 +113,7 @@ class Average(Report, View):
                     "sa_state": row[15],
                     "sa_active": row[16],
 
+                    "ss_awork": self.format_timedelta(row[32]),
                     "ss_await": row[17],
                     "ss_reload": row[18],
                     "ss_pokemons": row[19],

@@ -27,6 +27,25 @@ def _arg_parse():
     return args
 
 
+def _touch_pid(worker_id=1):
+    worker_path = os.path.abspath(os.path.join(os.path.dirname(os.path.realpath(__file__)), '..'))
+    worker_pid = str(os.getpid())
+    worker_pidfile = "{0}/.run/worker.{1}.pid".format(worker_path, worker_id)
+
+    file(worker_pidfile, 'w').write(worker_pid)
+
+
+def _touch_log(worker_id=1):
+    worker_path = os.path.abspath(os.path.join(os.path.dirname(os.path.realpath(__file__)), '..'))
+    logging.basicConfig(filename="{0}/.log/worker.{1}.log".format(worker_path, worker_id), filemode='w', level=logging.INFO, format='%(asctime)s [%(module)15s] [%(funcName)15s] [%(lineno)4d] [%(levelname)7s] [%(threadName)5s] %(message)s')
+
+    logging.getLogger("peewee").setLevel(logging.WARNING)
+    logging.getLogger("requests").setLevel(logging.WARNING)
+    logging.getLogger("Interfaces.pgoapi.pgoapi").setLevel(logging.WARNING)
+    logging.getLogger("Interfaces.pgoapi.rpc_api").setLevel(logging.WARNING)
+    logging.getLogger("Interfaces.AI.Metrica").setLevel(logging.DEBUG)
+
+
 def _thread_start(scanner):
     log.info("Инициализируем сканнер id={0}".format(scanner.id))
 
@@ -60,22 +79,6 @@ session_mysql = session_maker()
 scanner_alive = True
 if __name__ == '__main__':
     threading.current_thread().name = '00-00'
-
-    if arguments.server != 0:
-        path = os.path.abspath(os.path.join(os.path.dirname(os.path.realpath(__file__)), '..'))
-        pid = str(os.getpid())
-        pidfile = "{0}/.log/worker.{1}.pid".format(path, arguments.server)
-        file(pidfile, 'w').write(pid)
-
-        logging.basicConfig(filename="{0}/.log/worker.{1}.log".format(path, arguments.server), filemode='w', level=logging.INFO, format='%(asctime)s [%(module)15s] [%(funcName)15s] [%(lineno)4d] [%(levelname)7s] [%(threadName)5s] %(message)s')
-    else:
-        logging.basicConfig(level=logging.INFO, format='%(asctime)s [%(module)15s] [%(funcName)15s] [%(lineno)4d] [%(levelname)7s] [%(threadName)5s] %(message)s')
-
-    logging.getLogger("peewee").setLevel(logging.WARNING)
-    logging.getLogger("requests").setLevel(logging.WARNING)
-    logging.getLogger("Interfaces.pgoapi.pgoapi").setLevel(logging.WARNING)
-    logging.getLogger("Interfaces.pgoapi.rpc_api").setLevel(logging.WARNING)
-    logging.getLogger("Interfaces.AI.Metrica").setLevel(logging.DEBUG)
 
     threads = []
 

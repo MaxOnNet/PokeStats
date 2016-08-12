@@ -17,10 +17,13 @@ class Metrica:
         self.time_await = datetime.datetime.now()
 
         log.debug("Обнуляем счетсчики в БД")
+
+        self.take_start()
         self.take_status(scanner_state=0, scanner_msg="", account_state=0, account_msg="")
         self.take_banning()
         self.take_throttling()
         self.take_step()
+
         self.session.flush()
 
         self._level_banning = 0
@@ -38,6 +41,10 @@ class Metrica:
 
         self.session.commit()
         self.take_ping()
+
+
+    def take_start(self):
+        self.scanner.statistic.date_start = datetime.datetime.now()
 
 
     def take_banning(self, level_banning=0):
@@ -66,7 +73,7 @@ class Metrica:
 
     def take_ping(self):
         self.time_await = datetime.datetime.now()
-        self.scanner.statistic.date_start = datetime.datetime.now()
+        self.scanner.statistic.date_change = datetime.datetime.now()
 
         if self.time_flush + datetime.timedelta(seconds=60) < datetime.datetime.now():
             log.debug("Сброс статистики в БД")
