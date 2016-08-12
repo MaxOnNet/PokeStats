@@ -39,15 +39,14 @@ mysqldump   --host=${db_host} \
             --extended-insert \
             --complete-insert \
             ${db_name} \
-            --ignore-table=${db_name}.scanner_mode > ${path_web_dump_pokemon};
-#            --ignore-table=${db_name}.scanner \
-#            --ignore-table=${db_name}.scanner_account \
-#            --ignore-table=${db_name}.scanner_account_statistic \
-#            --ignore-table=${db_name}.scanner_location \
-#            --ignore-table=${db_name}.scanner_proxy \
-#            --ignore-table=${db_name}.scanner_server \
-#            --ignore-table=${db_name}.scanner_statistic \
-
+            --ignore-table=${db_name}.scanner \
+            --ignore-table=${db_name}.scanner_account \
+            --ignore-table=${db_name}.scanner_account_statistic \
+            --ignore-table=${db_name}.scanner_location \
+            --ignore-table=${db_name}.scanner_proxy \
+            --ignore-table=${db_name}.scanner_server \
+            --ignore-table=${db_name}.scanner_statistic > ${path_web_dump_pokemon};№
+#            --ignore-table=${db_name}.scanner_mode
 
 mysqldump   --host=${db_host} \
             --user=${db_user} \
