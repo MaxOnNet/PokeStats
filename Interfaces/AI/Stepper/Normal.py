@@ -145,7 +145,6 @@ class Normal(object):
             radius_array = []
 
             if seen_pokemon:
-                radius_array.append(70)
                 radius_array.append(190)
 
             if (seen_pokestop | seen_gym) & self.use_long_radius:

@@ -18,7 +18,7 @@ for worker_id in $(seq ${worker_index_first} ${worker_index_last}); do
     if [ -f "${worker_path}/.run/worker.${worker_id}.pid" ]; then
         worker_pid="$(cat ${worker_path}/.run/worker.${worker_id}.pid)";
 
-        if [ "z$worker_mode" -eq "zupdate" ]; then
+        if [ "z${worker_mode}" -eq "zupdate" ]; then
             if [ -f "/proc/${worker_pid}/comm" ]; then
                 if [ "$(cat /proc/${worker_pid}/comm)" -eq "Worker.py" ]; then
                     kill ${worker_pid} > /dev/null 2> /dev/null;
