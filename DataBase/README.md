@@ -7,7 +7,7 @@
 - [Directory](http://pokestats.tatarnikov.org/database/) Директория с дампами
 - [Current Structure](http://pokestats.tatarnikov.org/database/current.structure.sql) Текущая не сжатая структура базы данных
 - [Current Data Poke](http://pokestats.tatarnikov.org/database/current.dump.pokemon.sql) Текущий не сжатый дамп покемонов
-- [Current Data Poke](http://pokestats.tatarnikov.org/database/current.dump.scanners.sql) Текущий не сжатый дамп настроек сканнеров
+- [Current Data Scanner](http://pokestats.tatarnikov.org/database/current.dump.scanners.sql) Текущий не сжатый дамп настроек сканнеров
 
 # Для запуска надо будет создать
 - scanner_location, если координаты оставить в 0, то при запуске адрес переведется в координаты, если координаты установлены, то перевода не будет

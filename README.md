@@ -1,9 +1,10 @@
 
 # PokeStats
 Проект находится на стадии глубокой альвы, и постоянно переписывается, частота коммитов обуславливается с системой доставки на сервера.
+Изза изменений в API и троллинга IP адресов со стороны ниантик, эффектоивность на данный момен 0! но мы будет искать пути решения проблемы.
 
-[live](http://pokestats.tatarnikov.org) Работа данного кода
-[reports](http://pokestats.tatarnikov.org/report/server/average) Статистики
+- [live](http://pokestats.tatarnikov.org) Работа данного кода
+- [reports](http://pokestats.tatarnikov.org/report/server/average) Статистики
 
 Карта города омска, статистика по GYM, Trainers и много е другое.
 
