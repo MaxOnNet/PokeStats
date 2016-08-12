@@ -51,4 +51,3 @@ sleep 2
 worker_pid="$(cat ${worker_path}/.run/worker.${worker_id}.pid)";
 
 renice -7 ${worker_pid};
-

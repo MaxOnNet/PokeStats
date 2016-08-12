@@ -8,5 +8,5 @@ git pull;
 cat /dev/null > "${worker_path}/.log/access_log";
 cat /dev/null > "${worker_path}/.log/error_log";
 
-killall -9 httpd
-systemctl restart httpd
+killall -9 httpd;
+systemctl restart httpd;
