@@ -13,7 +13,6 @@ path_web_structure="${path_web}/current.stricture.sql";
 path_web_dump_pokemon="${path_web}/current.dump.pokemon.sql";
 path_web_dump_scanners="${path_web}/current.dump.scanners.sql";
 
-
 mkdir -p "${path}";
 mkdir -p "${path_web}";
 
