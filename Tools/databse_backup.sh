@@ -23,15 +23,13 @@ mysqldump   --host=${db_host} \
             --no-create-info \
             --extended-insert \
             --complete-insert \
-            ${db_name} \
-            > ${path_backup};
+            ${db_name} > ${path_backup};
 
 mysqldump   --host=${db_host} \
             --user=${db_user} \
             --password=${db_password} \
             --no-data \
-            ${db_name} \
-            > ${path_web_structure};
+            ${db_name} > ${path_web_structure};
 
 mysqldump   --host=${db_host} \
             --user=${db_user} \
@@ -41,17 +39,17 @@ mysqldump   --host=${db_host} \
             --extended-insert \
             --complete-insert \
             ${db_name} \
+            --ignore-table=${db_name}.scanner_mode > ${path_web_dump_pokemon};
 #            --ignore-table=${db_name}.scanner \
 #            --ignore-table=${db_name}.scanner_account \
 #            --ignore-table=${db_name}.scanner_account_statistic \
 #            --ignore-table=${db_name}.scanner_location \
-            --ignore-table=${db_name}.scanner_mode \
 #            --ignore-table=${db_name}.scanner_proxy \
 #            --ignore-table=${db_name}.scanner_server \
 #            --ignore-table=${db_name}.scanner_statistic \
-            > ${path_web_dump_pokemon};
 
-mysqldump  --host=${db_host} \
+
+mysqldump   --host=${db_host} \
             --user=${db_user} \
             --password=${db_password} \
             --no-create-db \
@@ -65,8 +63,8 @@ mysqldump  --host=${db_host} \
             --ignore-table=${db_name}.team \
             --ignore-table=${db_name}.pokemon \
             --ignore-table=${db_name}.pokemon_spawnpoint \
-            --ignore-table=${db_name}.pokestop \
-            > ${path_web_dump_scanners};
+            --ignore-table=${db_name}.pokestop > ${path_web_dump_scanners};
+            
 #echo "Чистим логины и пароли"
 echo " Компрессируем данные";
 rm -f ${path_web_structure}.tar.gz ${path_web_dump_pokemon}.tar.gz ${path_web_dump_scanners}.tar.gz;
