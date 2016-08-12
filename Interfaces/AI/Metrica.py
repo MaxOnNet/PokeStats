@@ -56,7 +56,7 @@ class Metrica:
         else:
             self._level_banning += 1
 
-            if self._level_banning > 18:
+            if self._level_banning > 5:
                 log.warning("Суки забанили! топчемся на месте...")
                 #
                 # CСуки опять блокируют, 1 минуту занимаемся херней, каждые 10 сек, топчемся на 1 месте и посылаем сердцепиения
