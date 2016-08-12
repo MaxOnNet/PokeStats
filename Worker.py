@@ -80,6 +80,9 @@ scanner_alive = True
 if __name__ == '__main__':
     threading.current_thread().name = '00-00'
 
+    _touch_pid(arguments.server)
+    _touch_log(arguments.server)
+
     threads = []
 
     server = session_mysql.query(dbScannerServer).get(arguments.server)
