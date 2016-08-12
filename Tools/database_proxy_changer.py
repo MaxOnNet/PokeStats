@@ -19,7 +19,7 @@ config = Config()
 session_maker = init(config)
 session_mysql = session_maker()
 
-scanner_index_first = 26
+scanner_index_first = 28
 scanner_index_last = 327
 scanner_in_server = 25
 

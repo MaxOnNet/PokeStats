@@ -154,6 +154,8 @@ class Normal(object):
                 log.debug("Сканируем область в радиусе {} метров.".format(radius))
                 response_index = 0
 
+                sleep(self.ai.delay_scan)
+
                 while response_index < 5:
                     cellid = get_cell_ids(lat, lng, radius=radius)
                     timestamp = [0, ] * len(cellid)
@@ -161,9 +163,6 @@ class Normal(object):
                     self.api.set_position(lat, lng, 0)
                     self.ai.heartbeat()
 
-                    sleep(self.ai.delay_scan)
-
-                    self.api.set_position(lat, lng, 0)
                     response_dict = self.api.get_map_objects(latitude=lat, longitude=lng,  since_timestamp_ms=timestamp, cell_id=cellid)
 
                     if response_dict and 'status_code' in response_dict:
@@ -176,16 +175,9 @@ class Normal(object):
                                             log.debug('Response dictionary: \r\n{}'.format(pprint.PrettyPrinter(indent=4).pformat(response_dict['responses']['GET_MAP_OBJECTS'])))
                                             break
 
-                                        else:
-                                            log.warning("Получен неверный статус: {0}".format(response_dict['responses']['GET_MAP_OBJECTS']['status']))
-                                            action_delay(self.ai.delay_action_min, self.ai.delay_action_max)
-                        else:
-                            log.debug("Получен неверный статус: {0}".format(response_dict['status_code']))
-
-                            if response_dict['status_code'] == 52:
-                                action_delay(self.ai.delay_action_min, self.ai.delay_action_max)
-
                     response_index += 1
+
+                    action_delay(self.ai.delay_scan, self.ai.delay_scan*2)
 
         except Exception as e:
             log.error("Ошибка в обработке дочернего потока: {}".format(e))
