@@ -64,7 +64,7 @@ mysqldump   --host=${db_host} \
             --ignore-table=${db_name}.pokemon \
             --ignore-table=${db_name}.pokemon_spawnpoint \
             --ignore-table=${db_name}.pokestop > ${path_web_dump_scanners};
-            
+
 #echo "Чистим логины и пароли"
 echo " Компрессируем данные";
 rm -f ${path_web_structure}.tar.gz ${path_web_dump_pokemon}.tar.gz ${path_web_dump_scanners}.tar.gz;
