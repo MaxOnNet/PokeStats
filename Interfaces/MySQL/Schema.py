@@ -462,7 +462,7 @@ def parse_pokemon_cell(cell, session):
 
     for p in cell.get('wild_pokemons', []):
 
-        if int(p['time_till_hidden_ms']) < 0:
+        if int(p['time_till_hidden_ms']) < 0 or (int(p['time_till_hidden_ms']) / 1000) > 1500:
             p['time_till_hidden_ms'] = 300
 
         pokemon_spawnpoint = PokemonSpawnpoint()
@@ -473,7 +473,7 @@ def parse_pokemon_cell(cell, session):
 
         pokemon_spawnpoint.latitude = p['latitude']
         pokemon_spawnpoint.longitude = p['longitude']
-        pokemon_spawnpoint.date_till_hidden = p['time_till_hidden_ms'] / 1000.0
+        pokemon_spawnpoint.date_till_hidden = int(p['time_till_hidden_ms']) / 1000.0
         pokemon_spawnpoint.date_disappear = datetime.fromtimestamp(
                 (p['last_modified_timestamp_ms'] +
                  p['time_till_hidden_ms']) / 1000.0)
