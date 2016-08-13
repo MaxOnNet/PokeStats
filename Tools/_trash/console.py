@@ -1,4 +1,4 @@
-from Tools.ptcexceptions import *
+from Tools._trash.ptcexceptions import *
 
 from Tools._trash.accountcreator import *
 
@@ -8,14 +8,14 @@ from Tools._trash.accountcreator import *
 # account_info = create_account(
 #            "clubmap{0}".format(index), "pwdxSf1{0}".format(index), "v{0}@tatarnikov.org".format(index)
 #        )
-for index in xrange(300):
-    if index < 200:
+for index in range(300, 700):
+    if index < 300:
         pass
     else:
         status = 0
         while status == 0:
             try:
-
+                #print index
                 account_info = create_account(
                     "mapDefenderx{0}".format(index), "pwdxSf1{0}".format(index), "mapDefender-{0}@tatarnikov.org".format(index)
                 )
@@ -24,10 +24,10 @@ for index in xrange(300):
                 status = 1
             # Handle account creation failure exceptions
             except PTCInvalidPasswordException as err:
-                print('Invalid password: {}'.format(err))
+                print('-- Invalid password: {}'.format(err))
             except (PTCInvalidEmailException, PTCInvalidNameException) as err:
-                print('Failed to create account! {}'.format(err))
+                print('-- Failed to create account! {}'.format(err))
                 status = 1
             except PTCException as err:
-                print('Failed to create account! General error:  {}'.format(err))
+                print('-- Failed to create account! General error:  {}'.format(err))
 # 51

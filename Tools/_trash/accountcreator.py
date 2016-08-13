@@ -30,8 +30,12 @@ _BASE_URL = 'https://club.pokemon.com/us/pokemon-trainer-club'
 # Account creation validation is done by checking the response URLs
 # The following are control flow URL constants
 _SUCCESS_DESTS = (
-    'https://club.pokemon.com/us/pokemon-trainer-club/parents/email',  # This initially seemed to be the proper success redirect
-    'https://club.pokemon.com/us/pokemon-trainer-club/sign-up/',  # but experimentally it now seems to return to the sign-up, but still registers
+    'https://club.pokemon.com/us/pokemon-trainer-club/parents/email',
+    # This initially seemed to be the proper success redirect
+    'https://club.pokemon.com/us/pokemon-trainer-club/parents/email/',
+    'https://club.pokemon.com/us/pokemon-trainer-club/sign-up/',
+    'https://club.pokemon.com/us/pokemon-trainer-club/sign-up',
+    'https://club.pokemon.com/us/pokemon-trainer-club/parents/sign-up'# but experimentally it now seems to return to the sign-up, but still registers
 )
 # As both seem to work, we'll check against both success destinations until I have I better idea for how to check success
 _DUPE_EMAIL_DEST = 'https://club.pokemon.com/us/pokemon-trainer-club/forgot-password?msg=users.email.exists'
@@ -89,7 +93,7 @@ class PTCSession(requests.Session):
         req = requests.Request(method, url, data=data, **kwargs)
         prepped = self.prepare_request(req)
         prepped.headers.update(headers)
-        resp = self.send(prepped)
+        resp = self.send(prepped, timeout=10)
 
         # Validate the status_code if a desired code was given
         if resp_code is not None and resp.status_code != resp_code:
@@ -255,7 +259,7 @@ def create_account(username, password, email):
                 data={
                     'csrfmiddlewaretoken': session.cookies.get_dict()['csrftoken'],
                     'dob': '1970-01-01',
-                    'country': 'US',
+                    'country': 'RU',
                 },
                 resp_code=200
             )
