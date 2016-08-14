@@ -464,6 +464,7 @@ def parse_pokemon_cell(cell, session):
 
         if int(p['time_till_hidden_ms']) < 0 or (int(p['time_till_hidden_ms']) / 1000) > 1500:
             p['time_till_hidden_ms'] = 300
+            log.warning(cell)
 
         pokemon_spawnpoint = PokemonSpawnpoint()
 
