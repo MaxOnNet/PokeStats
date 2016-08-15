@@ -286,7 +286,12 @@ class PGoApiRequest:
                         break
                     time.sleep(5)
                 else:
+                    if 'status_code' in result['responses']:
+                        print result['responses']
+
+                    print result['responses']
                     break
+
             except:
                 try_cnt += 1
 

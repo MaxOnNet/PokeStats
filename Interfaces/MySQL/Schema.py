@@ -408,6 +408,8 @@ class GymMembership(Base):
     date_change = Column(DateTime(), nullable=False, default=func.now(), onupdate=func.now())
 
 
+
+@staticmethod
 def parse_map_cell(map_cell, session):
     count_pokemons = 0
     count_gyms = 0
@@ -458,13 +460,11 @@ def parse_fort_details(fort_id, fort_type, fort_dict, session):
 
 
 def parse_pokemon_cell(cell, session):
-    count_pokemons = 0
+    pokemons = {}
 
     for p in cell.get('wild_pokemons', []):
-
-        if int(p['time_till_hidden_ms']) < 0 or (int(p['time_till_hidden_ms']) / 1000) > 1500:
-            p['time_till_hidden_ms'] = 300
-            log.warning(cell)
+        if p['encounter_id'] in pokemons:
+            continue
 
         pokemon_spawnpoint = PokemonSpawnpoint()
 
@@ -480,16 +480,43 @@ def parse_pokemon_cell(cell, session):
                  p['time_till_hidden_ms']) / 1000.0)
         pokemon_spawnpoint.date_change = datetime.fromtimestamp((p['last_modified_timestamp_ms']/1000))
 
-        try:
-            count_pokemons += 1
+        if p['time_till_hidden_ms'] < 0:
+            pokemon_spawnpoint.date_disappear = datetime.utcfromtimestamp(p['last_modified_timestamp_ms']/1000 + 15*60)
 
-            session.merge(pokemon_spawnpoint)
-            session.commit()
-        finally:
-            pass
-            #session.flush()
+        pokemons['encounter_id'] = pokemon_spawnpoint
 
-    return count_pokemons
+    for p in cell.get('catchable_pokemons', []):
+        if p['encounter_id'] in pokemons:
+            continue
+
+        log.critical("found catchable pokemon not in wild: {}".format(p))
+
+        pokemon_spawnpoint = PokemonSpawnpoint()
+
+        pokemon_spawnpoint.id = p['spawn_point_id']
+        pokemon_spawnpoint.cd_encounter = p['encounter_id']
+        pokemon_spawnpoint.cd_pokemon = p['pokemon_data']['pokemon_id']
+
+        pokemon_spawnpoint.latitude = p['latitude']
+        pokemon_spawnpoint.longitude = p['longitude']
+        pokemon_spawnpoint.date_till_hidden = int(p['time_till_hidden_ms']) / 1000.0
+        pokemon_spawnpoint.date_disappear = datetime.fromtimestamp(
+                (p['last_modified_timestamp_ms'] +
+                 p['time_till_hidden_ms']) / 1000.0)
+
+        pokemon_spawnpoint.date_change = datetime.fromtimestamp((p['last_modified_timestamp_ms']/1000))
+
+        if p['time_till_hidden_ms'] < 0:
+            pokemon_spawnpoint.date_disappear = datetime.utcfromtimestamp(p['last_modified_timestamp_ms']/1000 + 15*60)
+
+        pokemons['encounter_id'] = pokemon_spawnpoint
+
+    for pokemon in pokemons:
+        session.merge(pokemon)
+
+    session.commit()
+
+    return len(pokemons)
 
 
 def parse_pokestop(f, session):

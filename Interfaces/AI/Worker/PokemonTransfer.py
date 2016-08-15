@@ -110,11 +110,17 @@ class PokemonTransfer(object):
 
     def _release_pokemon_get_groups(self):
         pokemon_groups = {}
+        request = self.api.create_request()
 
-        inventory_req = self.api.get_inventory()
+        request.get_player()
+        request.get_inventory()
+
+        inventory_req = request.call()
+        #inventory_req = self.api.get_inventory()
 
         if 'responses' not in inventory_req:
             return pokemon_groups
+
 
         inventory_dict = inventory_req['responses']['GET_INVENTORY']['inventory_delta']['inventory_items']
 
