@@ -133,7 +133,7 @@ gzip -9 ${path_web_structure} --stdout > ${path_web_structure}.gz;
 gzip -9 ${path_web_dump_pokemon} --stdout > ${path_web_dump_pokemon}.gz;
 gzip -9 ${path_web_dump_scanners} --stdout > ${path_web_dump_scanners}.gz;
 gzip -9 ${path_web_dump_gym} --stdout > ${path_web_dump_gym}.gz;
-gzip -9 ${path_web_dump_pokestop} --stdout > ${path_web_dump_pokestop}.gz};
+gzip -9 ${path_web_dump_pokestop} --stdout > ${path_web_dump_pokestop}.gz;
 
 rm -rf ${db_backup};
 
