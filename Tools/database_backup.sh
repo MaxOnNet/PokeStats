@@ -127,13 +127,13 @@ rm -f ${path_web_structure}.tar.gz ${path_web_dump_pokemon}.tar.gz ${path_web_du
 
 cat ${path_backup} > ${path_backup_current};
 cd ${path_web};
-tar --directory="${path_web}" -zcf ${path_backup}.tar.gz ${path_backup};
+gzip -9 ${path_backup} --stdout > ${path_backup}.gz;
 
-tar --directory="${path_web}" -zcf ${path_web_structure}.tar.gz ${path_web_structure};
-tar --directory="${path_web}" -zcf ${path_web_dump_pokemon}.tar.gz ${path_web_dump_pokemon};
-tar --directory="${path_web}" -zcf ${path_web_dump_scanners}.tar.gz ${path_web_dump_scanners};
-tar --directory="${path_web}" -zcf ${path_web_dump_gym}.tar.gz ${path_web_dump_gym};
-tar --directory="${path_web}" -zcf ${path_web_dump_pokestop}.tar.gz ${path_web_dump_pokestop};
+gzip -9 ${path_web_structure} --stdout > ${path_web_structure}.gz;
+gzip -9 ${path_web_dump_pokemon} --stdout > ${path_web_dump_pokemon}.gz;
+gzip -9 ${path_web_dump_scanners} --stdout > ${path_web_dump_scanners}.gz;
+gzip -9 ${path_web_dump_gym} --stdout > ${path_web_dump_gym}.gz;
+gzip -9 ${path_web_dump_pokestop} --stdout > ${path_web_dump_pokestop}.gz};
 
 rm -rf ${db_backup};
 
