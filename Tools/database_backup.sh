@@ -12,6 +12,8 @@ path_web="/home/apache/org-tatarnikov-pokestats/database"
 path_web_structure="${path_web}/current.stricture.sql";
 path_web_dump_pokemon="${path_web}/current.dump.pokemon.sql";
 path_web_dump_scanners="${path_web}/current.dump.scanners.sql";
+path_web_dump_pokestop="${path_web}/current.dump.pokestop.sql";
+path_web_dump_gym="${path_web}/current.dump.gym.sql";
 
 mkdir -p "${path}";
 mkdir -p "${path_web}";
@@ -71,17 +73,67 @@ mysqldump   --host=${db_host} \
             --ignore-table=${db_name}.scanner_server \
             --ignore-table=${db_name}.scanner_statistic > ${path_web_dump_scanners};
 
+mysqldump   --host=${db_host} \
+            --user=${db_user} \
+            --password=${db_password} \
+            --no-create-db \
+            --extended-insert \
+            --complete-insert \
+            ${db_name} \
+            --ignore-table=${db_name}.gym \
+            --ignore-table=${db_name}.gym_membership \
+            --ignore-table=${db_name}.trainer \
+            --ignore-table=${db_name}.team \
+            --ignore-table=${db_name}.pokemon \
+            --ignore-table=${db_name}.pokemon_spawnpoint \
+            --ignore-table=${db_name}.scanner \
+            --ignore-table=${db_name}.scanner_account \
+            --ignore-table=${db_name}.scanner_account_statistic \
+            --ignore-table=${db_name}.scanner_location \
+            --ignore-table=${db_name}.scanner_proxy \
+            --ignore-table=${db_name}.scanner_server \
+            --ignore-table=${db_name}.scanner_statistic \
+            --ignore-table=${db_name}.scanner_mode > ${path_web_dump_pokestop};
+
+mysqldump   --host=${db_host} \
+            --user=${db_user} \
+            --password=${db_password} \
+            --no-create-db \
+            --extended-insert \
+            --complete-insert \
+            ${db_name} \
+            --ignore-table=${db_name}.pokestop \
+            --ignore-table=${db_name}.gym_membership \
+            --ignore-table=${db_name}.trainer \
+            --ignore-table=${db_name}.team \
+            --ignore-table=${db_name}.pokemon \
+            --ignore-table=${db_name}.pokemon_spawnpoint \
+            --ignore-table=${db_name}.scanner \
+            --ignore-table=${db_name}.scanner_account \
+            --ignore-table=${db_name}.scanner_account_statistic \
+            --ignore-table=${db_name}.scanner_location \
+            --ignore-table=${db_name}.scanner_proxy \
+            --ignore-table=${db_name}.scanner_server \
+            --ignore-table=${db_name}.scanner_statistic \
+            --ignore-table=${db_name}.scanner_mode > ${path_web_dump_gym};
+
+
+
+
 
 #echo "Чистим логины и пароли"
 echo " Компрессируем данные";
 rm -f ${path_web_structure}.tar.gz ${path_web_dump_pokemon}.tar.gz ${path_web_dump_scanners}.tar.gz;
 
 cat ${path_backup} > ${path_backup_current};
+cd ${path_web};
 tar -zcf ${path_backup}.tar.gz ${path_backup};
 
 tar -zcf ${path_web_structure}.tar.gz ${path_web_structure};
 tar -zcf ${path_web_dump_pokemon}.tar.gz ${path_web_dump_pokemon};
 tar -zcf ${path_web_dump_scanners}.tar.gz ${path_web_dump_scanners};
+tar -zcf ${path_web_dump_gym}.tar.gz ${path_web_dump_gym};
+tar -zcf ${path_web_dump_pokestop}.tar.gz ${path_web_dump_pokestop};
 
 rm -rf ${db_backup};
 
