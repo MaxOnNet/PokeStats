@@ -123,7 +123,7 @@ mysqldump   --host=${db_host} \
 
 #echo "Чистим логины и пароли"
 echo " Компрессируем данные";
-rm -f ${path_web_structure}.tar.gz ${path_web_dump_pokemon}.tar.gz ${path_web_dump_scanners}.tar.gz;
+rm -f ${path_web_structure}.gz ${path_web_dump_pokemon}.gz ${path_web_dump_scanners}.gz ${path_web_dump_gym}.gz ${path_web_dump_pokestop}.gz;
 
 cat ${path_backup} > ${path_backup_current};
 cd ${path_web};
